@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// —— Next-Auth requeridos ————————————————————————————————————
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// —— Usuario ————————————————————————————————————————————————
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+
+  // Límite de 1 imagen de prueba gratuita por Google ID
+  previewUsado Boolean @default(false)
+  previewUrl   String? // URL de la imagen de prueba (con marca de agua)
+
+  createdAt DateTime @default(now())
+
+  accounts Account[]
+  sessions Session[]
+  pedidos  Pedido[]
+}
+
+// —— Pedido ————————————————————————————————————————————————
+
+model Pedido {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Configuración — Interior
+  tamano                Tamano
+  tematicas             String[]
+  tematicaPersonalizada String?
+  estilos               Estilo[]
+  tipoPapel             TipoPapel @default(BLANCO)
+  fotoFamiliarKey       String?
+
+  // Configuración — Tapa
+  tituloTapa        String?
+  subtituloTapa     String?
+  observacionesTapa String?
+  imagenTapaKey     String?
+  dedicatoria       String?
+
+  // Estado del pedido
+  estado EstadoPedido @default(ESPERANDO_PAGO)
+
+  // Datos de envío
+  nombreCompleto String
+  direccion      String
+  codigoPostal   String
+  localidad      String
+  provincia      String
+  telefono       String
+  emailEnvio     String
+
+  // Pago (MercadoPago)
+  mpPreferenceId String?
+  mpPaymentId    String?
+  pagadoAt       DateTime?
+
+  // PDF y aprobación
+  pdfUrl        String?
+  pdfSubidoAt   DateTime?
+  clienteAprobo Boolean   @default(false)
+  aprobadoAt    DateTime?
+
+  // Despacho
+  trackingNumero String?
+  despachadoAt   DateTime?
+
+  // Limpieza automática a 30 días
+  eliminarAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  imagenes ImagenPedido[]
+  fotos    FotoCliente[]
+}
+
+// —— Fotos del cliente (input) ————————————————————————————————
+
+model FotoCliente {
+  id       String @id @default(cuid())
+  pedidoId String
+  pedido   Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+
+  url   String
+  orden Int
+
+  createdAt DateTime @default(now())
+}
+
+// —— Imágenes generadas (output) ——————————————————————————————
+
+model ImagenPedido {
+  id       String @id @default(cuid())
+  pedidoId String
+  pedido   Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+
+  orden       Int
+  tipo        TipoImagen
+  url         String?
+  promptUsado String?    @db.Text
+  aprobada    Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+// —— Enums ————————————————————————————————————————————————————
+
+enum Tamano {
+  CHICO
+  GRANDE
+}
+
+enum Estilo {
+  REALISTA
+  PIXAR
+  ANIME
+}
+
+enum TipoPapel {
+  BLANCO
+  AHUESADO
+  COMBINADO
+}
+
+enum TipoImagen {
+  A
+  B
+  C
+}
+
+enum EstadoPedido {
+  ESPERANDO_PAGO
+  ESPERANDO_GENERACION
+  EN_REVISION
+  ESPERANDO_APROBACION
+  APROBADO
+  ENVIADO
+}
