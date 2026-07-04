@@ -35,133 +35,126 @@ Cómo usar este archivo:
 - [x] Página de bienvenida / landing con CTA "Crear mi libro"
 - [x] Redirigir al flujo de creación después del login
 - [x] Configurar variables de entorno para producción → `.env.example` creado con todas las variables
-- [x] Agregar componente de footer fijo (FAQ, botón de arrepentimiento, términos y condiciones) — `web/app/components/Footer.tsx`, incluido en `layout.tsx`
+- [x] Agregar componente de footer fijo (FAQ, botón de arrepentimiento, términos y condiciones)
+- [x] Repositorio en GitHub → `github.com/tintamarindostore-libros/tintamarindo`
+- [x] Base de datos migrada a Supabase (São Paulo) — `DATABASE_URL` transaction pooler, `DIRECT_URL` session pooler
 
-### Pantalla 1 — Configuración (solapas: Interior / Tapa / Regalo)
+### Pantalla 1 — Configuración (solapas: Interior / Tapa)
+
+> **Nota:** La solapa "Regalo" fue eliminada del producto. Los campos de tarjeta y opción regalo fueron removidos del schema y del código.
 
 **Solapa Interior**
 
 - [x] Cards visuales: 24 páginas vs 32 páginas
-- [ ] Mostrar diferencia de precio entre opciones *(ya hay precio de referencia — ver planilla `colorear-kids-precios.xlsx` — falta cargar precio final)*
+- [ ] Mostrar diferencia de precio entre opciones *(falta cargar precio final)*
 - [x] Indicar qué incluye cada tamaño
 - [x] Selector de temática con preview visual (aventura, princesas, dinosaurios, espacio, animales)
-- [ ] **Al seleccionar una temática, mostrar imagen de ejemplo real (foto + ilustración en esa temática)** — el dueño debe proveer estas imágenes de muestra por cada temática
-- [x] Limitar la selección de temáticas según el tamaño: hasta 3 en 24 páginas, hasta 5 en 32 páginas
-- [x] Si el libro es de 32 páginas, habilitar campo de **temática personalizada** (texto libre, ej. "fútbol — River Plate")
-- [x] Selector de estilo artístico con ejemplo visual (realista, Pixar, anime)
-- [x] Limitar la selección de estilos según el tamaño: hasta 2 en 24 páginas, hasta 3 en 32 páginas
-- [x] Si se eligen varios estilos, aplicarlos de forma aleatoria entre las ilustraciones
-- [x] Selector de tipo de papel: blanco / ahuesado / combinado (no cambia el precio, pero debe guardarse en el pedido)
-- [x] Si el libro es de 32 páginas, habilitar opción de **imagen familiar**: el cliente sube una foto grupal y la IA genera una ilustración con todo el grupo familiar como personajes en la escena (se integra como una página más del libro)
+- [ ] **Al seleccionar una temática, mostrar imagen de ejemplo real** — el dueño debe proveer imágenes de muestra por cada temática
+- [x] Limitar selección de temáticas según tamaño: hasta 3 en 24 páginas, hasta 5 en 32 páginas
+- [x] Si el libro es de 32 páginas, habilitar campo de **temática personalizada**
+- [x] Selector de estilo artístico (realista, Pixar, anime)
+- [x] Limitar selección de estilos según tamaño: hasta 2 en 24 páginas, hasta 3 en 32 páginas
+- [x] Selector de tipo de papel: blanco / ahuesado / combinado
+- [x] Si el libro es de 32 páginas, habilitar opción de **imagen familiar**
 
-**Solapa Tapa**
+**Solapa Tapa** *(título e imagen son obligatorios — el resto es opcional)*
 
-- [x] Campo: Título
-- [x] Campo: Subtítulo
-- [x] Campo: Observaciones (texto libre para pedidos particulares)
-- [x] Campo de carga de imagen específica para la tapa (upload separado de las fotos del interior)
-- [ ] Vista previa de cómo queda la tapa a color con los datos cargados
-
-**Solapa Regalo (opcional)**
-
-- [x] Toggle/checkbox para activar la opción regalo
-- [x] Selector de plantilla de tarjeta (14 x 10 cm)
-- [x] Campo: Título
-- [x] Campo: Nombre de quien recibe
-- [x] Campo: Nombre de quien regala
-- [x] Campo: Mensaje
-- [x] Mostrar aclaración de costo adicional fijo de $6.000 al activar la opción
+- [x] Campo: Título *(obligatorio)*
+- [x] Campo: Subtítulo *(opcional)*
+- [x] Campo: Observaciones *(opcional)*
+- [x] Campo: Imagen de tapa *(obligatoria)*
+- [x] Validación: no se puede avanzar sin título e imagen de tapa
+- [x] Tabs Interior/Tapa repetidos al pie del paso 2 para que el cliente no se pierda
+- [ ] Vista previa de cómo queda la tapa con los datos cargados
 
 ### Pantalla 2 — Login + Upload de fotos + Términos
 
 - [x] Flujo de login con Google (next-auth)
 - [x] Guardar en DB: Google ID, nombre, email, foto de perfil
 - [x] Componente de upload de fotos (drag & drop + botón — mobile first)
+- [x] Multi-selección de fotos (Ctrl/Shift para seleccionar varias a la vez)
 - [x] Validación: cantidad de fotos entre 2 y 5
-- [x] Validación: tipo de archivo (jpg, png, heic), tamaño máximo
+- [x] Validación: tipo de archivo (jpg, png, heic), tamaño máximo 15MB
 - [x] Preview de fotos subidas con opción de eliminar
-- [x] Popup / pantalla de política de privacidad de imágenes
-- [x] Ajustar formato: debe ser específicamente un **popup** con scroll obligatorio (antes podía ser popup o pantalla completa)
+- [x] Popup de política de privacidad con scroll obligatorio
 - [x] Checkbox de aceptación obligatorio antes de continuar
-- [x] Guardar fotos en almacenamiento temporal
+- [x] Guardar fotos en almacenamiento temporal (Cloudflare R2)
+- [ ] **Fix pendiente:** agregar `http://localhost:3000/api/auth/callback/google` en Google Cloud Console para que el login funcione en desarrollo
 
 ### Pantalla 3 — Imagen de prueba
 
 - [x] Botón "Generar mi imagen de prueba"
-- [x] Spinner / estado de carga mientras se genera (puede tardar ~30 seg)
+- [x] Spinner / estado de carga mientras se genera (~30 seg)
 - [x] Mostrar imagen generada con marca de agua
-- [x] Botón para descargar la imagen de prueba con marca de agua
-- [x] Lógica: verificar que el Google ID no haya generado una prueba antes
-- [x] Si ya tiene una prueba generada: mostrar la imagen anterior + invitar a completar el pedido
+- [x] Botón para descargar la imagen de prueba
+- [x] Límite de una imagen de prueba por cuenta de Google
+- [x] Si ya tiene prueba generada: mostrar imagen anterior + invitar a completar el pedido
+- [x] Fix: imagen de prueba recarga correctamente si falla la primera vez
 
 ### Pantalla 4 — Checkout (envío + resumen + pago, unificado)
 
-- [x] Campo: Nombre completo
-- [x] Campo: Dirección (calle, número, piso/depto)
-- [x] Campo: Código postal
-- [x] Campo: Localidad / Barrio
-- [x] Campo: Provincia (selector desplegable — todas las provincias AR)
-- [x] Campo: Teléfono
-- [x] Campo: Email (pre-completado desde Google, editable)
+- [x] Campos de envío completos (nombre, dirección, CP, localidad, provincia, teléfono, email)
 - [x] Validaciones de todos los campos
-- [x] Resumen del pedido: tamaño, temática(s), estilo(s), tipo de papel, tapa, opción regalo (si se eligió), datos de envío
-- [ ] Cotización de envío en tiempo real — integración API MiCorreo (Correo Argentino), por peso/dimensiones + código postal. Incluir opción de retiro en sucursal.
-- [x] Desglose de precio: libro + envío *(UI ya construida — falta cargar el monto final, ya definido en `colorear-kids-precios.xlsx`)*
-- [x] Sumar al desglose el costo fijo de $6.000 si se activó la opción regalo en la Pantalla 1
+- [x] Campo: Dedicatoria (opcional)
+- [x] Resumen del pedido
+- [ ] Cotización de envío en tiempo real — API MiCorreo (Correo Argentino)
+- [x] Desglose de precio *(falta cargar el monto final real)*
 - [ ] Mostrar precio con descuento si paga por transferencia bancaria
-- [ ] Integración MercadoPago (básica — se completa en Fase 3)
+- [ ] Integración MercadoPago *(en desarrollo, desactivado en localhost)*
 - [ ] Integración pago por transferencia bancaria directa (con descuento)
-- [x] Pantalla de confirmación post-pago
+- [x] Pantalla de confirmación post-pedido
 - [x] Guardar pedido completo en DB con estado "esperando generación"
 
 ### Panel de administración
 
-- [x] Ruta protegida — solo accesible con cuenta de admin
+- [x] Ruta protegida `/admin` — acceso solo para admin
+- [x] Fix: panel de admin funcionando correctamente (Prisma client regenerado, migrado a Supabase)
 - [x] Lista de pedidos con estado y fecha
-- [x] Filtro por estado: esperando generación / en revisión / esperando aprobación / aprobado / enviado
-- [x] Vista de detalle de pedido: fotos del cliente, temática(s), estilo(s), tamaño, dirección
-- [x] Mostrar en el detalle del pedido: tipo de papel, temática personalizada (si se ingresó) e imagen familiar (si se subió) — datos operativos para generar las ilustraciones correctamente
-- [x] Botón para disparar generación de imágenes del pedido
-- [x] Visor de imágenes generadas una por una
-- [x] Botón de regenerar por imagen individual
-- [x] Indicador de cuántas imágenes están aprobadas vs pendientes
-- [x] Botón para subir PDF armado → dispara email al cliente para aprobación *(subida funciona; el envío de email queda para Fase 3)*
-- [x] Campo para cargar número de tracking → dispara email de despacho al cliente *(campo funciona; el envío de email queda para Fase 3)*
-- [x] Cambio de estado del pedido en cada paso
-- [x] Indicador visual de pedidos "esperando aprobación" con días restantes antes de la aprobación automática (5 días)
+- [x] Filtro por estado
+- [x] Vista de detalle de pedido con fotos del cliente, temática, estilo, tamaño, dirección
+- [x] Botón para disparar generación de imágenes
+- [x] Visor de imágenes generadas con botones de aprobar / regenerar por imagen
+- [x] Indicador de imágenes aprobadas vs pendientes
+- [x] Botón para subir PDF
+- [x] Campo para número de tracking
+- [x] Indicador de días restantes para aprobación automática (5 días)
+- [ ] **Verificar:** que se guarden correctamente las 5 fotos al hacer un pedido nuevo (testear con pedido nuevo)
 
 ---
 
 ## 🔲 FASE 3 — Pagos y notificaciones
 
-- [x] Integración completa MercadoPago (webhook de confirmación de pago)
+- [x] Integración MercadoPago base (webhook de confirmación) — *desactivado en dev, activo en producción*
 - [ ] Integración pago por transferencia bancaria (conciliación manual o automática a definir)
-- [x] Crear skill `integracion-pagos` en Claude Code antes de arrancar
 - [ ] Integración API MiCorreo para cotización y generación de etiquetas de envío
 - [ ] Email 1: Confirmación de pedido (inmediato al pago)
 - [ ] Email 2: PDF con marca de agua para aprobación del cliente
-- [ ] Aviso por WhatsApp cuando se envía el Email 2 (avisando que el mail fue enviado)
-- [ ] Recordatorio automático diario (mail + WhatsApp) mientras el pedido espera aprobación
-- [ ] Job/cron de aprobación automática a los 5 días si el cliente no respondió
+- [ ] Aviso por WhatsApp cuando se envía el Email 2
+- [ ] Recordatorio automático diario mientras el pedido espera aprobación
+- [ ] Job/cron de aprobación automática a los 5 días
 - [ ] Email 3: Despacho con número de tracking
 - [ ] Lógica de eliminación automática de imágenes a los 30 días
 - [ ] Testing de flujo completo de pago
 
 ---
 
-## 🔲 FASE 4 — Pulido final
+## 🔲 FASE 4 — Pulido final y deploy
 
-- [x] Redactar documento legal completo de política de privacidad de imágenes
-- [x] Integrar texto legal en la app (popup de aceptación)
-- [x] Redactar texto de Botón de Arrepentimiento (ver `docs/tintamora-boton-arrepentimiento.docx`) → integrado en `web/app/(content)/arrepentimiento/page.tsx`, linkeado desde el footer
-- [x] Redactar FAQ orientado al cliente (ver `docs/tintamora-faq.docx`) → integrado en `web/app/(content)/faq/page.tsx`, linkeado desde el footer
-- [x] Redactar Términos y Condiciones (ver `docs/tintamora-terminos-y-condiciones.docx`) → integrado en `web/app/(content)/terminos/page.tsx`, linkeado desde el footer
-- [ ] Branding final — nombre, logo, colores
-- [ ] Dominio propio
-- [x] SEO básico
-- [ ] Testing en mobile (la mayoría de clientes entran por celular)
-- [ ] Testing de flujo completo end-to-end
-- [ ] Deploy a producción
+- [x] Texto legal: política de privacidad, botón de arrepentimiento, FAQ, términos y condiciones
+- [x] SEO básico (metadata, og:image, sitemap, robots.txt)
+- [x] Repositorio GitHub configurado con .gitignore correcto
+- [x] Base de datos en Supabase (listo para producción)
+- [ ] Actualizar precios reales en `web/lib/precios.ts` *(actualmente tiene valores de prueba)*
+- [ ] Branding final — logo para el header y favicon
+- [ ] Crear OG image `/public/og-image.jpg` (1200×630 px)
+- [ ] Dominio: registrar `tintamarindo.com` (o `.store` / `.ar`)
+- [ ] Verificar dominio en Resend para envío de emails
+- [ ] Deploy a Vercel: conectar repo GitHub → configurar Root Directory `web` → cargar env vars
+- [ ] Configurar variables de entorno en Vercel (todas las de `.env.local`)
+- [ ] Activar MercadoPago en producción y configurar webhook `POST /api/webhooks/mercadopago`
+- [ ] Testing en mobile — la mayoría de clientes entran por celular
+- [ ] Testing de flujo completo end-to-end en producción
+- [ ] Google OAuth en producción: agregar URL de Vercel en Google Cloud Console como redirect autorizado
 
 ---
 
@@ -171,11 +164,10 @@ Cómo usar este archivo:
 
 - [ ] Conectar Evolution API
 - [ ] Botón flotante de WhatsApp en la web
-- [ ] Agente conversacional con base de conocimiento (RAG o el FAQ en Word)
-- [ ] Acceso de solo lectura a Postgres (tiempos de proceso y estado de pedido — sin modificar datos)
-- [ ] Definir criterio de escalamiento a humano cuando el agente no resuelve la consulta
-- [ ] Definir cómo se notifica al dueño cuando hay un escalamiento
-- [ ] Migrar las notificaciones automáticas de Fase 3 (confirmación, aprobación, despacho) para que también salgan por este canal
+- [ ] Agente conversacional con base de conocimiento (RAG o FAQ en Word)
+- [ ] Acceso de solo lectura a Postgres (estado de pedidos — sin modificar datos)
+- [ ] Definir criterio de escalamiento a humano
+- [ ] Migrar notificaciones automáticas de Fase 3 a este canal
 - [ ] Crear skill `agente-whatsapp` en Claude Code antes de arrancar
 
 ---
@@ -184,22 +176,16 @@ Cómo usar este archivo:
 
 - [ ] Día del Niño: domingo 9 de agosto de 2026
 - [ ] Fecha límite de pedido para entrega garantizada: antes del 15 de julio (a confirmar según tiempos reales de envío)
-- [ ] Definir precio de lanzamiento para esta campaña (ver planilla `colorear-kids-precios.xlsx`, sección "Precio de lanzamiento")
+- [ ] Definir precio de lanzamiento para esta campaña
 - [ ] Diseñar y difundir la campaña
 
 ---
 
-## 📝 Decisiones pendientes (no bloquean el MVP)
+## 📝 Decisiones pendientes
 
-> Las decisiones ya tomadas están documentadas también en `PRODUCTO.md` (precios, pagos, envíos, flujo, legal).
-
-- [x] Definir precio de venta del libro (24 pág y 32 pág) en ARS → marco de referencia definido en `colorear-kids-precios.xlsx` (precio objetivo y precio de lanzamiento). Falta cargar costo real de impresión (interior, tapa láser, encuadernado) y volante con QR para cerrar el número final.
-- [x] Definir costo de envío por provincia (o precio fijo nacional) → se eligió variable, calculado por la API de MiCorreo según código postal
-- [x] Definir precio de la opción regalo (tarjeta 14x10cm + envoltorio) → $6.000 fijo, independiente del tamaño del libro
-- [x] Elegir operador logístico: Correo Argentino / OCA / Andreani → se eligió Correo Argentino (MiCorreo). Evaluar Andreani como alternativa/complemento más adelante.
-- [x] Elegir servicio de almacenamiento de imágenes (S3, Cloudflare R2, etc.) → se eligió Cloudflare R2 (bucket privado, URLs firmadas)
-- [x] Elegir servicio de emails transaccionales → **Resend** (`resend` + `react-email` instalados; falta `RESEND_API_KEY` del dashboard de resend.com)
+- [ ] Cargar precio final real del libro (24 y 32 páginas) en `web/lib/precios.ts`
 - [ ] Definir precio del plus de regeneraciones extra (si se implementa)
-- [ ] Confirmar el plazo real de retención de fondos de MercadoPago en la cuenta del negocio, para comunicar con precisión el beneficio de pagar por transferencia
-- [ ] Definir peso y dimensiones reales del libro armado (24 y 32 páginas) — necesario para que cotice bien la API de MiCorreo
+- [ ] Confirmar plazo real de retención de fondos de MercadoPago (para comunicar beneficio del pago por transferencia)
+- [ ] Definir peso y dimensiones reales del libro armado (necesario para cotización MiCorreo)
 - [ ] Definir costo del volante insert con QR para reseñas en Google Places
+- [ ] Proveer imágenes de ejemplo por temática (aventura, princesas, dinosaurios, espacio, animales) para mostrar en el selector
