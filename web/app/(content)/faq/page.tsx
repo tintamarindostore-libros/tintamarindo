@@ -81,8 +81,8 @@ export default function FAQPage() {
             q: '¿Qué temáticas puedo elegir?',
             a: (
               <>
-                <p>Por ahora ofrecemos cinco temáticas: Aventura, Princesas, Dinosaurios, Espacio y Animales.</p>
-                <p>Si elegís el libro de 24 páginas, podés combinar hasta 3 temáticas distintas. Si elegís el libro de 32 páginas, podés combinar hasta 5, y además tenés la opción de personalizar una de ellas: por ejemplo, podés pedir una temática de fútbol con el equipo favorito de tu hijo, un deporte en particular, u otras ideas. Vamos a ir sumando temáticas nuevas con el tiempo.</p>
+                <p>Por ahora ofrecemos seis temáticas: Aventura, Princesas, Dinosaurios, Espacio, Animales y Letras y números.</p>
+                <p>Si elegís el libro de 24 páginas, podés combinar hasta 3 temáticas distintas. Si elegís el libro de 32 páginas, podés combinar hasta 5. Además, en cualquiera de los dos tamaños podés agregar hasta 3 temáticas personalizadas: por ejemplo, podés pedir una temática de fútbol con el equipo favorito de tu hijo, un deporte en particular, u otras ideas. Vamos a ir sumando temáticas nuevas con el tiempo.</p>
               </>
             ),
           },

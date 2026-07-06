@@ -3,10 +3,13 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { mpPreference } from '@/lib/mp'
 import { PRECIO_LIBRO } from '@/lib/precios'
+import { estimarEnvio } from '@/lib/envio'
 
 const PAGINAS_POR_TAMANO: Record<string, number> = { CHICO: 24, GRANDE: 32 }
 const ESTILOS_VALIDOS = ['REALISTA', 'PIXAR', 'ANIME']
 const PAPELES_VALIDOS = ['BLANCO', 'AHUESADO', 'COMBINADO']
+const TIPOS_ENTREGA_VALIDOS = ['SUCURSAL', 'DOMICILIO']
+const MAX_TEMATICAS_PERSONALIZADAS = 3
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,7 +23,7 @@ export async function POST(req: NextRequest) {
       fotos,
       tamano,
       tematicas,
-      tematicaPersonalizada,
+      tematicasPersonalizadas,
       estilos,
       tipoPapel,
       fotoFamiliarKey,
@@ -29,6 +32,7 @@ export async function POST(req: NextRequest) {
       observacionesTapa,
       imagenTapaKey,
       dedicatoria,
+      estiloTapa,
       nombreCompleto,
       direccion,
       codigoPostal,
@@ -36,6 +40,7 @@ export async function POST(req: NextRequest) {
       provincia,
       telefono,
       emailEnvio,
+      tipoEntrega,
     } = body
 
     if (!Array.isArray(fotos) || fotos.length < 2) {
@@ -56,7 +61,26 @@ export async function POST(req: NextRequest) {
     if (tipoPapel && !PAPELES_VALIDOS.includes(tipoPapel)) {
       return NextResponse.json({ error: 'Tipo de papel inválido' }, { status: 400 })
     }
-    for (const campo of [nombreCompleto, direccion, codigoPostal, localidad, provincia, telefono, emailEnvio]) {
+    if (estiloTapa && !ESTILOS_VALIDOS.includes(estiloTapa)) {
+      return NextResponse.json({ error: 'Estilo de tapa inválido' }, { status: 400 })
+    }
+    if (tipoEntrega && !TIPOS_ENTREGA_VALIDOS.includes(tipoEntrega)) {
+      return NextResponse.json({ error: 'Tipo de entrega inválido' }, { status: 400 })
+    }
+    if (
+      tematicasPersonalizadas !== undefined &&
+      (!Array.isArray(tematicasPersonalizadas) ||
+        tematicasPersonalizadas.length > MAX_TEMATICAS_PERSONALIZADAS ||
+        !tematicasPersonalizadas.every((t: unknown) => typeof t === 'string' && t.trim()))
+    ) {
+      return NextResponse.json({ error: 'Temáticas personalizadas inválidas' }, { status: 400 })
+    }
+    // La dirección es opcional cuando se retira en sucursal (el cliente puede no saber cuál es)
+    const camposEnvioObligatorios =
+      tipoEntrega === 'SUCURSAL'
+        ? [nombreCompleto, codigoPostal, localidad, provincia, telefono, emailEnvio]
+        : [nombreCompleto, direccion, codigoPostal, localidad, provincia, telefono, emailEnvio]
+    for (const campo of camposEnvioObligatorios) {
       if (!campo || typeof campo !== 'string' || !campo.trim()) {
         return NextResponse.json({ error: 'Faltan datos de envío' }, { status: 400 })
       }
@@ -76,13 +100,15 @@ export async function POST(req: NextRequest) {
     }
 
     const cantidadPaginas = PAGINAS_POR_TAMANO[tamano]
+    const tipoEntregaFinal = tipoEntrega || 'DOMICILIO'
+    const costoEnvioEstimado = estimarEnvio(provincia, tipoEntregaFinal)
 
     const pedido = await prisma.pedido.create({
       data: {
         userId,
         tamano,
         tematicas,
-        tematicaPersonalizada: tematicaPersonalizada || null,
+        tematicasPersonalizadas: tematicasPersonalizadas || [],
         estilos,
         tipoPapel: tipoPapel || 'BLANCO',
         fotoFamiliarKey: fotoFamiliarKey || null,
@@ -91,6 +117,7 @@ export async function POST(req: NextRequest) {
         observacionesTapa: observacionesTapa || null,
         imagenTapaKey: imagenTapaKey || null,
         dedicatoria: dedicatoria || null,
+        estiloTapa: estiloTapa || null,
         estado: 'ESPERANDO_PAGO',
         nombreCompleto,
         direccion,
@@ -99,14 +126,19 @@ export async function POST(req: NextRequest) {
         provincia,
         telefono,
         emailEnvio,
+        tipoEntrega: tipoEntregaFinal,
+        costoEnvioEstimado,
         fotos: {
           create: fotos.map((url: string, i: number) => ({ url, orden: i })),
         },
         imagenes: {
-          create: Array.from({ length: cantidadPaginas }, (_, i) => ({
-            orden: i,
-            tipo: i % 2 === 0 ? 'A' : 'B',
-          })),
+          create: [
+            ...(imagenTapaKey ? [{ orden: -1, tipo: 'TAPA' as const }] : []),
+            ...Array.from({ length: cantidadPaginas }, (_, i) => ({
+              orden: i,
+              tipo: i % 2 === 0 ? ('A' as const) : ('B' as const),
+            })),
+          ],
         },
       },
     })
@@ -126,6 +158,19 @@ export async function POST(req: NextRequest) {
         currency_id: 'ARS',
         unit_price: PRECIO_LIBRO[tamano],
       },
+      // Si el envío todavía no tiene un costo confirmado para la zona (interior/Patagonia a
+      // domicilio, sin API de MiCorreo), no se cobra acá — se coordina por WhatsApp/email.
+      ...(costoEnvioEstimado !== null
+        ? [
+            {
+              id: `ENVIO-${pedido.id}`,
+              title: `Envío (${tipoEntregaFinal === 'SUCURSAL' ? 'retiro en sucursal' : 'a domicilio'})`,
+              quantity: 1,
+              currency_id: 'ARS',
+              unit_price: costoEnvioEstimado,
+            },
+          ]
+        : []),
     ]
 
     try {

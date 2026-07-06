@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const { id, imgId } = await params
-  const { accion } = await req.json()
+  const { accion, promptExtra } = await req.json()
 
   const imagen = await prisma.imagenPedido.findUnique({ where: { id: imgId } })
   if (!imagen || imagen.pedidoId !== id) {
@@ -26,6 +26,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ imagen: actualizada })
   }
 
+  if (accion === 'actualizarPrompt') {
+    if (typeof promptExtra !== 'string') {
+      return NextResponse.json({ error: 'promptExtra inválido' }, { status: 400 })
+    }
+    const actualizada = await prisma.imagenPedido.update({
+      where: { id: imgId },
+      data: { promptExtra: promptExtra.trim() || null },
+    })
+    return NextResponse.json({ imagen: actualizada })
+  }
+
   if (accion === 'regenerar') {
     const pedido = await prisma.pedido.findUnique({
       where: { id },
@@ -35,28 +46,55 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'El pedido no tiene fotos' }, { status: 400 })
     }
 
-    const foto = pedido.fotos[imagen.orden % pedido.fotos.length]
-    const { buffer, contentType } = await descargarArchivo(foto.url)
+    let fotoUrl: string
+    let estilo: string
+    let tematica: string | undefined
 
-    const tematicasEfectivas = pedido.tematicaPersonalizada
-      ? [...pedido.tematicas, pedido.tematicaPersonalizada]
-      : pedido.tematicas
+    if (imagen.tipo === 'TAPA') {
+      if (!pedido.imagenTapaKey || !pedido.estiloTapa) {
+        return NextResponse.json({ error: 'Falta la imagen o el estilo de tapa' }, { status: 400 })
+      }
+      fotoUrl = pedido.imagenTapaKey
+      estilo = pedido.estiloTapa
+    } else {
+      const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
+      fotoUrl = pedido.fotos[imagen.orden % pedido.fotos.length].url
+      estilo = pedido.estilos[imagen.orden % pedido.estilos.length] ?? pedido.estilos[0]
+      tematica = tematicasEfectivas[imagen.orden % tematicasEfectivas.length] ?? tematicasEfectivas[0]
+    }
+
+    const { buffer, contentType } = await descargarArchivo(fotoUrl)
 
     const { base64, prompt } = await generarImagenLibro({
       fotoBase64: buffer.toString('base64'),
       fotoMime: contentType,
-      estilo: pedido.estilos[imagen.orden % pedido.estilos.length] ?? pedido.estilos[0],
-      tematica: tematicasEfectivas[imagen.orden % tematicasEfectivas.length] ?? tematicasEfectivas[0],
+      estilo,
+      tematica,
       tipo: imagen.tipo,
+      titulo: pedido.tituloTapa,
+      subtitulo: pedido.subtituloTapa,
+      observaciones: pedido.observacionesTapa,
+      promptExtra: imagen.promptExtra,
     })
 
-    const key = `pedidos/${id}/pagina-${String(imagen.orden + 1).padStart(2, '0')}.png`
+    const key = imagen.tipo === 'TAPA'
+      ? `pedidos/${id}/tapa.png`
+      : `pedidos/${id}/pagina-${String(imagen.orden + 1).padStart(2, '0')}.png`
     await subirArchivo(key, Buffer.from(base64, 'base64'), 'image/png')
 
     const actualizada = await prisma.imagenPedido.update({
       where: { id: imgId },
       data: { url: key, promptUsado: prompt, aprobada: false },
     })
+
+    // Si esta era la última imagen pendiente, el pedido pasa a "En revisión"
+    if (pedido.estado === 'ESPERANDO_GENERACION') {
+      const pendientes = await prisma.imagenPedido.count({ where: { pedidoId: id, url: null } })
+      if (pendientes === 0) {
+        await prisma.pedido.update({ where: { id }, data: { estado: 'EN_REVISION' } })
+      }
+    }
+
     return NextResponse.json({ imagen: actualizada })
   }
 

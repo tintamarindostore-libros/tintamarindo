@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { construirPromptEscena, construirPromptDirecto } from './prompts'
+import { construirPromptEscena, construirPromptDirecto, construirPromptTapa } from './prompts'
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
@@ -9,14 +9,29 @@ export async function generarImagenLibro({
   estilo,
   tematica,
   tipo,
+  titulo,
+  subtitulo,
+  observaciones,
+  promptExtra,
 }: {
   fotoBase64: string
   fotoMime: string
   estilo: string
-  tematica: string
-  tipo: 'A' | 'B' | 'C'
+  tematica?: string
+  tipo: 'A' | 'B' | 'C' | 'TAPA'
+  titulo?: string | null
+  subtitulo?: string | null
+  observaciones?: string | null
+  promptExtra?: string | null
 }): Promise<{ base64: string; prompt: string }> {
-  const prompt = tipo === 'A' || tipo === 'C' ? construirPromptEscena(estilo, tematica) : construirPromptDirecto(estilo)
+  let prompt =
+    tipo === 'TAPA'
+      ? construirPromptTapa({ estilo, titulo, subtitulo, observaciones })
+      : tipo === 'A' || tipo === 'C'
+      ? construirPromptEscena(estilo, tematica!)
+      : construirPromptDirecto(estilo)
+
+  if (promptExtra) prompt += `\n\nINSTRUCCIONES ADICIONALES PARA ESTA IMAGEN: ${promptExtra}`
 
   const response = await client.responses.create({
     model: 'gpt-4o',

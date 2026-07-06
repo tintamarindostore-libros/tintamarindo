@@ -75,7 +75,7 @@ model Pedido {
   // Configuración — Interior
   tamano                Tamano
   tematicas             String[]
-  tematicaPersonalizada String?
+  tematicasPersonalizadas String[] @default([])
   estilos               Estilo[]
   tipoPapel             TipoPapel @default(BLANCO)
   fotoFamiliarKey       String?
@@ -86,18 +86,21 @@ model Pedido {
   observacionesTapa String?
   imagenTapaKey     String?
   dedicatoria       String?
+  estiloTapa        Estilo?
 
   // Estado del pedido
   estado EstadoPedido @default(ESPERANDO_PAGO)
 
   // Datos de envío
-  nombreCompleto String
-  direccion      String
-  codigoPostal   String
-  localidad      String
-  provincia      String
-  telefono       String
-  emailEnvio     String
+  nombreCompleto     String
+  direccion          String
+  codigoPostal       String
+  localidad          String
+  provincia          String
+  telefono           String
+  emailEnvio         String
+  tipoEntrega        TipoEntrega @default(DOMICILIO)
+  costoEnvioEstimado Int? // estimado por zona mostrado al cliente — MiCorreo aún no dio acceso a la API, se confirma el costo real por WhatsApp/email antes de despachar
 
   // Pago (MercadoPago)
   mpPreferenceId String?
@@ -148,6 +151,7 @@ model ImagenPedido {
   tipo        TipoImagen
   url         String?
   promptUsado String?    @db.Text
+  promptExtra String?    @db.Text // instrucciones puntuales que carga el admin antes de generar/regenerar esta imagen
   aprobada    Boolean    @default(false)
 
   createdAt DateTime @default(now())
@@ -172,10 +176,16 @@ enum TipoPapel {
   COMBINADO
 }
 
+enum TipoEntrega {
+  SUCURSAL
+  DOMICILIO
+}
+
 enum TipoImagen {
   A
   B
   C
+  TAPA
 }
 
 enum EstadoPedido {

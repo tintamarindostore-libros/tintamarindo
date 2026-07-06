@@ -39,7 +39,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         estado: pedido.estado,
         tamano: pedido.tamano,
         tematicas: pedido.tematicas,
-        tematicaPersonalizada: pedido.tematicaPersonalizada,
+        tematicasPersonalizadas: pedido.tematicasPersonalizadas,
         estilos: pedido.estilos,
         tipoPapel: pedido.tipoPapel,
         fotoFamiliarUrl,
@@ -47,6 +47,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         subtituloTapa: pedido.subtituloTapa,
         observacionesTapa: pedido.observacionesTapa,
         dedicatoria: pedido.dedicatoria,
+        estiloTapa: pedido.estiloTapa,
         nombreCompleto: pedido.nombreCompleto,
         direccion: pedido.direccion,
         codigoPostal: pedido.codigoPostal,
@@ -54,6 +55,8 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         provincia: pedido.provincia,
         telefono: pedido.telefono,
         emailEnvio: pedido.emailEnvio,
+        tipoEntrega: pedido.tipoEntrega,
+        costoEnvioEstimado: pedido.costoEnvioEstimado,
         trackingNumero: pedido.trackingNumero,
         pdfUrlFirmada,
       }}
@@ -65,6 +68,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         aprobada: i.aprobada,
         urlFirmada: i.urlFirmada,
         generada: Boolean(i.url),
+        promptExtra: i.promptExtra,
       }))}
     />
   )

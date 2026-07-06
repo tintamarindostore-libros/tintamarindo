@@ -46,12 +46,12 @@ Cómo usar este archivo:
 **Solapa Interior**
 
 - [x] Cards visuales: 24 páginas vs 32 páginas
-- [ ] Mostrar diferencia de precio entre opciones *(falta cargar precio final)*
+- [x] Mostrar diferencia de precio entre opciones
 - [x] Indicar qué incluye cada tamaño
-- [x] Selector de temática con preview visual (aventura, princesas, dinosaurios, espacio, animales)
+- [x] Selector de temática con preview visual (aventura, princesas, dinosaurios, espacio, animales, letras y números)
 - [ ] **Al seleccionar una temática, mostrar imagen de ejemplo real** — el dueño debe proveer imágenes de muestra por cada temática
 - [x] Limitar selección de temáticas según tamaño: hasta 3 en 24 páginas, hasta 5 en 32 páginas
-- [x] Si el libro es de 32 páginas, habilitar campo de **temática personalizada**
+- [x] Campo de **temática personalizada** — permite cargar hasta 3 (antes solo una)
 - [x] Selector de estilo artístico (realista, Pixar, anime)
 - [x] Limitar selección de estilos según tamaño: hasta 2 en 24 páginas, hasta 3 en 32 páginas
 - [x] Selector de tipo de papel: blanco / ahuesado / combinado
@@ -66,6 +66,9 @@ Cómo usar este archivo:
 - [x] Validación: no se puede avanzar sin título e imagen de tapa
 - [x] Tabs Interior/Tapa repetidos al pie del paso 2 para que el cliente no se pierda
 - [ ] Vista previa de cómo queda la tapa con los datos cargados
+- [x] Selector de estilo para la tapa (Realista / Pixar / Anime, obligatorio junto con título e imagen)
+- [x] Generación real de la imagen de tapa con IA — integrada al mismo botón "Generar imágenes faltantes" del admin (se genera primero, antes que las páginas interiores). A color (no blanco y negro como el interior), incluye tipografía del título/subtítulo, usa `estiloTapa` + `observacionesTapa` como guía. Cada imagen (tapa o página) tiene un campo de "prompt extra" editable en el admin para instrucciones puntuales antes de generar/regenerar
+- [x] Botones "Atrás" y "Siguiente" uno al lado del otro en todos los pasos, con "Siguiente" destacado como acción principal
 
 ### Pantalla 2 — Login + Upload de fotos + Términos
 
@@ -94,15 +97,17 @@ Cómo usar este archivo:
 ### Pantalla 4 — Checkout (envío + resumen + pago, unificado)
 
 - [x] Campos de envío completos (nombre, dirección, CP, localidad, provincia, teléfono, email)
+- [x] Dirección opcional si se elige "Retiro en sucursal" (el cliente puede no saber cuál es — se coordina después)
 - [x] Validaciones de todos los campos
 - [x] Campo: Dedicatoria (opcional)
 - [x] Resumen del pedido
-- [ ] Cotización de envío en tiempo real — API MiCorreo (Correo Argentino)
-- [x] Desglose de precio *(falta cargar el monto final real)*
-- [ ] Mostrar precio con descuento si paga por transferencia bancaria
+- [x] Cotización de envío estimada por zona (CABA / interior / Patagonia, sucursal o domicilio) — solución interina en `web/lib/envio.ts` mientras Correo Argentino no habilita la API de MiCorreo (cuenta en trámite comercial, esperando que contacten). Domicilio en interior y Patagonia todavía no tiene precio — se muestra "a confirmar" y se coordina por WhatsApp/email
+- [ ] Reemplazar el estimado por zona por la cotización real en tiempo real vía API de MiCorreo, cuando Correo Argentino dé acceso
+- [x] Desglose de precio (libro + envío estimado por zona + total)
+- [x] Mostrar precio con descuento si paga por transferencia bancaria
 - [ ] Integración MercadoPago *(en desarrollo, desactivado en localhost)*
 - [ ] Integración pago por transferencia bancaria directa (con descuento)
-- [x] Pantalla de confirmación post-pedido
+- [x] Pantalla de confirmación post-pedido — agradecimiento + botón para volver al inicio
 - [x] Guardar pedido completo en DB con estado "esperando generación"
 
 ### Panel de administración
@@ -112,7 +117,7 @@ Cómo usar este archivo:
 - [x] Lista de pedidos con estado y fecha
 - [x] Filtro por estado
 - [x] Vista de detalle de pedido con fotos del cliente, temática, estilo, tamaño, dirección
-- [x] Botón para disparar generación de imágenes
+- [x] Botón para disparar generación de imágenes — ahora hay dos formas: "Generar imágenes faltantes" (todas en secuencia) o generar/regenerar una imagen puntual desde su propia card, para ir de a una y no gastar créditos de más
 - [x] Visor de imágenes generadas con botones de aprobar / regenerar por imagen
 - [x] Indicador de imágenes aprobadas vs pendientes
 - [x] Botón para subir PDF
@@ -144,7 +149,7 @@ Cómo usar este archivo:
 - [x] SEO básico (metadata, og:image, sitemap, robots.txt)
 - [x] Repositorio GitHub configurado con .gitignore correcto
 - [x] Base de datos en Supabase (listo para producción)
-- [ ] Actualizar precios reales en `web/lib/precios.ts` *(actualmente tiene valores de prueba)*
+- [x] Actualizar precios reales en `web/lib/precios.ts`
 - [ ] Branding final — logo para el header y favicon
 - [ ] Crear OG image `/public/og-image.jpg` (1200×630 px)
 - [ ] Dominio: registrar `tintamarindo.com` (o `.store` / `.ar`)
@@ -176,16 +181,17 @@ Cómo usar este archivo:
 
 - [ ] Día del Niño: domingo 9 de agosto de 2026
 - [ ] Fecha límite de pedido para entrega garantizada: antes del 15 de julio (a confirmar según tiempos reales de envío)
-- [ ] Definir precio de lanzamiento para esta campaña
+- [x] Definir precio de lanzamiento para esta campaña — ver sección "Decisiones pendientes" / `web/lib/precios.ts`
 - [ ] Diseñar y difundir la campaña
 
 ---
 
 ## 📝 Decisiones pendientes
 
-- [ ] Cargar precio final real del libro (24 y 32 páginas) en `web/lib/precios.ts`
+- [x] Cargar precio final real del libro (24 y 32 páginas) en `web/lib/precios.ts` — $49.900 (24 pág.) / $59.900 (32 pág.), 10% descuento por transferencia. Precio de lanzamiento Día del Niño 2026.
 - [ ] Definir precio del plus de regeneraciones extra (si se implementa)
 - [ ] Confirmar plazo real de retención de fondos de MercadoPago (para comunicar beneficio del pago por transferencia)
-- [ ] Definir peso y dimensiones reales del libro armado (necesario para cotización MiCorreo)
+- [ ] Definir peso y dimensiones reales del libro armado (no bloquea el estimado por zona actual, pero sí la cotización real vía API de MiCorreo)
+- [ ] Cargar precio de domicilio en Interior y Patagonia en `web/lib/envio.ts` (hoy solo hay precio de sucursal para esas dos zonas)
 - [ ] Definir costo del volante insert con QR para reseñas en Google Places
-- [ ] Proveer imágenes de ejemplo por temática (aventura, princesas, dinosaurios, espacio, animales) para mostrar en el selector
+- [ ] Proveer imágenes de ejemplo por temática (aventura, princesas, dinosaurios, espacio, animales, letras y números) para mostrar en el selector

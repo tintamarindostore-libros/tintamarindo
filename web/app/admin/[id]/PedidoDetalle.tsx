@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { formatoARS } from '@/lib/precios'
 
 type Imagen = {
   id: string
@@ -9,6 +10,7 @@ type Imagen = {
   aprobada: boolean
   urlFirmada: string | null
   generada: boolean
+  promptExtra: string | null
 }
 
 type Pedido = {
@@ -16,7 +18,7 @@ type Pedido = {
   estado: string
   tamano: string
   tematicas: string[]
-  tematicaPersonalizada: string | null
+  tematicasPersonalizadas: string[]
   estilos: string[]
   tipoPapel: string
   fotoFamiliarUrl: string | null
@@ -24,6 +26,7 @@ type Pedido = {
   subtituloTapa: string | null
   observacionesTapa: string | null
   dedicatoria: string | null
+  estiloTapa: string | null
   nombreCompleto: string
   direccion: string
   codigoPostal: string
@@ -31,6 +34,8 @@ type Pedido = {
   provincia: string
   telefono: string
   emailEnvio: string
+  tipoEntrega: string
+  costoEnvioEstimado: number | null
   trackingNumero: string | null
   pdfUrlFirmada: string | null
 }
@@ -54,6 +59,11 @@ export function PedidoDetalle({
   imagenesIniciales: Imagen[]
 }) {
   const [imagenes, setImagenes] = useState<Imagen[]>(imagenesIniciales)
+  const [promptExtras, setPromptExtras] = useState<Record<string, string>>(
+    Object.fromEntries(imagenesIniciales.map((i) => [i.id, i.promptExtra ?? ''])),
+  )
+  const [guardandoPrompt, setGuardandoPrompt] = useState<string | null>(null)
+  const [generandoImg, setGenerandoImg] = useState<string | null>(null)
   const [estado, setEstado] = useState(pedido.estado)
   const [generando, setGenerando] = useState(false)
   const [progreso, setProgreso] = useState({ hechas: imagenesIniciales.filter((i) => i.generada).length, total: imagenesIniciales.length })
@@ -120,16 +130,38 @@ export function PedidoDetalle({
     }
   }
 
+  const guardarPrompt = async (img: Imagen) => {
+    setGuardandoPrompt(img.id)
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}/imagenes/${img.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion: 'actualizarPrompt', promptExtra: promptExtras[img.id] ?? '' }),
+      })
+      const data = await res.json()
+      if (data.imagen) {
+        setImagenes((prev) => prev.map((i) => (i.id === img.id ? { ...i, promptExtra: data.imagen.promptExtra } : i)))
+      }
+    } finally {
+      setGuardandoPrompt(null)
+    }
+  }
+
   const regenerar = async (img: Imagen) => {
-    setImagenes((prev) => prev.map((i) => (i.id === img.id ? { ...i, generada: false } : i)))
-    const res = await fetch(`/api/admin/pedidos/${pedido.id}/imagenes/${img.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accion: 'regenerar' }),
-    })
-    const data = await res.json()
-    if (data.imagen) {
+    setGenerandoImg(img.id)
+    setErrorGen(null)
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}/imagenes/${img.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion: 'regenerar' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Error al generar la imagen')
       window.location.reload()
+    } catch (err) {
+      setErrorGen((err as Error).message)
+      setGenerandoImg(null)
     }
   }
 
@@ -200,8 +232,8 @@ export function PedidoDetalle({
             <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Pedido</p>
             <p className="text-sm text-stone-600">Tamaño: <b>{pedido.tamano === 'CHICO' ? '24 páginas' : '32 páginas'}</b></p>
             <p className="text-sm text-stone-600">Temáticas: <b>{pedido.tematicas.join(', ')}</b></p>
-            {pedido.tematicaPersonalizada && (
-              <p className="text-sm text-stone-600">Personalizada: <b>{pedido.tematicaPersonalizada}</b></p>
+            {pedido.tematicasPersonalizadas.length > 0 && (
+              <p className="text-sm text-stone-600">Personalizadas: <b>{pedido.tematicasPersonalizadas.join(', ')}</b></p>
             )}
             <p className="text-sm text-stone-600">Estilos: <b>{pedido.estilos.join(', ')}</b></p>
             <p className="text-sm text-stone-600">Papel: <b>{pedido.tipoPapel}</b></p>
@@ -211,11 +243,12 @@ export function PedidoDetalle({
                 <img src={pedido.fotoFamiliarUrl} alt="Imagen familiar" className="w-24 h-24 object-cover rounded-xl border border-stone-100" />
               </div>
             )}
-            {(pedido.tituloTapa || pedido.subtituloTapa || pedido.observacionesTapa || pedido.dedicatoria) && (
+            {(pedido.tituloTapa || pedido.subtituloTapa || pedido.observacionesTapa || pedido.dedicatoria || pedido.estiloTapa) && (
               <div className="mt-3 pt-3 border-t border-stone-100">
                 <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Tapa</p>
                 {pedido.tituloTapa && <p className="text-sm text-stone-600">Título: <b>{pedido.tituloTapa}</b></p>}
                 {pedido.subtituloTapa && <p className="text-sm text-stone-600">Subtítulo: <b>{pedido.subtituloTapa}</b></p>}
+                {pedido.estiloTapa && <p className="text-sm text-stone-600">Estilo: <b>{pedido.estiloTapa}</b></p>}
                 {pedido.observacionesTapa && <p className="text-sm text-stone-600">Observaciones: <i>{pedido.observacionesTapa}</i></p>}
                 {pedido.dedicatoria && (
                   <div className="mt-2 p-2 bg-orange-50 rounded-lg border border-orange-100">
@@ -228,9 +261,13 @@ export function PedidoDetalle({
           </div>
           <div className="bg-white rounded-2xl border border-stone-100 p-5">
             <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Envío</p>
+            <p className="text-sm text-stone-600">{pedido.tipoEntrega === 'SUCURSAL' ? 'Retiro en sucursal' : 'A domicilio'}</p>
             <p className="text-sm text-stone-600">{pedido.direccion}</p>
             <p className="text-sm text-stone-600">{pedido.localidad}, {pedido.provincia} ({pedido.codigoPostal})</p>
             <p className="text-sm text-stone-600">{pedido.telefono} · {pedido.emailEnvio}</p>
+            <p className="text-sm text-stone-600 mt-2">
+              Estimado mostrado al cliente: {pedido.costoEnvioEstimado !== null ? formatoARS(pedido.costoEnvioEstimado) : 'a confirmar (sin MiCorreo API todavía)'}
+            </p>
           </div>
         </div>
 
@@ -263,13 +300,17 @@ export function PedidoDetalle({
               <div key={img.id} className="rounded-xl border border-stone-100 overflow-hidden">
                 <div className="h-32 bg-stone-50 flex items-center justify-center">
                   {img.urlFirmada ? (
-                    <img src={img.urlFirmada} alt={`Página ${img.orden + 1}`} className="w-full h-full object-cover" />
+                    <img src={img.urlFirmada} alt={img.tipo === 'TAPA' ? 'Tapa' : `Página ${img.orden + 1}`} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-xs text-stone-300">Sin generar</span>
+                    <span className="text-xs text-stone-300">
+                      {generandoImg === img.id ? 'Generando…' : 'Sin generar'}
+                    </span>
                   )}
                 </div>
                 <div className="p-2 space-y-1">
-                  <p className="text-[10px] text-stone-400 font-bold">Pág. {img.orden + 1} · Tipo {img.tipo}</p>
+                  <p className="text-[10px] text-stone-400 font-bold">
+                    {img.tipo === 'TAPA' ? 'Tapa (color)' : `Pág. ${img.orden + 1} · Tipo ${img.tipo}`}
+                  </p>
                   <div className="flex gap-1">
                     <button
                       onClick={() => toggleAprobar(img)}
@@ -283,12 +324,29 @@ export function PedidoDetalle({
                     </button>
                     <button
                       onClick={() => regenerar(img)}
-                      disabled={!img.urlFirmada}
-                      className="flex-1 text-[10px] font-bold py-1 rounded-full bg-stone-100 text-stone-500"
+                      disabled={generandoImg === img.id}
+                      className={[
+                        'flex-1 text-[10px] font-bold py-1 rounded-full disabled:opacity-50',
+                        img.urlFirmada ? 'bg-stone-100 text-stone-500' : 'bg-orange-500 text-white',
+                      ].join(' ')}
                     >
-                      Regenerar
+                      {generandoImg === img.id ? 'Generando…' : img.urlFirmada ? 'Regenerar' : 'Generar'}
                     </button>
                   </div>
+                  <textarea
+                    value={promptExtras[img.id] ?? ''}
+                    onChange={(e) => setPromptExtras((prev) => ({ ...prev, [img.id]: e.target.value }))}
+                    placeholder="Instrucciones extra para el prompt de esta imagen (opcional)..."
+                    rows={2}
+                    className="w-full rounded-lg border border-stone-200 px-2 py-1 text-[10px] focus:border-orange-300 focus:outline-none"
+                  />
+                  <button
+                    onClick={() => guardarPrompt(img)}
+                    disabled={guardandoPrompt === img.id}
+                    className="w-full text-[10px] font-bold py-1 rounded-full bg-stone-100 text-stone-500"
+                  >
+                    {guardandoPrompt === img.id ? 'Guardando…' : 'Guardar prompt'}
+                  </button>
                 </div>
               </div>
             ))}

@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { PRECIO_LIBRO, precioTransferencia, formatoARS } from '@/lib/precios'
+import { estimarEnvio, type TipoEntrega } from '@/lib/envio'
 
 type Tamano = 'CHICO' | 'GRANDE'
 type Estilo = 'REALISTA' | 'PIXAR' | 'ANIME'
@@ -13,11 +15,13 @@ type Foto = { key: string; previewUrl: string; nombre: string }
 type Config = {
   tamano: Tamano | null
   tematicas: string[]
-  tematicaPersonalizada: string
+  tematicasPersonalizadas: string[]
   estilos: Estilo[]
   tipoPapel: TipoPapel
   fotoFamiliarKey: string | null
 }
+
+const MAX_TEMATICAS_PERSONALIZADAS = 3
 
 type DatosTapa = {
   tituloTapa: string
@@ -25,6 +29,7 @@ type DatosTapa = {
   observacionesTapa: string
   imagenTapaKey: string | null
   dedicatoria: string
+  estiloTapa: Estilo | null
 }
 
 type DatosEnvio = {
@@ -35,6 +40,7 @@ type DatosEnvio = {
   provincia: string
   telefono: string
   emailEnvio: string
+  tipoEntrega: TipoEntrega
 }
 
 const TEMATICAS = [
@@ -43,6 +49,7 @@ const TEMATICAS = [
   { id: 'Dinosaurios', emoji: '🦕' },
   { id: 'Espacio', emoji: '🚀' },
   { id: 'Animales', emoji: '🦁' },
+  { id: 'Letras y números', emoji: '🔤' },
 ]
 
 const ESTILOS: { id: Estilo; label: string; sub: string; emoji: string }[] = [
@@ -184,37 +191,42 @@ function Shell({ children }: { children: React.ReactNode }) {
   )
 }
 
-function BotonSiguiente({
+function PasoNav({
+  onAtras,
   disabled,
-  onClick,
+  onSiguiente,
   children = 'Siguiente →',
 }: {
+  onAtras?: () => void
   disabled?: boolean
-  onClick: () => void
+  onSiguiente: () => void
   children?: React.ReactNode
 }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={[
-        'w-full py-4 rounded-2xl font-black text-base transition-all mt-8',
-        disabled
-          ? 'bg-stone-200 text-stone-400 cursor-not-allowed'
-          : 'bg-orange-500 hover:bg-orange-600 text-white active:scale-[0.98] shadow-lg shadow-orange-200',
-      ].join(' ')}
-      style={{ fontFamily: 'var(--font-display)' }}
-    >
-      {children}
-    </button>
-  )
-}
-
-function BotonAtras({ onClick }: { onClick: () => void }) {
-  return (
-    <button onClick={onClick} className="text-stone-400 hover:text-stone-600 text-sm font-semibold mt-3 w-full text-center">
-      ← Atrás
-    </button>
+    <div className="flex gap-3 mt-8">
+      {onAtras && (
+        <button
+          onClick={onAtras}
+          className="shrink-0 px-6 py-4 rounded-2xl font-black text-base border-2 border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700 transition-all"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          ← Atrás
+        </button>
+      )}
+      <button
+        onClick={onSiguiente}
+        disabled={disabled}
+        className={[
+          'flex-1 py-4 rounded-2xl font-black text-base transition-all',
+          disabled
+            ? 'bg-stone-200 text-stone-400 cursor-not-allowed'
+            : 'bg-orange-500 hover:bg-orange-600 text-white active:scale-[0.98] shadow-lg shadow-orange-200',
+        ].join(' ')}
+        style={{ fontFamily: 'var(--font-display)' }}
+      >
+        {children}
+      </button>
+    </div>
   )
 }
 
@@ -268,7 +280,7 @@ export function Wizard({
   const [config, setConfig] = useState<Config>({
     tamano: null,
     tematicas: [],
-    tematicaPersonalizada: '',
+    tematicasPersonalizadas: [],
     estilos: [],
     tipoPapel: 'BLANCO',
     fotoFamiliarKey: null,
@@ -279,6 +291,7 @@ export function Wizard({
     observacionesTapa: '',
     imagenTapaKey: null,
     dedicatoria: '',
+    estiloTapa: null,
   })
   const [subiendoFamiliar, setSubiendoFamiliar] = useState(false)
   const [errorFamiliar, setErrorFamiliar] = useState<string | null>(null)
@@ -302,6 +315,7 @@ export function Wizard({
     provincia: '',
     telefono: '',
     emailEnvio: email,
+    tipoEntrega: 'DOMICILIO',
   })
 
   // Avanza etapas mientras genera la preview
@@ -377,7 +391,6 @@ export function Wizard({
       tamano: t,
       tematicas: prev.tematicas.slice(0, t === 'GRANDE' ? 5 : 3),
       estilos: prev.estilos.slice(0, t === 'GRANDE' ? 3 : 2),
-      tematicaPersonalizada: prev.tematicaPersonalizada,
       fotoFamiliarKey: t === 'CHICO' ? null : prev.fotoFamiliarKey,
     }))
   }
@@ -466,13 +479,15 @@ export function Wizard({
         tipoPapel: config.tipoPapel,
         ...envio,
       }
-      if (config.tematicaPersonalizada) body.tematicaPersonalizada = config.tematicaPersonalizada
+      const tematicasPersonalizadas = config.tematicasPersonalizadas.map((t) => t.trim()).filter(Boolean)
+      if (tematicasPersonalizadas.length > 0) body.tematicasPersonalizadas = tematicasPersonalizadas
       if (config.fotoFamiliarKey) body.fotoFamiliarKey = config.fotoFamiliarKey
       if (datosTapa.tituloTapa) body.tituloTapa = datosTapa.tituloTapa
       if (datosTapa.subtituloTapa) body.subtituloTapa = datosTapa.subtituloTapa
       if (datosTapa.observacionesTapa) body.observacionesTapa = datosTapa.observacionesTapa
       if (datosTapa.imagenTapaKey) body.imagenTapaKey = datosTapa.imagenTapaKey
       if (datosTapa.dedicatoria) body.dedicatoria = datosTapa.dedicatoria
+      if (datosTapa.estiloTapa) body.estiloTapa = datosTapa.estiloTapa
       const res = await fetch('/api/pedidos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -481,10 +496,10 @@ export function Wizard({
       let data: Record<string, unknown> = {}
       try { data = await res.json() } catch { /* respuesta vacía */ }
       if (!res.ok) throw new Error((data.error as string) || 'Error al guardar el pedido')
-      if (data.mpInitPoint) {
+      if (typeof data.mpInitPoint === 'string') {
         window.location.href = data.mpInitPoint
       } else {
-        setPedidoId(data.id)
+        setPedidoId(typeof data.id === 'string' ? data.id : null)
         setPaso(6)
       }
     } catch (err) {
@@ -582,7 +597,7 @@ export function Wizard({
           </span>
         </label>
 
-        <BotonSiguiente disabled={fotos.length < 2 || !aceptoPrivacidad} onClick={() => setPaso(2)} />
+        <PasoNav disabled={fotos.length < 2 || !aceptoPrivacidad} onSiguiente={() => setPaso(2)} />
       </Shell>
     )
   }
@@ -590,7 +605,8 @@ export function Wizard({
   // ── Paso 2 — Configuración ───────────────────────────
   if (paso === 2) {
     const configInteriorValida = config.tamano !== null && config.tematicas.length >= 1 && config.estilos.length >= 1
-    const configTapaValida = datosTapa.tituloTapa.trim().length > 0 && datosTapa.imagenTapaKey !== null
+    const configTapaValida =
+      datosTapa.tituloTapa.trim().length > 0 && datosTapa.imagenTapaKey !== null && datosTapa.estiloTapa !== null
 
     return (
       <Shell>
@@ -636,7 +652,7 @@ export function Wizard({
                       {t.paginas} páginas
                     </div>
                     <div className="text-xs text-stone-500 mt-0.5">{t.desc}</div>
-                    <div className="text-xs font-bold text-orange-400 mt-2">Precio a definir</div>
+                    <div className="text-xs font-bold text-orange-400 mt-2">{formatoARS(PRECIO_LIBRO[t.id])}</div>
                   </button>
                 ))}
               </div>
@@ -677,16 +693,44 @@ export function Wizard({
                 <div>
                   <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 block">
                     ¿Tenés algo especial en mente?{' '}
-                    <span className="font-normal normal-case">(opcional)</span>
+                    <span className="font-normal normal-case">(opcional, hasta {MAX_TEMATICAS_PERSONALIZADAS})</span>
                   </label>
-                  <input
-                    type="text"
-                    value={config.tematicaPersonalizada}
-                    onChange={(e) => setConfig((prev) => ({ ...prev, tematicaPersonalizada: e.target.value }))}
-                    placeholder='Ej: "Fútbol — River Plate", "Karate", "Dinosaurios en el espacio"'
-                    className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-orange-300 focus:outline-none"
-                  />
-                  <p className="text-xs text-stone-400 mt-1.5">Se va a intercalar con las temáticas que elegiste arriba</p>
+                  <div className="space-y-2">
+                    {config.tematicasPersonalizadas.map((valor, i) => (
+                      <div key={i} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={valor}
+                          onChange={(e) => setConfig((prev) => ({
+                            ...prev,
+                            tematicasPersonalizadas: prev.tematicasPersonalizadas.map((v, j) => (j === i ? e.target.value : v)),
+                          }))}
+                          placeholder='Ej: "Fútbol — River Plate", "Karate", "Dinosaurios en el espacio"'
+                          className="flex-1 rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-orange-300 focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setConfig((prev) => ({
+                            ...prev,
+                            tematicasPersonalizadas: prev.tematicasPersonalizadas.filter((_, j) => j !== i),
+                          }))}
+                          className="text-xs text-stone-400 hover:text-red-500 px-2"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  {config.tematicasPersonalizadas.length < MAX_TEMATICAS_PERSONALIZADAS && (
+                    <button
+                      type="button"
+                      onClick={() => setConfig((prev) => ({ ...prev, tematicasPersonalizadas: [...prev.tematicasPersonalizadas, ''] }))}
+                      className="text-xs font-bold text-orange-500 hover:text-orange-600 mt-2"
+                    >
+                      + Agregar otra
+                    </button>
+                  )}
+                  <p className="text-xs text-stone-400 mt-1.5">Se van a intercalar con las temáticas que elegiste arriba</p>
                 </div>
 
                 <div>
@@ -884,6 +928,29 @@ export function Wizard({
             </div>
 
             <div>
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">
+                Estilo de la tapa <span className="text-orange-400">*</span>
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {ESTILOS.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setDatosTapa((prev) => ({ ...prev, estiloTapa: s.id }))}
+                    className={[
+                      'rounded-xl border-2 p-3 text-center transition-all',
+                      datosTapa.estiloTapa === s.id ? 'border-orange-400 bg-orange-50' : 'border-stone-100 hover:border-orange-200',
+                    ].join(' ')}
+                  >
+                    <div className="text-2xl">{s.emoji}</div>
+                    <div className="text-xs font-bold text-stone-700 mt-1">{s.label}</div>
+                    <div className="text-[10px] text-stone-400 mt-0.5">{s.sub}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
               <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 block">
                 Dedicatoria <span className="font-normal normal-case">(opcional)</span>
               </label>
@@ -921,17 +988,16 @@ export function Wizard({
         )}
         {!configTapaValida && solapa === 'interior' && (
           <p className="text-xs text-orange-500 text-center mt-2">
-            Antes de continuar completá la pestaña Tapa (título e imagen)
+            Antes de continuar completá la pestaña Tapa (título, imagen y estilo)
           </p>
         )}
-        <BotonSiguiente disabled={!configInteriorValida || !configTapaValida} onClick={() => setPaso(3)}>
+        <PasoNav disabled={!configInteriorValida || !configTapaValida} onAtras={() => setPaso(1)} onSiguiente={() => setPaso(3)}>
           {!configInteriorValida
             ? 'Completá Interior para continuar'
             : !configTapaValida
             ? 'Completá Tapa para continuar'
             : 'Siguiente →'}
-        </BotonSiguiente>
-        <BotonAtras onClick={() => setPaso(1)} />
+        </PasoNav>
       </Shell>
     )
   }
@@ -1025,10 +1091,9 @@ export function Wizard({
           </div>
         )}
 
-        <BotonSiguiente disabled={!previewUsado} onClick={() => setPaso(4)}>
+        <PasoNav disabled={!previewUsado} onAtras={() => setPaso(2)} onSiguiente={() => setPaso(4)}>
           Continuar con mi pedido →
-        </BotonSiguiente>
-        <BotonAtras onClick={() => setPaso(2)} />
+        </PasoNav>
       </Shell>
     )
   }
@@ -1038,7 +1103,7 @@ export function Wizard({
     const campoValido = (v: string) => v.trim().length > 0
     const formularioValido =
       campoValido(envio.nombreCompleto) &&
-      campoValido(envio.direccion) &&
+      (envio.tipoEntrega === 'SUCURSAL' || campoValido(envio.direccion)) &&
       campoValido(envio.codigoPostal) &&
       campoValido(envio.localidad) &&
       campoValido(envio.provincia) &&
@@ -1049,8 +1114,37 @@ export function Wizard({
       <Shell>
         <PasoHeader paso={4} total={5} titulo="Datos de envío" />
         <div className="space-y-3">
+          <div>
+            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 block">Tipo de entrega</label>
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { id: 'DOMICILIO' as const, label: 'A domicilio' },
+                { id: 'SUCURSAL' as const, label: 'Retiro en sucursal' },
+              ]).map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setEnvio((p) => ({ ...p, tipoEntrega: t.id }))}
+                  className={[
+                    'rounded-xl border-2 py-2.5 text-sm font-bold transition-all',
+                    envio.tipoEntrega === t.id ? 'border-orange-400 bg-orange-50 text-orange-600' : 'border-stone-100 text-stone-500 hover:border-orange-200',
+                  ].join(' ')}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <CampoEnvio label="Nombre completo" value={envio.nombreCompleto} onChange={(v) => setEnvio((p) => ({ ...p, nombreCompleto: v }))} />
-          <CampoEnvio label="Dirección (calle, número, piso/depto)" value={envio.direccion} onChange={(v) => setEnvio((p) => ({ ...p, direccion: v }))} />
+          <CampoEnvio
+            label={
+              envio.tipoEntrega === 'SUCURSAL'
+                ? 'Sucursal de retiro (opcional — si no la sabés, te ayudamos a elegirla)'
+                : 'Dirección (calle, número, piso/depto)'
+            }
+            value={envio.direccion}
+            onChange={(v) => setEnvio((p) => ({ ...p, direccion: v }))}
+          />
           <div className="grid grid-cols-2 gap-3">
             <CampoEnvio label="Código postal" value={envio.codigoPostal} onChange={(v) => setEnvio((p) => ({ ...p, codigoPostal: v }))} />
             <CampoEnvio label="Localidad / Barrio" value={envio.localidad} onChange={(v) => setEnvio((p) => ({ ...p, localidad: v }))} />
@@ -1069,8 +1163,7 @@ export function Wizard({
           <CampoEnvio label="Teléfono" value={envio.telefono} onChange={(v) => setEnvio((p) => ({ ...p, telefono: v }))} type="tel" />
           <CampoEnvio label="Email" value={envio.emailEnvio} onChange={(v) => setEnvio((p) => ({ ...p, emailEnvio: v }))} type="email" />
         </div>
-        <BotonSiguiente disabled={!formularioValido} onClick={() => setPaso(5)} />
-        <BotonAtras onClick={() => setPaso(3)} />
+        <PasoNav disabled={!formularioValido} onAtras={() => setPaso(3)} onSiguiente={() => setPaso(5)} />
       </Shell>
     )
   }
@@ -1078,6 +1171,7 @@ export function Wizard({
   // ── Paso 5 — Resumen y pago ─────────────────────────
   if (paso === 5) {
     const etiquetaEstilo = (id: Estilo) => ESTILOS.find((e) => e.id === id)?.label ?? id
+    const costoEnvioEstimado = estimarEnvio(envio.provincia, envio.tipoEntrega)
 
     return (
       <Shell>
@@ -1091,10 +1185,12 @@ export function Wizard({
             <span className="text-stone-400">Temáticas</span>
             <span className="font-bold text-stone-700 text-right">{config.tematicas.join(' · ')}</span>
           </div>
-          {config.tematicaPersonalizada && (
+          {config.tematicasPersonalizadas.filter((t) => t.trim()).length > 0 && (
             <div className="flex justify-between border-b border-stone-100 pb-2">
               <span className="text-stone-400">Personalizada</span>
-              <span className="font-bold text-stone-700 text-right max-w-[55%]">{config.tematicaPersonalizada}</span>
+              <span className="font-bold text-stone-700 text-right max-w-[55%]">
+                {config.tematicasPersonalizadas.filter((t) => t.trim()).join(' · ')}
+              </span>
             </div>
           )}
           <div className="flex justify-between border-b border-stone-100 pb-2">
@@ -1117,6 +1213,12 @@ export function Wizard({
               <span className="font-bold text-stone-700 text-right max-w-[55%]">{datosTapa.tituloTapa}</span>
             </div>
           )}
+          {datosTapa.estiloTapa && (
+            <div className="flex justify-between border-b border-stone-100 pb-2">
+              <span className="text-stone-400">Estilo de tapa</span>
+              <span className="font-bold text-stone-700">{etiquetaEstilo(datosTapa.estiloTapa)}</span>
+            </div>
+          )}
           <div className="flex justify-between border-b border-stone-100 pb-2">
             <span className="text-stone-400">Envío a</span>
             <span className="font-bold text-stone-700 text-right">
@@ -1125,20 +1227,37 @@ export function Wizard({
           </div>
           <div className="flex justify-between pt-2">
             <span className="text-stone-400">Libro</span>
-            <span className="font-bold text-stone-700">A definir</span>
+            <span className="font-bold text-stone-700">{config.tamano ? formatoARS(PRECIO_LIBRO[config.tamano]) : 'A definir'}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-stone-400">Envío</span>
-            <span className="font-bold text-stone-700">A definir</span>
+            <span className="text-stone-400">Envío ({envio.tipoEntrega === 'SUCURSAL' ? 'sucursal' : 'domicilio'}, estimado)</span>
+            <span className="font-bold text-stone-700">
+              {costoEnvioEstimado !== null ? formatoARS(costoEnvioEstimado) : 'A confirmar'}
+            </span>
           </div>
+          {config.tamano && (
+            <div className="flex justify-between border-t border-stone-200 pt-2">
+              <span className="text-stone-500 font-bold">Total estimado</span>
+              <span className="font-black text-stone-800">
+                {formatoARS(PRECIO_LIBRO[config.tamano] + (costoEnvioEstimado ?? 0))}
+              </span>
+            </div>
+          )}
         </div>
+
+        {config.tamano && (
+          <p className="text-xs text-stone-400 mt-3">
+            Precio especial de lanzamiento. Pagando por transferencia bancaria tenés un 10% de descuento
+            ({formatoARS(precioTransferencia(config.tamano))}) sobre el libro.
+            {costoEnvioEstimado === null && ' El costo de envío a domicilio para tu zona todavía no está confirmado — te lo pasamos por WhatsApp o email antes de despachar.'}
+          </p>
+        )}
 
         {errorPedido && <p className="text-sm text-red-500 mt-3">{errorPedido}</p>}
 
-        <BotonSiguiente disabled={enviandoPedido} onClick={confirmarPedido}>
+        <PasoNav disabled={enviandoPedido} onAtras={() => setPaso(4)} onSiguiente={confirmarPedido}>
           {enviandoPedido ? 'Procesando…' : 'Ir a pagar →'}
-        </BotonSiguiente>
-        <BotonAtras onClick={() => setPaso(4)} />
+        </PasoNav>
       </Shell>
     )
   }
@@ -1155,6 +1274,16 @@ export function Wizard({
           Tu pedido <span className="font-mono text-stone-700">#{pedidoId?.slice(-8)}</span> quedó registrado.
           Te vamos a contactar a {envio.emailEnvio} para coordinar el pago y los siguientes pasos.
         </p>
+        <p className="text-stone-500 text-sm mt-3">
+          ¡Gracias por confiar en nosotros para este regalo tan especial! 💛
+        </p>
+        <Link
+          href="/"
+          className="inline-block mt-8 w-full py-4 rounded-2xl font-black text-base bg-orange-500 hover:bg-orange-600 text-white active:scale-[0.98] shadow-lg shadow-orange-200 transition-all"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          Volver al inicio
+        </Link>
       </div>
     </Shell>
   )
