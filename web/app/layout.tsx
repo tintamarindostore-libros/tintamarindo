@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
-import { Nunito, Inter } from 'next/font/google'
+import { Fredoka, Inter } from 'next/font/google'
 import { Providers } from './providers'
 import Footer from './components/Footer'
 import './globals.css'
 
-const nunito = Nunito({
+const fredoka = Fredoka({
   subsets: ['latin'],
   variable: '--font-display',
-  weight: ['400', '600', '700', '800', '900'],
+  weight: ['400', '500', '600', '700'],
 })
 
 const inter = Inter({
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className={`${nunito.variable} ${inter.variable}`}>
+      <body className={`${fredoka.variable} ${inter.variable}`}>
         <Providers>{children}</Providers>
         <Footer />
       </body>
