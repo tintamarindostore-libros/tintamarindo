@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { PRECIO_LIBRO, precioTransferencia, formatoARS } from '@/lib/precios'
 import { estimarEnvio, type TipoEntrega } from '@/lib/envio'
+import { DATOS_BANCARIOS } from '@/lib/datosBancarios'
 
 type Tamano = 'CHICO' | 'GRANDE'
 type Estilo = 'REALISTA' | 'PIXAR' | 'ANIME'
@@ -329,6 +330,7 @@ export function Wizard({
   }, [generandoPreview])
 
   // Paso 5 — Confirmar
+  const [medioPago, setMedioPago] = useState<'MERCADOPAGO' | 'TRANSFERENCIA'>('MERCADOPAGO')
   const [enviandoPedido, setEnviandoPedido] = useState(false)
   const [errorPedido, setErrorPedido] = useState<string | null>(null)
   const [pedidoId, setPedidoId] = useState<string | null>(null)
@@ -477,6 +479,7 @@ export function Wizard({
         tematicas: config.tematicas,
         estilos: config.estilos,
         tipoPapel: config.tipoPapel,
+        medioPago,
         ...envio,
       }
       const tematicasPersonalizadas = config.tematicasPersonalizadas.map((t) => t.trim()).filter(Boolean)
@@ -1227,7 +1230,11 @@ export function Wizard({
           </div>
           <div className="flex justify-between pt-2">
             <span className="text-stone-400">Libro</span>
-            <span className="font-bold text-stone-700">{config.tamano ? formatoARS(PRECIO_LIBRO[config.tamano]) : 'A definir'}</span>
+            <span className="font-bold text-stone-700">
+              {config.tamano
+                ? formatoARS(medioPago === 'TRANSFERENCIA' ? precioTransferencia(config.tamano) : PRECIO_LIBRO[config.tamano])
+                : 'A definir'}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-stone-400">Envío ({envio.tipoEntrega === 'SUCURSAL' ? 'sucursal' : 'domicilio'}, estimado)</span>
@@ -1239,16 +1246,53 @@ export function Wizard({
             <div className="flex justify-between border-t border-stone-200 pt-2">
               <span className="text-stone-500 font-bold">Total estimado</span>
               <span className="font-black text-stone-800">
-                {formatoARS(PRECIO_LIBRO[config.tamano] + (costoEnvioEstimado ?? 0))}
+                {formatoARS(
+                  (medioPago === 'TRANSFERENCIA' ? precioTransferencia(config.tamano) : PRECIO_LIBRO[config.tamano]) +
+                    (costoEnvioEstimado ?? 0),
+                )}
               </span>
             </div>
           )}
         </div>
 
+        <div className="mt-6">
+          <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">Medio de pago</p>
+          <div className="grid grid-cols-2 gap-3">
+            {([
+              { id: 'MERCADOPAGO' as const, label: 'MercadoPago' },
+              { id: 'TRANSFERENCIA' as const, label: 'Transferencia (10% off)' },
+            ]).map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setMedioPago(m.id)}
+                className={[
+                  'rounded-xl border-2 py-2.5 text-sm font-bold transition-all',
+                  medioPago === m.id ? 'border-orange-400 bg-orange-50 text-orange-600' : 'border-stone-100 text-stone-500 hover:border-orange-200',
+                ].join(' ')}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {medioPago === 'TRANSFERENCIA' && (
+          <div className="mt-4 bg-orange-50 border border-orange-100 rounded-xl p-4 text-sm space-y-1">
+            <p className="font-bold text-stone-700 mb-2">Datos para transferir</p>
+            <p className="text-stone-600">Banco: <b>{DATOS_BANCARIOS.banco}</b></p>
+            <p className="text-stone-600">Alias: <b>{DATOS_BANCARIOS.alias}</b></p>
+            <p className="text-stone-600">CBU: <b>{DATOS_BANCARIOS.cbu}</b></p>
+            <p className="text-stone-600">Titular: <b>{DATOS_BANCARIOS.titular}</b> (CUIT {DATOS_BANCARIOS.cuit})</p>
+            <p className="text-xs text-stone-400 mt-2">
+              Al confirmar, tu pedido queda registrado como "esperando pago". Hacé la transferencia por el monto total y avisanos por WhatsApp o email — apenas la acreditemos, arrancamos con tu libro.
+            </p>
+          </div>
+        )}
+
         {config.tamano && (
           <p className="text-xs text-stone-400 mt-3">
-            Precio especial de lanzamiento. Pagando por transferencia bancaria tenés un 10% de descuento
-            ({formatoARS(precioTransferencia(config.tamano))}) sobre el libro.
+            Precio especial de lanzamiento. Pagando por transferencia bancaria tenés un 10% de descuento sobre el libro.
             {costoEnvioEstimado === null && ' El costo de envío a domicilio para tu zona todavía no está confirmado — te lo pasamos por WhatsApp o email antes de despachar.'}
           </p>
         )}
@@ -1256,7 +1300,7 @@ export function Wizard({
         {errorPedido && <p className="text-sm text-red-500 mt-3">{errorPedido}</p>}
 
         <PasoNav disabled={enviandoPedido} onAtras={() => setPaso(4)} onSiguiente={confirmarPedido}>
-          {enviandoPedido ? 'Procesando…' : 'Ir a pagar →'}
+          {enviandoPedido ? 'Procesando…' : medioPago === 'TRANSFERENCIA' ? 'Confirmar pedido →' : 'Ir a pagar →'}
         </PasoNav>
       </Shell>
     )

@@ -102,7 +102,8 @@ model Pedido {
   tipoEntrega        TipoEntrega @default(DOMICILIO)
   costoEnvioEstimado Int? // estimado por zona mostrado al cliente — MiCorreo aún no dio acceso a la API, se confirma el costo real por WhatsApp/email antes de despachar
 
-  // Pago (MercadoPago)
+  // Pago
+  medioPago      MedioPago @default(MERCADOPAGO)
   mpPreferenceId String?
   mpPaymentId    String?
   pagadoAt       DateTime?
@@ -179,6 +180,11 @@ enum TipoPapel {
 enum TipoEntrega {
   SUCURSAL
   DOMICILIO
+}
+
+enum MedioPago {
+  MERCADOPAGO
+  TRANSFERENCIA
 }
 
 enum TipoImagen {

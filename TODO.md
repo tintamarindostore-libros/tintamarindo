@@ -105,8 +105,9 @@ Cómo usar este archivo:
 - [ ] Reemplazar el estimado por zona por la cotización real en tiempo real vía API de MiCorreo, cuando Correo Argentino dé acceso
 - [x] Desglose de precio (libro + envío estimado por zona + total)
 - [x] Mostrar precio con descuento si paga por transferencia bancaria
-- [ ] Integración MercadoPago *(en desarrollo, desactivado en localhost)*
-- [ ] Integración pago por transferencia bancaria directa (con descuento)
+- [x] Selector de medio de pago (MercadoPago / Transferencia) en el checkout, con datos bancarios (`web/lib/datosBancarios.ts`) visibles al elegir transferencia
+- [x] Integración MercadoPago *(código listo — falta confirmar en la cuenta real que las credenciales sean de producción y no de prueba, y cargar `MERCADOPAGO_WEBHOOK_SECRET` en Vercel)*
+- [x] Integración pago por transferencia bancaria directa (con descuento) — confirmación manual desde el admin (botón "Confirmar transferencia recibida")
 - [x] Pantalla de confirmación post-pedido — agradecimiento + botón para volver al inicio
 - [x] Guardar pedido completo en DB con estado "esperando generación"
 

@@ -9,6 +9,7 @@ const PAGINAS_POR_TAMANO: Record<string, number> = { CHICO: 24, GRANDE: 32 }
 const ESTILOS_VALIDOS = ['REALISTA', 'PIXAR', 'ANIME']
 const PAPELES_VALIDOS = ['BLANCO', 'AHUESADO', 'COMBINADO']
 const TIPOS_ENTREGA_VALIDOS = ['SUCURSAL', 'DOMICILIO']
+const MEDIOS_PAGO_VALIDOS = ['MERCADOPAGO', 'TRANSFERENCIA']
 const MAX_TEMATICAS_PERSONALIZADAS = 3
 
 export async function POST(req: NextRequest) {
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
       telefono,
       emailEnvio,
       tipoEntrega,
+      medioPago,
     } = body
 
     if (!Array.isArray(fotos) || fotos.length < 2) {
@@ -66,6 +68,9 @@ export async function POST(req: NextRequest) {
     }
     if (tipoEntrega && !TIPOS_ENTREGA_VALIDOS.includes(tipoEntrega)) {
       return NextResponse.json({ error: 'Tipo de entrega inválido' }, { status: 400 })
+    }
+    if (medioPago && !MEDIOS_PAGO_VALIDOS.includes(medioPago)) {
+      return NextResponse.json({ error: 'Medio de pago inválido' }, { status: 400 })
     }
     if (
       tematicasPersonalizadas !== undefined &&
@@ -101,6 +106,7 @@ export async function POST(req: NextRequest) {
 
     const cantidadPaginas = PAGINAS_POR_TAMANO[tamano]
     const tipoEntregaFinal = tipoEntrega || 'DOMICILIO'
+    const medioPagoFinal = medioPago || 'MERCADOPAGO'
     const costoEnvioEstimado = estimarEnvio(provincia, tipoEntregaFinal)
 
     const pedido = await prisma.pedido.create({
@@ -128,6 +134,7 @@ export async function POST(req: NextRequest) {
         emailEnvio,
         tipoEntrega: tipoEntregaFinal,
         costoEnvioEstimado,
+        medioPago: medioPagoFinal,
         fotos: {
           create: fotos.map((url: string, i: number) => ({ url, orden: i })),
         },
@@ -143,8 +150,10 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // En desarrollo se omite MercadoPago para poder probar el flujo completo sin conexión
-    if (process.env.NODE_ENV !== 'production') {
+    // Transferencia: no hay pago online, el pedido queda "esperando pago" hasta que el
+    // admin confirme la acreditación a mano. En desarrollo también se omite MercadoPago
+    // para poder probar el flujo completo sin conexión.
+    if (medioPagoFinal === 'TRANSFERENCIA' || process.env.NODE_ENV !== 'production') {
       return NextResponse.json({ id: pedido.id, mpInitPoint: null })
     }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { formatoARS } from '@/lib/precios'
+import { formatoARS, PRECIO_LIBRO, precioTransferencia } from '@/lib/precios'
 
 type Imagen = {
   id: string
@@ -36,6 +36,7 @@ type Pedido = {
   emailEnvio: string
   tipoEntrega: string
   costoEnvioEstimado: number | null
+  medioPago: string
   trackingNumero: string | null
   pdfUrlFirmada: string | null
 }
@@ -72,6 +73,7 @@ export function PedidoDetalle({
   const [subiendoPdf, setSubiendoPdf] = useState(false)
   const [guardandoTracking, setGuardandoTracking] = useState(false)
   const [simulandoPago, setSimulandoPago] = useState(false)
+  const [confirmandoTransferencia, setConfirmandoTransferencia] = useState(false)
   const pdfInputRef = useRef<HTMLInputElement>(null)
 
   const aprobadas = imagenes.filter((i) => i.aprobada).length
@@ -87,6 +89,20 @@ export function PedidoDetalle({
       alert((err as Error).message)
     } finally {
       setSimulandoPago(false)
+    }
+  }
+
+  const confirmarTransferencia = async () => {
+    setConfirmandoTransferencia(true)
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}/confirmar-transferencia`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setEstado('ESPERANDO_GENERACION')
+    } catch (err) {
+      alert((err as Error).message)
+    } finally {
+      setConfirmandoTransferencia(false)
     }
   }
 
@@ -203,15 +219,26 @@ export function PedidoDetalle({
         {estado === 'ESPERANDO_PAGO' && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 flex items-center justify-between">
             <p className="text-sm text-yellow-800 font-medium">
-              🔒 Pago pendiente — el cliente aún no pagó
+              🔒 Pago pendiente ({pedido.medioPago === 'TRANSFERENCIA' ? 'transferencia' : 'MercadoPago'}) — el cliente aún no pagó
             </p>
-            <button
-              onClick={simularPago}
-              disabled={simulandoPago}
-              className="bg-yellow-400 hover:bg-yellow-500 disabled:bg-stone-200 text-yellow-900 text-xs font-black px-4 py-2 rounded-full transition-colors"
-            >
-              {simulandoPago ? 'Simulando…' : '🧪 Simular pago (dev)'}
-            </button>
+            <div className="flex gap-2">
+              {pedido.medioPago === 'TRANSFERENCIA' && (
+                <button
+                  onClick={confirmarTransferencia}
+                  disabled={confirmandoTransferencia}
+                  className="bg-green-500 hover:bg-green-600 disabled:bg-stone-200 text-white text-xs font-black px-4 py-2 rounded-full transition-colors"
+                >
+                  {confirmandoTransferencia ? 'Confirmando…' : '✓ Confirmar transferencia recibida'}
+                </button>
+              )}
+              <button
+                onClick={simularPago}
+                disabled={simulandoPago}
+                className="bg-yellow-400 hover:bg-yellow-500 disabled:bg-stone-200 text-yellow-900 text-xs font-black px-4 py-2 rounded-full transition-colors"
+              >
+                {simulandoPago ? 'Simulando…' : '🧪 Simular pago (dev)'}
+              </button>
+            </div>
           </div>
         )}
 
@@ -267,6 +294,17 @@ export function PedidoDetalle({
             <p className="text-sm text-stone-600">{pedido.telefono} · {pedido.emailEnvio}</p>
             <p className="text-sm text-stone-600 mt-2">
               Estimado mostrado al cliente: {pedido.costoEnvioEstimado !== null ? formatoARS(pedido.costoEnvioEstimado) : 'a confirmar (sin MiCorreo API todavía)'}
+            </p>
+            <p className="text-sm text-stone-600 mt-2 pt-2 border-t border-stone-100">
+              Pago: <b>{pedido.medioPago === 'TRANSFERENCIA' ? 'Transferencia bancaria' : 'MercadoPago'}</b>
+              {' · Libro: '}
+              <b>
+                {formatoARS(
+                  pedido.medioPago === 'TRANSFERENCIA'
+                    ? precioTransferencia(pedido.tamano)
+                    : PRECIO_LIBRO[pedido.tamano],
+                )}
+              </b>
             </p>
           </div>
         </div>

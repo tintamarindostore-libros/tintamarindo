@@ -38,13 +38,9 @@ export default function TerminosPage() {
       >
         Términos y condiciones de uso
       </h1>
-      <p className="text-stone-500 text-sm mb-2">
+      <p className="text-stone-500 text-sm mb-12">
         Libros de colorear personalizados, impresos y enviados a todo el país
       </p>
-      <p className="text-stone-400 text-xs mb-12">
-        Vigencia: [FECHA DE PUBLICACIÓN] — Revisar con un profesional legal antes del lanzamiento.
-      </p>
-
       <div>
 
         <Section num="1" title="Partes y aceptación de los términos">

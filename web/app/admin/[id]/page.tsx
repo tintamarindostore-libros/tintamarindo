@@ -57,6 +57,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         emailEnvio: pedido.emailEnvio,
         tipoEntrega: pedido.tipoEntrega,
         costoEnvioEstimado: pedido.costoEnvioEstimado,
+        medioPago: pedido.medioPago,
         trackingNumero: pedido.trackingNumero,
         pdfUrlFirmada,
       }}

@@ -42,7 +42,7 @@ export default function PrivacidadPage() {
         Libros de colorear personalizados, impresos y enviados a todo el país
       </p>
       <p className="text-stone-400 text-xs mb-12">
-        Última actualización: julio de 2026. Revisar con un profesional legal antes del lanzamiento.
+        Última actualización: julio de 2026.
       </p>
 
       <div>
