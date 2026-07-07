@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation'
-import { auth } from '@/auth'
+import { auth, signIn } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { obtenerUrlFirmada } from '@/lib/r2'
 import { Wizard } from './Wizard'
@@ -8,7 +7,8 @@ export default async function CrearPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/api/auth/signin?callbackUrl=/crear')
+    await signIn('google', { redirectTo: '/crear' })
+    return
   }
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })
