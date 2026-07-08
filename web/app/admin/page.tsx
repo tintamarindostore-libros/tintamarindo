@@ -48,9 +48,17 @@ export default async function AdminPage({
   return (
     <div className="min-h-screen bg-[#FEF9F0] px-6 py-12" style={{ fontFamily: 'var(--font-body)' }}>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-black text-stone-800 mb-6" style={{ fontFamily: 'var(--font-display)' }}>
-          Panel de administración
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-black text-stone-800" style={{ fontFamily: 'var(--font-display)' }}>
+            Panel de administración
+          </h1>
+          <Link
+            href="/admin/cupones"
+            className="text-xs font-bold px-3 py-1.5 rounded-full bg-white text-stone-500 border border-stone-200 hover:border-orange-300"
+          >
+            🎟 Cupones
+          </Link>
+        </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
           <Link

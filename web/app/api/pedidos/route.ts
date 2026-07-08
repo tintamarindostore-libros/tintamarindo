@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { mpPreference } from '@/lib/mp'
 import { PRECIO_LIBRO } from '@/lib/precios'
 import { estimarEnvio } from '@/lib/envio'
+import { validarCupon } from '@/lib/cupones'
 
 const PAGINAS_POR_TAMANO: Record<string, number> = { CHICO: 24, GRANDE: 32 }
 const ESTILOS_VALIDOS = ['REALISTA', 'PIXAR', 'ANIME']
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
       emailEnvio,
       tipoEntrega,
       medioPago,
+      cuponCodigo,
     } = body
 
     if (!Array.isArray(fotos) || fotos.length < 2) {
@@ -71,6 +73,15 @@ export async function POST(req: NextRequest) {
     }
     if (medioPago && !MEDIOS_PAGO_VALIDOS.includes(medioPago)) {
       return NextResponse.json({ error: 'Medio de pago inválido' }, { status: 400 })
+    }
+
+    let cuponInfo: { codigo: string; descuentoPorcentaje: number } | null = null
+    if (typeof cuponCodigo === 'string' && cuponCodigo.trim()) {
+      const resultadoCupon = await validarCupon(cuponCodigo)
+      if (!resultadoCupon.valido) {
+        return NextResponse.json({ error: resultadoCupon.error }, { status: 400 })
+      }
+      cuponInfo = { codigo: resultadoCupon.codigo, descuentoPorcentaje: resultadoCupon.descuentoPorcentaje }
     }
     if (
       tematicasPersonalizadas !== undefined &&
@@ -135,6 +146,8 @@ export async function POST(req: NextRequest) {
         tipoEntrega: tipoEntregaFinal,
         costoEnvioEstimado,
         medioPago: medioPagoFinal,
+        cuponCodigo: cuponInfo?.codigo ?? null,
+        cuponDescuentoPorcentaje: cuponInfo?.descuentoPorcentaje ?? null,
         fotos: {
           create: fotos.map((url: string, i: number) => ({ url, orden: i })),
         },
@@ -150,6 +163,23 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    if (cuponInfo) {
+      await prisma.cupon.update({
+        where: { codigo: cuponInfo.codigo },
+        data: { usosActuales: { increment: 1 } },
+      })
+    }
+
+    // Cupón 100% bonificado (regalos a influencers / marketing): el pedido queda pagado
+    // al instante, sin pasar por MercadoPago ni transferencia.
+    if (cuponInfo?.descuentoPorcentaje === 100) {
+      await prisma.pedido.update({
+        where: { id: pedido.id },
+        data: { estado: 'ESPERANDO_GENERACION', pagadoAt: new Date() },
+      })
+      return NextResponse.json({ id: pedido.id, mpInitPoint: null })
+    }
+
     // Transferencia: no hay pago online, el pedido queda "esperando pago" hasta que el
     // admin confirme la acreditación a mano. En desarrollo también se omite MercadoPago
     // para poder probar el flujo completo sin conexión.
@@ -159,13 +189,16 @@ export async function POST(req: NextRequest) {
 
     // Crear preferencia de MercadoPago (solo en producción)
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+    const precioLibroConCupon = cuponInfo
+      ? Math.round(PRECIO_LIBRO[tamano] * (1 - cuponInfo.descuentoPorcentaje / 100))
+      : PRECIO_LIBRO[tamano]
     const items = [
       {
         id: `LIBRO-${pedido.id}`,
         title: `Libro de colorear Tintamarindo — ${tamano === 'CHICO' ? '24 páginas' : '32 páginas'}`,
         quantity: 1,
         currency_id: 'ARS',
-        unit_price: PRECIO_LIBRO[tamano],
+        unit_price: precioLibroConCupon,
       },
       // Si el envío todavía no tiene un costo confirmado para la zona (interior/Patagonia a
       // domicilio, sin API de MiCorreo), no se cobra acá — se coordina por WhatsApp/email.

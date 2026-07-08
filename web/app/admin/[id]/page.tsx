@@ -58,6 +58,8 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         tipoEntrega: pedido.tipoEntrega,
         costoEnvioEstimado: pedido.costoEnvioEstimado,
         medioPago: pedido.medioPago,
+        cuponCodigo: pedido.cuponCodigo,
+        cuponDescuentoPorcentaje: pedido.cuponDescuentoPorcentaje,
         trackingNumero: pedido.trackingNumero,
         pdfUrlFirmada,
       }}

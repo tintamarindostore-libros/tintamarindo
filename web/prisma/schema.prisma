@@ -103,10 +103,12 @@ model Pedido {
   costoEnvioEstimado Int? // estimado por zona mostrado al cliente — MiCorreo aún no dio acceso a la API, se confirma el costo real por WhatsApp/email antes de despachar
 
   // Pago
-  medioPago      MedioPago @default(MERCADOPAGO)
-  mpPreferenceId String?
-  mpPaymentId    String?
-  pagadoAt       DateTime?
+  medioPago              MedioPago @default(MERCADOPAGO)
+  mpPreferenceId         String?
+  mpPaymentId            String?
+  pagadoAt               DateTime?
+  cuponCodigo            String? // snapshot del código usado (el Cupon puede editarse/desactivarse después)
+  cuponDescuentoPorcentaje Int?  // snapshot del % aplicado al momento del pedido
 
   // PDF y aprobación
   pdfUrl        String?
@@ -126,6 +128,20 @@ model Pedido {
 
   imagenes ImagenPedido[]
   fotos    FotoCliente[]
+}
+
+// —— Cupones de descuento (para promos/influencers) ————————————————
+
+model Cupon {
+  id                  String   @id @default(cuid())
+  codigo              String   @unique
+  descuentoPorcentaje Int      @default(100)
+  activo              Boolean  @default(true)
+  usosMaximos         Int? // null = sin límite
+  usosActuales        Int      @default(0)
+  nota                String? // uso interno, ej. "Regalo influencer Fulanita"
+
+  createdAt DateTime @default(now())
 }
 
 // —— Fotos del cliente (input) ————————————————————————————————

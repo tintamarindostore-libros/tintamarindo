@@ -37,6 +37,8 @@ type Pedido = {
   tipoEntrega: string
   costoEnvioEstimado: number | null
   medioPago: string
+  cuponCodigo: string | null
+  cuponDescuentoPorcentaje: number | null
   trackingNumero: string | null
   pdfUrlFirmada: string | null
 }
@@ -296,16 +298,28 @@ export function PedidoDetalle({
               Estimado mostrado al cliente: {pedido.costoEnvioEstimado !== null ? formatoARS(pedido.costoEnvioEstimado) : 'a confirmar (sin MiCorreo API todavía)'}
             </p>
             <p className="text-sm text-stone-600 mt-2 pt-2 border-t border-stone-100">
-              Pago: <b>{pedido.medioPago === 'TRANSFERENCIA' ? 'Transferencia bancaria' : 'MercadoPago'}</b>
+              Pago: <b>{pedido.cuponDescuentoPorcentaje === 100 ? 'Bonificado (cupón)' : pedido.medioPago === 'TRANSFERENCIA' ? 'Transferencia bancaria' : 'MercadoPago'}</b>
               {' · Libro: '}
               <b>
-                {formatoARS(
-                  pedido.medioPago === 'TRANSFERENCIA'
-                    ? precioTransferencia(pedido.tamano)
-                    : PRECIO_LIBRO[pedido.tamano],
-                )}
+                {pedido.cuponDescuentoPorcentaje
+                  ? formatoARS(
+                      Math.round(
+                        (pedido.medioPago === 'TRANSFERENCIA' ? precioTransferencia(pedido.tamano) : PRECIO_LIBRO[pedido.tamano]) *
+                          (1 - pedido.cuponDescuentoPorcentaje / 100),
+                      ),
+                    )
+                  : formatoARS(
+                      pedido.medioPago === 'TRANSFERENCIA'
+                        ? precioTransferencia(pedido.tamano)
+                        : PRECIO_LIBRO[pedido.tamano],
+                    )}
               </b>
             </p>
+            {pedido.cuponCodigo && (
+              <p className="text-xs font-bold text-green-700 bg-green-50 border border-green-100 rounded-lg px-2.5 py-1 mt-2 inline-block">
+                🎟 PROMO: {pedido.cuponCodigo} ({pedido.cuponDescuentoPorcentaje}% off)
+              </p>
+            )}
           </div>
         </div>
 

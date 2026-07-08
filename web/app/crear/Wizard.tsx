@@ -331,6 +331,10 @@ export function Wizard({
 
   // Paso 5 — Confirmar
   const [medioPago, setMedioPago] = useState<'MERCADOPAGO' | 'TRANSFERENCIA'>('MERCADOPAGO')
+  const [cuponInput, setCuponInput] = useState('')
+  const [cuponAplicado, setCuponAplicado] = useState<{ codigo: string; descuentoPorcentaje: number } | null>(null)
+  const [cuponError, setCuponError] = useState<string | null>(null)
+  const [validandoCupon, setValidandoCupon] = useState(false)
   const [enviandoPedido, setEnviandoPedido] = useState(false)
   const [errorPedido, setErrorPedido] = useState<string | null>(null)
   const [pedidoId, setPedidoId] = useState<string | null>(null)
@@ -469,6 +473,33 @@ export function Wizard({
     img.src = previewUrl
   }
 
+  const aplicarCupon = async () => {
+    if (!cuponInput.trim()) return
+    setValidandoCupon(true)
+    setCuponError(null)
+    try {
+      const res = await fetch('/api/cupones/validar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: cuponInput }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Cupón inválido')
+      setCuponAplicado({ codigo: cuponInput.trim().toUpperCase(), descuentoPorcentaje: data.descuentoPorcentaje })
+    } catch (err) {
+      setCuponAplicado(null)
+      setCuponError((err as Error).message)
+    } finally {
+      setValidandoCupon(false)
+    }
+  }
+
+  const quitarCupon = () => {
+    setCuponAplicado(null)
+    setCuponInput('')
+    setCuponError(null)
+  }
+
   const confirmarPedido = async () => {
     setEnviandoPedido(true)
     setErrorPedido(null)
@@ -491,6 +522,7 @@ export function Wizard({
       if (datosTapa.imagenTapaKey) body.imagenTapaKey = datosTapa.imagenTapaKey
       if (datosTapa.dedicatoria) body.dedicatoria = datosTapa.dedicatoria
       if (datosTapa.estiloTapa) body.estiloTapa = datosTapa.estiloTapa
+      if (cuponAplicado) body.cuponCodigo = cuponAplicado.codigo
       const res = await fetch('/api/pedidos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1175,6 +1207,15 @@ export function Wizard({
   if (paso === 5) {
     const etiquetaEstilo = (id: Estilo) => ESTILOS.find((e) => e.id === id)?.label ?? id
     const costoEnvioEstimado = estimarEnvio(envio.provincia, envio.tipoEntrega)
+    const esCuponTotal = cuponAplicado?.descuentoPorcentaje === 100
+    const precioLibroBase = config.tamano
+      ? (medioPago === 'TRANSFERENCIA' ? precioTransferencia(config.tamano) : PRECIO_LIBRO[config.tamano])
+      : null
+    const precioLibroFinal =
+      precioLibroBase !== null && cuponAplicado
+        ? Math.round(precioLibroBase * (1 - cuponAplicado.descuentoPorcentaje / 100))
+        : precioLibroBase
+    const totalEstimado = esCuponTotal ? 0 : (precioLibroFinal ?? 0) + (costoEnvioEstimado ?? 0)
 
     return (
       <Shell>
@@ -1231,76 +1272,124 @@ export function Wizard({
           <div className="flex justify-between pt-2">
             <span className="text-stone-400">Libro</span>
             <span className="font-bold text-stone-700">
-              {config.tamano
-                ? formatoARS(medioPago === 'TRANSFERENCIA' ? precioTransferencia(config.tamano) : PRECIO_LIBRO[config.tamano])
-                : 'A definir'}
+              {config.tamano ? (
+                cuponAplicado ? (
+                  <>
+                    <span className="line-through text-stone-300 mr-2 font-normal">
+                      {formatoARS(medioPago === 'TRANSFERENCIA' ? precioTransferencia(config.tamano) : PRECIO_LIBRO[config.tamano])}
+                    </span>
+                    {formatoARS(precioLibroFinal ?? 0)}
+                  </>
+                ) : (
+                  formatoARS(medioPago === 'TRANSFERENCIA' ? precioTransferencia(config.tamano) : PRECIO_LIBRO[config.tamano])
+                )
+              ) : (
+                'A definir'
+              )}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-stone-400">Envío ({envio.tipoEntrega === 'SUCURSAL' ? 'sucursal' : 'domicilio'}, estimado)</span>
             <span className="font-bold text-stone-700">
-              {costoEnvioEstimado !== null ? formatoARS(costoEnvioEstimado) : 'A confirmar'}
+              {esCuponTotal ? 'Gratis (cupón)' : costoEnvioEstimado !== null ? formatoARS(costoEnvioEstimado) : 'A confirmar'}
             </span>
           </div>
           {config.tamano && (
             <div className="flex justify-between border-t border-stone-200 pt-2">
               <span className="text-stone-500 font-bold">Total estimado</span>
-              <span className="font-black text-stone-800">
-                {formatoARS(
-                  (medioPago === 'TRANSFERENCIA' ? precioTransferencia(config.tamano) : PRECIO_LIBRO[config.tamano]) +
-                    (costoEnvioEstimado ?? 0),
-                )}
-              </span>
+              <span className="font-black text-stone-800">{formatoARS(totalEstimado)}</span>
             </div>
           )}
         </div>
 
         <div className="mt-6">
-          <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">Medio de pago</p>
-          <div className="grid grid-cols-2 gap-3">
-            {([
-              { id: 'MERCADOPAGO' as const, label: 'MercadoPago' },
-              { id: 'TRANSFERENCIA' as const, label: 'Transferencia (10% off)' },
-            ]).map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setMedioPago(m.id)}
-                className={[
-                  'rounded-xl border-2 py-2.5 text-sm font-bold transition-all',
-                  medioPago === m.id ? 'border-orange-400 bg-orange-50 text-orange-600' : 'border-stone-100 text-stone-500 hover:border-orange-200',
-                ].join(' ')}
-              >
-                {m.label}
+          <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">¿Tenés un cupón?</p>
+          {cuponAplicado ? (
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-2.5 text-sm">
+              <span className="font-bold text-green-700">
+                {cuponAplicado.codigo} aplicado — {cuponAplicado.descuentoPorcentaje}% off
+              </span>
+              <button type="button" onClick={quitarCupon} className="text-xs font-bold text-stone-400 hover:text-stone-600">
+                Quitar
               </button>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={cuponInput}
+                onChange={(e) => setCuponInput(e.target.value)}
+                placeholder="Código de cupón"
+                className="flex-1 rounded-xl border-2 border-stone-100 px-4 py-2.5 text-sm focus:border-orange-300 outline-none uppercase"
+              />
+              <button
+                type="button"
+                onClick={aplicarCupon}
+                disabled={validandoCupon || !cuponInput.trim()}
+                className="rounded-xl border-2 border-orange-300 text-orange-600 font-bold px-4 py-2.5 text-sm disabled:opacity-50"
+              >
+                {validandoCupon ? 'Validando…' : 'Aplicar'}
+              </button>
+            </div>
+          )}
+          {cuponError && <p className="text-xs text-red-500 mt-2">{cuponError}</p>}
         </div>
 
-        {medioPago === 'TRANSFERENCIA' && (
-          <div className="mt-4 bg-orange-50 border border-orange-100 rounded-xl p-4 text-sm space-y-1">
-            <p className="font-bold text-stone-700 mb-2">Datos para transferir</p>
-            <p className="text-stone-600">Banco: <b>{DATOS_BANCARIOS.banco}</b></p>
-            <p className="text-stone-600">Alias: <b>{DATOS_BANCARIOS.alias}</b></p>
-            <p className="text-stone-600">CBU: <b>{DATOS_BANCARIOS.cbu}</b></p>
-            <p className="text-stone-600">Titular: <b>{DATOS_BANCARIOS.titular}</b> (CUIT {DATOS_BANCARIOS.cuit})</p>
-            <p className="text-xs text-stone-400 mt-2">
-              Al confirmar, tu pedido queda registrado como "esperando pago". Hacé la transferencia por el monto total y avisanos por WhatsApp o email — apenas la acreditemos, arrancamos con tu libro.
-            </p>
+        {esCuponTotal ? (
+          <div className="mt-4 bg-green-50 border border-green-100 rounded-xl p-4 text-sm">
+            <p className="font-bold text-green-700">🎁 Este pedido está 100% bonificado</p>
+            <p className="text-stone-500 mt-1">No necesitás pagar nada. Al confirmar, arrancamos directo con tu libro.</p>
           </div>
-        )}
+        ) : (
+          <>
+            <div className="mt-6">
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">Medio de pago</p>
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { id: 'MERCADOPAGO' as const, label: 'MercadoPago' },
+                  { id: 'TRANSFERENCIA' as const, label: 'Transferencia (10% off)' },
+                ]).map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setMedioPago(m.id)}
+                    className={[
+                      'rounded-xl border-2 py-2.5 text-sm font-bold transition-all',
+                      medioPago === m.id ? 'border-orange-400 bg-orange-50 text-orange-600' : 'border-stone-100 text-stone-500 hover:border-orange-200',
+                    ].join(' ')}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {config.tamano && (
-          <p className="text-xs text-stone-400 mt-3">
-            Precio especial de lanzamiento. Pagando por transferencia bancaria tenés un 10% de descuento sobre el libro.
-            {costoEnvioEstimado === null && ' El costo de envío a domicilio para tu zona todavía no está confirmado — te lo pasamos por WhatsApp o email antes de despachar.'}
-          </p>
+            {medioPago === 'TRANSFERENCIA' && (
+              <div className="mt-4 bg-orange-50 border border-orange-100 rounded-xl p-4 text-sm space-y-1">
+                <p className="font-bold text-stone-700 mb-2">Datos para transferir</p>
+                <p className="text-stone-600">Banco: <b>{DATOS_BANCARIOS.banco}</b></p>
+                <p className="text-stone-600">Alias: <b>{DATOS_BANCARIOS.alias}</b></p>
+                <p className="text-stone-600">CBU: <b>{DATOS_BANCARIOS.cbu}</b></p>
+                <p className="text-stone-600">Titular: <b>{DATOS_BANCARIOS.titular}</b> (CUIT {DATOS_BANCARIOS.cuit})</p>
+                <p className="text-xs text-stone-400 mt-2">
+                  Al confirmar, tu pedido queda registrado como "esperando pago". Hacé la transferencia por el monto total y avisanos por WhatsApp o email — apenas la acreditemos, arrancamos con tu libro.
+                </p>
+              </div>
+            )}
+
+            {config.tamano && (
+              <p className="text-xs text-stone-400 mt-3">
+                Precio especial de lanzamiento. Pagando por transferencia bancaria tenés un 10% de descuento sobre el libro.
+                {costoEnvioEstimado === null && ' El costo de envío a domicilio para tu zona todavía no está confirmado — te lo pasamos por WhatsApp o email antes de despachar.'}
+              </p>
+            )}
+          </>
         )}
 
         {errorPedido && <p className="text-sm text-red-500 mt-3">{errorPedido}</p>}
 
         <PasoNav disabled={enviandoPedido} onAtras={() => setPaso(4)} onSiguiente={confirmarPedido}>
-          {enviandoPedido ? 'Procesando…' : medioPago === 'TRANSFERENCIA' ? 'Confirmar pedido →' : 'Ir a pagar →'}
+          {enviandoPedido ? 'Procesando…' : esCuponTotal ? 'Confirmar pedido gratuito →' : medioPago === 'TRANSFERENCIA' ? 'Confirmar pedido →' : 'Ir a pagar →'}
         </PasoNav>
       </Shell>
     )

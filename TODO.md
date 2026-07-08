@@ -73,6 +73,7 @@ Cómo usar este archivo:
 ### Pantalla 2 — Login + Upload de fotos + Términos
 
 - [x] Flujo de login con Google (next-auth)
+- [x] Login va directo al selector de cuentas de Google (`/entrar`, client-side `signIn()`) — sin la pantalla intermedia de NextAuth
 - [x] Guardar en DB: Google ID, nombre, email, foto de perfil
 - [x] Componente de upload de fotos (drag & drop + botón — mobile first)
 - [x] Multi-selección de fotos (Ctrl/Shift para seleccionar varias a la vez)
@@ -108,6 +109,7 @@ Cómo usar este archivo:
 - [x] Selector de medio de pago (MercadoPago / Transferencia) en el checkout, con datos bancarios (`web/lib/datosBancarios.ts`) visibles al elegir transferencia
 - [x] Integración MercadoPago *(código listo — falta confirmar en la cuenta real que las credenciales sean de producción y no de prueba, y cargar `MERCADOPAGO_WEBHOOK_SECRET` en Vercel)*
 - [x] Integración pago por transferencia bancaria directa (con descuento) — confirmación manual desde el admin (botón "Confirmar transferencia recibida")
+- [x] Cupones de descuento (bonificación 100% para regalos/promos a influencers) — el cliente los carga en el checkout, se gestionan desde `/admin/cupones`
 - [x] Pantalla de confirmación post-pedido — agradecimiento + botón para volver al inicio
 - [x] Guardar pedido completo en DB con estado "esperando generación"
 

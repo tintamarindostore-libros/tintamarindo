@@ -8,7 +8,7 @@ export default async function CrearPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/api/auth/signin?callbackUrl=/crear')
+    redirect('/entrar?callbackUrl=/crear')
   }
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })
