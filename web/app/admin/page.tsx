@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { requireAdmin } from '@/lib/admin'
+import { checkAdminAccess } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
+import { AccesoDenegado } from './AccesoDenegado'
 
 const ESTADOS = ['ESPERANDO_PAGO', 'ESPERANDO_GENERACION', 'EN_REVISION', 'ESPERANDO_APROBACION', 'APROBADO', 'ENVIADO']
 
@@ -35,8 +36,9 @@ export default async function AdminPage({
 }: {
   searchParams: Promise<{ estado?: string }>
 }) {
-  const session = await requireAdmin()
-  if (!session) redirect('/')
+  const access = await checkAdminAccess()
+  if (access.status === 'no-session') redirect('/entrar?callbackUrl=/admin')
+  if (access.status === 'wrong-email') return <AccesoDenegado email={access.email} volverA="/admin" />
 
   const { estado } = await searchParams
   const pedidos = await prisma.pedido.findMany({
@@ -52,12 +54,20 @@ export default async function AdminPage({
           <h1 className="text-3xl font-black text-stone-800" style={{ fontFamily: 'var(--font-display)' }}>
             Panel de administración
           </h1>
-          <Link
-            href="/admin/cupones"
-            className="text-xs font-bold px-3 py-1.5 rounded-full bg-white text-stone-500 border border-stone-200 hover:border-orange-300"
-          >
-            🎟 Cupones
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/admin/cupones"
+              className="text-xs font-bold px-3 py-1.5 rounded-full bg-white text-stone-500 border border-stone-200 hover:border-orange-300"
+            >
+              🎟 Cupones
+            </Link>
+            <Link
+              href="/salir"
+              className="text-xs font-bold px-3 py-1.5 rounded-full bg-white text-stone-500 border border-stone-200 hover:border-red-300"
+            >
+              Cerrar sesión
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">

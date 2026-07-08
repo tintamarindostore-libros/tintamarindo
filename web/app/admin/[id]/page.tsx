@@ -1,12 +1,14 @@
 import { redirect, notFound } from 'next/navigation'
-import { requireAdmin } from '@/lib/admin'
+import { checkAdminAccess } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { obtenerUrlFirmada } from '@/lib/r2'
 import { PedidoDetalle } from './PedidoDetalle'
+import { AccesoDenegado } from '../AccesoDenegado'
 
 export default async function AdminPedidoPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAdmin()
-  if (!session) redirect('/')
+  const access = await checkAdminAccess()
+  if (access.status === 'no-session') redirect('/entrar?callbackUrl=/admin')
+  if (access.status === 'wrong-email') return <AccesoDenegado email={access.email} volverA="/admin" />
 
   const { id } = await params
   const pedido = await prisma.pedido.findUnique({

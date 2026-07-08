@@ -1,11 +1,13 @@
 import { redirect } from 'next/navigation'
-import { requireAdmin } from '@/lib/admin'
+import { checkAdminAccess } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { CuponesAdmin } from './CuponesAdmin'
+import { AccesoDenegado } from '../AccesoDenegado'
 
 export default async function AdminCuponesPage() {
-  const session = await requireAdmin()
-  if (!session) redirect('/')
+  const access = await checkAdminAccess()
+  if (access.status === 'no-session') redirect('/entrar?callbackUrl=/admin/cupones')
+  if (access.status === 'wrong-email') return <AccesoDenegado email={access.email} volverA="/admin/cupones" />
 
   const cupones = await prisma.cupon.findMany({ orderBy: { createdAt: 'desc' } })
 
