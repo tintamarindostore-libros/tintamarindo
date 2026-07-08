@@ -5,6 +5,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { PRECIO_LIBRO, precioTransferencia, formatoARS } from '@/lib/precios'
 import { estimarEnvio, type TipoEntrega } from '@/lib/envio'
 import { DATOS_BANCARIOS } from '@/lib/datosBancarios'
+import '../landing.css'
+import {
+  IconCamera, IconCheck, IconCircleDot, IconDownload, IconCompass, IconCrown, IconEgg,
+  IconRocket, IconPaw, IconPen, IconBlob, IconSparkle, IconFamily, IconImage, IconGift, IconBook,
+} from './icons'
 
 type Tamano = 'CHICO' | 'GRANDE'
 type Estilo = 'REALISTA' | 'PIXAR' | 'ANIME'
@@ -44,19 +49,19 @@ type DatosEnvio = {
   tipoEntrega: TipoEntrega
 }
 
-const TEMATICAS = [
-  { id: 'Aventura', emoji: '🗺️' },
-  { id: 'Princesas', emoji: '👑' },
-  { id: 'Dinosaurios', emoji: '🦕' },
-  { id: 'Espacio', emoji: '🚀' },
-  { id: 'Animales', emoji: '🦁' },
-  { id: 'Letras y números', emoji: '🔤' },
+const TEMATICAS: { id: string; Icon?: (p: { className?: string }) => React.JSX.Element; letras?: boolean }[] = [
+  { id: 'Aventura', Icon: IconCompass },
+  { id: 'Princesas', Icon: IconCrown },
+  { id: 'Dinosaurios', Icon: IconEgg },
+  { id: 'Espacio', Icon: IconRocket },
+  { id: 'Animales', Icon: IconPaw },
+  { id: 'Letras y números', letras: true },
 ]
 
-const ESTILOS: { id: Estilo; label: string; sub: string; emoji: string }[] = [
-  { id: 'REALISTA', label: 'Realista', sub: 'Rasgos detallados, estilo cómic', emoji: '🖋️' },
-  { id: 'PIXAR', label: 'Pixar', sub: 'Redondeado, tierno y expresivo', emoji: '🎬' },
-  { id: 'ANIME', label: 'Anime', sub: 'Ojos grandes, estética japonesa', emoji: '✨' },
+const ESTILOS: { id: Estilo; label: string; sub: string; Icon: (p: { className?: string }) => React.JSX.Element }[] = [
+  { id: 'REALISTA', label: 'Realista', sub: 'Rasgos detallados, estilo cómic', Icon: IconPen },
+  { id: 'PIXAR', label: 'Pixar', sub: 'Redondeado, tierno y expresivo', Icon: IconBlob },
+  { id: 'ANIME', label: 'Anime', sub: 'Ojos grandes, estética japonesa', Icon: IconSparkle },
 ]
 
 const TIPOS_PAPEL: { id: TipoPapel; label: string; sub: string }[] = [
@@ -93,7 +98,7 @@ function CampoEnvio({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-orange-300 focus:outline-none"
+        className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-300 focus:outline-none"
       />
     </div>
   )
@@ -137,7 +142,7 @@ function PrivacidadPopup({ onClose }: { onClose: () => void }) {
             <p className="font-semibold text-stone-700 pt-2">¿Tenés preguntas?</p>
             <p>Para consultas sobre privacidad, eliminación de imágenes o cualquier otro tema, podés contactarnos por WhatsApp o email. Los datos de contacto están en el footer del sitio.</p>
             <p className="pt-2">
-              <Link href="/privacidad" target="_blank" className="text-orange-500 underline underline-offset-2 font-semibold hover:text-orange-600">
+              <Link href="/privacidad" target="_blank" className="text-brand-500 underline underline-offset-2 font-semibold hover:text-brand-600">
                 Ver política de privacidad completa →
               </Link>
             </p>
@@ -152,7 +157,7 @@ function PrivacidadPopup({ onClose }: { onClose: () => void }) {
             disabled={!puedeAceptar}
             className={[
               'w-full py-3 rounded-2xl font-black text-white transition-colors',
-              puedeAceptar ? 'bg-orange-500 hover:bg-orange-600' : 'bg-stone-200 text-stone-400 cursor-not-allowed',
+              puedeAceptar ? 'bg-brand-500 hover:bg-brand-600' : 'bg-stone-200 text-stone-400 cursor-not-allowed',
             ].join(' ')}
             style={{ fontFamily: 'var(--font-display)' }}
           >
@@ -164,29 +169,82 @@ function PrivacidadPopup({ onClose }: { onClose: () => void }) {
   )
 }
 
+const NOMBRES_PASOS = ['Fotos', 'Diseño', 'Prueba', 'Envío', 'Pago']
+
 function PasoHeader({ paso, total, titulo }: { paso: number; total: number; titulo: string }) {
   return (
     <div className="mb-8">
-      <p className="text-xs font-black text-orange-400 uppercase tracking-widest mb-2">
-        Paso {paso} de {total}
-      </p>
+      <div className="flex items-center mb-1.5">
+        {NOMBRES_PASOS.slice(0, total).map((_, i) => {
+          const n = i + 1
+          const hecho = n < paso
+          const activo = n === paso
+          return (
+            <div key={n} className="flex items-center flex-1 last:flex-none">
+              <div
+                className={[
+                  'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 transition-colors',
+                  hecho ? 'bg-brand-500 text-white' : activo ? 'border-2 border-brand-500 text-brand-500 bg-white' : 'bg-stone-100 text-stone-400',
+                ].join(' ')}
+              >
+                {hecho ? <IconCheck className="w-3 h-3" /> : n}
+              </div>
+              {n < total && (
+                <div className={`flex-1 h-0.5 mx-1 ${hecho ? 'bg-brand-500' : 'bg-stone-100'}`} />
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div className="flex mb-4">
+        {NOMBRES_PASOS.slice(0, total).map((label, i) => {
+          const n = i + 1
+          const activo = n === paso
+          const hecho = n < paso
+          return (
+            <div key={label} className="flex-1 last:flex-none text-center">
+              <span
+                className={[
+                  'text-[9px] font-bold uppercase tracking-wide',
+                  activo ? 'text-brand-500' : hecho ? 'text-stone-500' : 'text-stone-300',
+                ].join(' ')}
+              >
+                {label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
       <h1 className="text-2xl font-black text-stone-800" style={{ fontFamily: 'var(--font-display)' }}>
         {titulo}
       </h1>
-      <div className="flex gap-1.5 mt-4">
-        {Array.from({ length: total }, (_, i) => (
-          <div key={i} className={`h-1.5 flex-1 rounded-full ${i < paso ? 'bg-orange-400' : 'bg-stone-100'}`} />
-        ))}
-      </div>
     </div>
+  )
+}
+
+function WizardHeader() {
+  return (
+    <header className="site-header">
+      <div className="wrap">
+        <Link href="/">
+          <img src="/landing/logo.png" alt="Tintamarindo" />
+        </Link>
+        <Link href="/" className="text-sm font-bold text-stone-500 hover:text-stone-700 transition-colors">
+          ← Volver al inicio
+        </Link>
+      </div>
+    </header>
   )
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#FEF9F0] px-6 py-16" style={{ fontFamily: 'var(--font-body)' }}>
-      <div className="max-w-lg mx-auto bg-white rounded-3xl shadow-sm border border-stone-100 p-8">
-        {children}
+    <div className="tm-landing" style={{ fontFamily: 'var(--font-body)' }}>
+      <WizardHeader />
+      <div className="px-6 py-10 min-h-[65vh]" style={{ background: 'var(--papel)' }}>
+        <div className="max-w-lg mx-auto bg-white rounded-3xl shadow-sm border border-stone-100 p-8">
+          {children}
+        </div>
       </div>
     </div>
   )
@@ -221,7 +279,7 @@ function PasoNav({
           'flex-1 py-4 rounded-2xl font-black text-base transition-all',
           disabled
             ? 'bg-stone-200 text-stone-400 cursor-not-allowed'
-            : 'bg-orange-500 hover:bg-orange-600 text-white active:scale-[0.98] shadow-lg shadow-orange-200',
+            : 'bg-brand-500 hover:bg-brand-600 text-white active:scale-[0.98] shadow-lg shadow-brand-200',
         ].join(' ')}
         style={{ fontFamily: 'var(--font-display)' }}
       >
@@ -562,13 +620,13 @@ export function Wizard({
               Array.from(e.dataTransfer.files).slice(0, remaining).forEach((f) => subirFoto(f))
             }}
             onDragOver={(e) => e.preventDefault()}
-            className="rounded-2xl border-2 border-dashed border-stone-200 hover:border-orange-300 transition-all cursor-pointer h-32 flex flex-col items-center justify-center gap-1.5 text-stone-400"
+            className="rounded-2xl border-2 border-dashed border-stone-200 hover:border-brand-300 transition-all cursor-pointer h-32 flex flex-col items-center justify-center gap-1.5 text-stone-400"
           >
             {subiendo ? (
               <span className="text-sm font-medium animate-pulse">Subiendo…</span>
             ) : (
               <>
-                <span className="text-2xl">📷</span>
+                <IconCamera className="w-7 h-7 text-stone-300" />
                 <span className="text-sm font-medium">Arrastrá o tocá para agregar fotos (podés seleccionar varias)</span>
                 <span className="text-xs">JPG · PNG · WEBP · HEIC</span>
               </>
@@ -639,7 +697,9 @@ export function Wizard({
 
   // ── Paso 2 — Configuración ───────────────────────────
   if (paso === 2) {
-    const configInteriorValida = config.tamano !== null && config.tematicas.length >= 1 && config.estilos.length >= 1
+    const tieneAlgunaTematica =
+      config.tematicas.length >= 1 || config.tematicasPersonalizadas.some((t) => t.trim().length > 0)
+    const configInteriorValida = config.tamano !== null && tieneAlgunaTematica && config.estilos.length >= 1
     const configTapaValida =
       datosTapa.tituloTapa.trim().length > 0 && datosTapa.imagenTapaKey !== null && datosTapa.estiloTapa !== null
 
@@ -655,7 +715,7 @@ export function Wizard({
               onClick={() => setSolapa(id)}
               className={[
                 'flex-1 py-2.5 text-sm font-black rounded-xl transition-all capitalize',
-                solapa === id ? 'bg-orange-500 text-white' : 'text-stone-500 hover:text-stone-700',
+                solapa === id ? 'bg-brand-500 text-white' : 'text-stone-500 hover:text-stone-700',
               ].join(' ')}
               style={{ fontFamily: 'var(--font-display)' }}
             >
@@ -679,15 +739,15 @@ export function Wizard({
                     onClick={() => cambiarTamano(t.id)}
                     className={[
                       'rounded-2xl border-2 p-4 text-left transition-all',
-                      config.tamano === t.id ? 'border-orange-400 bg-orange-50' : 'border-stone-100 hover:border-orange-200',
+                      config.tamano === t.id ? 'border-brand-400 bg-brand-50' : 'border-stone-100 hover:border-brand-200',
                     ].join(' ')}
                   >
-                    <div className="text-2xl mb-1">{t.id === 'CHICO' ? '📕' : '📗'}</div>
+                    <IconBook className="w-6 h-6 text-brand-500 mb-1" />
                     <div className="font-black text-stone-800 text-sm" style={{ fontFamily: 'var(--font-display)' }}>
                       {t.paginas} páginas
                     </div>
                     <div className="text-xs text-stone-500 mt-0.5">{t.desc}</div>
-                    <div className="text-xs font-bold text-orange-400 mt-2">{formatoARS(PRECIO_LIBRO[t.id])}</div>
+                    <div className="text-xs font-bold text-brand-400 mt-2">{formatoARS(PRECIO_LIBRO[t.id])}</div>
                   </button>
                 ))}
               </div>
@@ -711,24 +771,28 @@ export function Wizard({
                           disabled={lleno}
                           className={[
                             'rounded-xl border-2 p-3 text-center transition-all',
-                            sel ? 'border-orange-400 bg-orange-50'
+                            sel ? 'border-brand-400 bg-brand-50'
                               : lleno ? 'border-stone-100 opacity-40 cursor-not-allowed'
-                              : 'border-stone-100 hover:border-orange-200',
+                              : 'border-stone-100 hover:border-brand-200',
                           ].join(' ')}
                         >
-                          <div className="text-2xl">{t.emoji}</div>
+                          {t.letras ? (
+                            <div className="font-black text-lg text-brand-500" style={{ fontFamily: 'var(--font-display)' }}>Aa</div>
+                          ) : t.Icon ? (
+                            <t.Icon className="w-6 h-6 mx-auto text-brand-500" />
+                          ) : null}
                           <div className="text-xs font-bold text-stone-700 mt-1">{t.id}</div>
                         </button>
                       )
                     })}
                   </div>
-                  <p className="text-xs text-stone-400 mt-2">Hasta {maxTematicas} temáticas</p>
+                  <p className="text-xs text-stone-400 mt-2">Hasta {maxTematicas} temáticas (opcional si cargás una temática personalizada abajo)</p>
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 block">
                     ¿Tenés algo especial en mente?{' '}
-                    <span className="font-normal normal-case">(opcional, hasta {MAX_TEMATICAS_PERSONALIZADAS})</span>
+                    <span className="font-normal normal-case">(opcional, hasta {MAX_TEMATICAS_PERSONALIZADAS} — podés usar solo esto, sin elegir de las de arriba)</span>
                   </label>
                   <div className="space-y-2">
                     {config.tematicasPersonalizadas.map((valor, i) => (
@@ -741,7 +805,7 @@ export function Wizard({
                             tematicasPersonalizadas: prev.tematicasPersonalizadas.map((v, j) => (j === i ? e.target.value : v)),
                           }))}
                           placeholder='Ej: "Fútbol — River Plate", "Karate", "Dinosaurios en el espacio"'
-                          className="flex-1 rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-orange-300 focus:outline-none"
+                          className="flex-1 rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-300 focus:outline-none"
                         />
                         <button
                           type="button"
@@ -760,12 +824,16 @@ export function Wizard({
                     <button
                       type="button"
                       onClick={() => setConfig((prev) => ({ ...prev, tematicasPersonalizadas: [...prev.tematicasPersonalizadas, ''] }))}
-                      className="text-xs font-bold text-orange-500 hover:text-orange-600 mt-2"
+                      className="text-xs font-bold text-brand-500 hover:text-brand-600 mt-2"
                     >
                       + Agregar otra
                     </button>
                   )}
-                  <p className="text-xs text-stone-400 mt-1.5">Se van a intercalar con las temáticas que elegiste arriba</p>
+                  <p className="text-xs text-stone-400 mt-1.5">
+                    {config.tematicas.length > 0
+                      ? 'Se van a intercalar con las temáticas que elegiste arriba'
+                      : 'Podés usar solo temáticas personalizadas, sin elegir ninguna de las de arriba'}
+                  </p>
                 </div>
 
                 <div>
@@ -784,12 +852,12 @@ export function Wizard({
                           disabled={lleno}
                           className={[
                             'rounded-xl border-2 p-3 text-center transition-all',
-                            sel ? 'border-orange-400 bg-orange-50'
+                            sel ? 'border-brand-400 bg-brand-50'
                               : lleno ? 'border-stone-100 opacity-40 cursor-not-allowed'
-                              : 'border-stone-100 hover:border-orange-200',
+                              : 'border-stone-100 hover:border-brand-200',
                           ].join(' ')}
                         >
-                          <div className="text-2xl">{s.emoji}</div>
+                          <s.Icon className="w-6 h-6 mx-auto text-brand-500" />
                           <div className="text-xs font-bold text-stone-700 mt-1">{s.label}</div>
                           <div className="text-[10px] text-stone-400 mt-0.5">{s.sub}</div>
                         </button>
@@ -810,10 +878,10 @@ export function Wizard({
                         onClick={() => setConfig((prev) => ({ ...prev, tipoPapel: t.id }))}
                         className={[
                           'w-full rounded-xl border-2 px-4 py-3 text-left transition-all flex items-center gap-3',
-                          config.tipoPapel === t.id ? 'border-orange-400 bg-orange-50' : 'border-stone-100 hover:border-orange-200',
+                          config.tipoPapel === t.id ? 'border-brand-400 bg-brand-50' : 'border-stone-100 hover:border-brand-200',
                         ].join(' ')}
                       >
-                        <div className={`w-4 h-4 rounded-full border-2 shrink-0 ${config.tipoPapel === t.id ? 'border-orange-400 bg-orange-400' : 'border-stone-300'}`} />
+                        <div className={`w-4 h-4 rounded-full border-2 shrink-0 ${config.tipoPapel === t.id ? 'border-brand-400 bg-brand-400' : 'border-stone-300'}`} />
                         <div>
                           <div className="text-sm font-bold text-stone-700">{t.label}</div>
                           <div className="text-xs text-stone-400">{t.sub}</div>
@@ -833,7 +901,7 @@ export function Wizard({
                     </p>
                     {config.fotoFamiliarKey ? (
                       <div className="flex items-center gap-3 bg-green-50 rounded-xl px-4 py-3 border border-green-200">
-                        <span className="text-green-600 text-lg">✓</span>
+                        <IconCheck className="w-4 h-4 text-green-600" />
                         <span className="text-sm text-green-700 font-medium">Imagen cargada</span>
                         <button
                           onClick={() => setConfig((prev) => ({ ...prev, fotoFamiliarKey: null }))}
@@ -847,11 +915,11 @@ export function Wizard({
                         role="button"
                         tabIndex={0}
                         onClick={() => inputFamiliarRef.current?.click()}
-                        className="rounded-xl border-2 border-dashed border-stone-200 hover:border-orange-300 transition-all cursor-pointer h-20 flex items-center justify-center text-stone-400"
+                        className="rounded-xl border-2 border-dashed border-stone-200 hover:border-brand-300 transition-all cursor-pointer h-20 flex items-center justify-center gap-2 text-stone-400"
                       >
                         {subiendoFamiliar
                           ? <span className="text-sm animate-pulse">Subiendo…</span>
-                          : <span className="text-sm">📸 Subir foto familiar</span>
+                          : <><IconFamily className="w-5 h-5" /><span className="text-sm">Subir foto familiar</span></>
                         }
                       </div>
                     )}
@@ -883,14 +951,14 @@ export function Wizard({
           <div className="space-y-4">
             <div>
               <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 block">
-                Título <span className="text-orange-400">*</span>
+                Título <span className="text-brand-400">*</span>
               </label>
               <input
                 type="text"
                 value={datosTapa.tituloTapa}
                 onChange={(e) => setDatosTapa((prev) => ({ ...prev, tituloTapa: e.target.value }))}
                 placeholder='Ej: "El libro de Sofía"'
-                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-orange-300 focus:outline-none"
+                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-300 focus:outline-none"
               />
             </div>
 
@@ -901,7 +969,7 @@ export function Wizard({
                 value={datosTapa.subtituloTapa}
                 onChange={(e) => setDatosTapa((prev) => ({ ...prev, subtituloTapa: e.target.value }))}
                 placeholder='Ej: "Con mucho amor, mamá y papá"'
-                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-orange-300 focus:outline-none"
+                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-300 focus:outline-none"
               />
             </div>
 
@@ -911,18 +979,18 @@ export function Wizard({
                 value={datosTapa.observacionesTapa}
                 onChange={(e) => setDatosTapa((prev) => ({ ...prev, observacionesTapa: e.target.value }))}
                 placeholder="Indicaciones especiales para el diseño de la tapa..."
-                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-orange-300 focus:outline-none"
+                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-300 focus:outline-none"
                 rows={3}
               />
             </div>
 
             <div>
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">
-                Imagen de tapa <span className="text-orange-400">*</span>
+                Imagen de tapa <span className="text-brand-400">*</span>
               </p>
               {datosTapa.imagenTapaKey ? (
                 <div className="flex items-center gap-3 bg-green-50 rounded-xl px-4 py-3 border border-green-200">
-                  <span className="text-green-600 text-lg">✓</span>
+                  <IconCheck className="w-4 h-4 text-green-600" />
                   <span className="text-sm text-green-700 font-medium">Imagen cargada</span>
                   <button
                     onClick={() => setDatosTapa((prev) => ({ ...prev, imagenTapaKey: null }))}
@@ -936,11 +1004,11 @@ export function Wizard({
                   role="button"
                   tabIndex={0}
                   onClick={() => inputTapaRef.current?.click()}
-                  className="rounded-xl border-2 border-dashed border-stone-200 hover:border-orange-300 transition-all cursor-pointer h-20 flex items-center justify-center text-stone-400"
+                  className="rounded-xl border-2 border-dashed border-stone-200 hover:border-brand-300 transition-all cursor-pointer h-20 flex items-center justify-center gap-2 text-stone-400"
                 >
                   {subiendoImagenTapa
                     ? <span className="text-sm animate-pulse">Subiendo…</span>
-                    : <span className="text-sm">🖼️ Subir imagen para la tapa</span>
+                    : <><IconImage className="w-5 h-5" /><span className="text-sm">Subir imagen para la tapa</span></>
                   }
                 </div>
               )}
@@ -964,7 +1032,7 @@ export function Wizard({
 
             <div>
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">
-                Estilo de la tapa <span className="text-orange-400">*</span>
+                Estilo de la tapa <span className="text-brand-400">*</span>
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {ESTILOS.map((s) => (
@@ -974,10 +1042,10 @@ export function Wizard({
                     onClick={() => setDatosTapa((prev) => ({ ...prev, estiloTapa: s.id }))}
                     className={[
                       'rounded-xl border-2 p-3 text-center transition-all',
-                      datosTapa.estiloTapa === s.id ? 'border-orange-400 bg-orange-50' : 'border-stone-100 hover:border-orange-200',
+                      datosTapa.estiloTapa === s.id ? 'border-brand-400 bg-brand-50' : 'border-stone-100 hover:border-brand-200',
                     ].join(' ')}
                   >
-                    <div className="text-2xl">{s.emoji}</div>
+                    <s.Icon className="w-6 h-6 mx-auto text-brand-500" />
                     <div className="text-xs font-bold text-stone-700 mt-1">{s.label}</div>
                     <div className="text-[10px] text-stone-400 mt-0.5">{s.sub}</div>
                   </button>
@@ -993,7 +1061,7 @@ export function Wizard({
                 value={datosTapa.dedicatoria}
                 onChange={(e) => setDatosTapa((prev) => ({ ...prev, dedicatoria: e.target.value }))}
                 placeholder='Ej: "Con todo el amor del mundo, mamá y papá 💛"'
-                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-orange-300 focus:outline-none"
+                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-300 focus:outline-none"
                 rows={3}
               />
               <p className="text-xs text-stone-400 mt-1.5">Se imprime en la contratapa o en una página especial del libro</p>
@@ -1008,7 +1076,7 @@ export function Wizard({
               onClick={() => setSolapa(id)}
               className={[
                 'flex-1 py-2.5 text-sm font-black rounded-xl transition-all',
-                solapa === id ? 'bg-orange-500 text-white' : 'text-stone-500 hover:text-stone-700',
+                solapa === id ? 'bg-brand-500 text-white' : 'text-stone-500 hover:text-stone-700',
               ].join(' ')}
               style={{ fontFamily: 'var(--font-display)' }}
             >
@@ -1017,12 +1085,12 @@ export function Wizard({
           ))}
         </div>
         {!configInteriorValida && solapa === 'tapa' && (
-          <p className="text-xs text-orange-500 text-center mt-2">
+          <p className="text-xs text-brand-500 text-center mt-2">
             Antes de continuar completá la pestaña Interior
           </p>
         )}
         {!configTapaValida && solapa === 'interior' && (
-          <p className="text-xs text-orange-500 text-center mt-2">
+          <p className="text-xs text-brand-500 text-center mt-2">
             Antes de continuar completá la pestaña Tapa (título, imagen y estilo)
           </p>
         )}
@@ -1040,12 +1108,19 @@ export function Wizard({
   // ── Paso 3 — Imagen de prueba ───────────────────────
   if (paso === 3) {
     const estiloLabel = ESTILOS.find((e) => e.id === config.estilos[0])?.label ?? config.estilos[0]
+    const tienePreviewDisponible = config.tematicas.length > 0
     return (
       <Shell>
         <PasoHeader paso={3} total={5} titulo="Tu imagen de prueba gratis" />
+        <p className="text-xs text-stone-400 -mt-6 mb-6">Este paso es opcional — podés continuar sin generarla.</p>
         <canvas ref={canvasRef} className="hidden" />
 
-        {previewUsado && previewUrl ? (
+        {!tienePreviewDisponible && !(previewUsado && previewUrl) ? (
+          <div className="text-center py-6 text-sm text-stone-500">
+            <p>Como elegiste una temática personalizada, no podemos generar la vista previa automática todavía.</p>
+            <p className="mt-1">No hay problema: podés continuar con tu pedido igual.</p>
+          </div>
+        ) : previewUsado && previewUrl ? (
           <div className="space-y-4">
             <p className="text-sm text-stone-500">
               Ya generaste tu imagen de prueba con esta cuenta. Esta es la que tenés guardada:
@@ -1062,7 +1137,7 @@ export function Wizard({
                   <p className="text-xs text-stone-400 mb-2">No se pudo cargar la imagen</p>
                   <button
                     onClick={refrescarUrlPreview}
-                    className="text-xs text-orange-500 underline underline-offset-2"
+                    className="text-xs text-brand-500 underline underline-offset-2"
                   >
                     Reintentar
                   </button>
@@ -1073,7 +1148,7 @@ export function Wizard({
                 style={{ transform: 'rotate(-20deg)', scale: '1.3' }}
               >
                 {Array.from({ length: 6 }, (_, i) => (
-                  <span key={i} className="text-orange-500/40 font-black text-lg whitespace-nowrap" style={{ fontFamily: 'var(--font-display)' }}>
+                  <span key={i} className="text-brand-500/40 font-black text-lg whitespace-nowrap" style={{ fontFamily: 'var(--font-display)' }}>
                     VISTA PREVIA — TINTAMARINDO · VISTA PREVIA — TINTAMARINDO
                   </span>
                 ))}
@@ -1081,10 +1156,10 @@ export function Wizard({
             </div>
             <button
               onClick={descargarConMarca}
-              className="w-full py-3 rounded-2xl font-black text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+              className="w-full py-3 rounded-2xl font-black text-white bg-brand-500 hover:bg-brand-600 transition-colors flex items-center justify-center gap-2"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              ⬇️ Descargar con marca de agua
+              <IconDownload className="w-4 h-4" /> Descargar con marca de agua
             </button>
           </div>
         ) : (
@@ -1099,10 +1174,10 @@ export function Wizard({
                 ].map((etapa, i) => (
                   <div key={i} className={[
                     'flex items-center gap-3 text-sm transition-all duration-500',
-                    i < etapaPreview ? 'text-green-600' : i === etapaPreview ? 'text-orange-500 font-medium' : 'text-stone-300',
+                    i < etapaPreview ? 'text-green-600' : i === etapaPreview ? 'text-brand-500 font-medium' : 'text-stone-300',
                   ].join(' ')}>
-                    <span className="text-base shrink-0">
-                      {i < etapaPreview ? '✓' : i === etapaPreview ? '✏️' : '○'}
+                    <span className="shrink-0">
+                      {i < etapaPreview ? <IconCheck className="w-4 h-4" /> : i === etapaPreview ? <IconPen className="w-4 h-4" /> : <IconCircleDot className="w-4 h-4" />}
                     </span>
                     <span className={i === etapaPreview ? 'animate-pulse' : ''}>{etapa}</span>
                   </div>
@@ -1115,10 +1190,10 @@ export function Wizard({
                 </p>
                 <button
                   onClick={generarPreview}
-                  className="py-4 px-8 rounded-2xl font-black text-white bg-orange-500 hover:bg-orange-600 transition-colors shadow-lg shadow-orange-200"
+                  className="py-4 px-8 rounded-2xl font-black text-white bg-brand-500 hover:bg-brand-600 transition-colors shadow-lg shadow-brand-200 inline-flex items-center gap-2"
                   style={{ fontFamily: 'var(--font-display)' }}
                 >
-                  ✨ Generar mi imagen de prueba
+                  <IconSparkle className="w-4 h-4" /> Generar mi imagen de prueba
                 </button>
               </>
             )}
@@ -1126,8 +1201,8 @@ export function Wizard({
           </div>
         )}
 
-        <PasoNav disabled={!previewUsado} onAtras={() => setPaso(2)} onSiguiente={() => setPaso(4)}>
-          Continuar con mi pedido →
+        <PasoNav onAtras={() => setPaso(2)} onSiguiente={() => setPaso(4)}>
+          {previewUsado ? 'Continuar con mi pedido →' : 'Continuar sin generar →'}
         </PasoNav>
       </Shell>
     )
@@ -1162,7 +1237,7 @@ export function Wizard({
                   onClick={() => setEnvio((p) => ({ ...p, tipoEntrega: t.id }))}
                   className={[
                     'rounded-xl border-2 py-2.5 text-sm font-bold transition-all',
-                    envio.tipoEntrega === t.id ? 'border-orange-400 bg-orange-50 text-orange-600' : 'border-stone-100 text-stone-500 hover:border-orange-200',
+                    envio.tipoEntrega === t.id ? 'border-brand-400 bg-brand-50 text-brand-600' : 'border-stone-100 text-stone-500 hover:border-brand-200',
                   ].join(' ')}
                 >
                   {t.label}
@@ -1189,7 +1264,7 @@ export function Wizard({
             <select
               value={envio.provincia}
               onChange={(e) => setEnvio((prev) => ({ ...prev, provincia: e.target.value }))}
-              className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-orange-300 focus:outline-none bg-white"
+              className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-300 focus:outline-none bg-white"
             >
               <option value="">Seleccioná tu provincia</option>
               {PROVINCIAS.map((p) => <option key={p} value={p}>{p}</option>)}
@@ -1320,13 +1395,13 @@ export function Wizard({
                 value={cuponInput}
                 onChange={(e) => setCuponInput(e.target.value)}
                 placeholder="Código de cupón"
-                className="flex-1 rounded-xl border-2 border-stone-100 px-4 py-2.5 text-sm focus:border-orange-300 outline-none uppercase"
+                className="flex-1 rounded-xl border-2 border-stone-100 px-4 py-2.5 text-sm focus:border-brand-300 outline-none uppercase"
               />
               <button
                 type="button"
                 onClick={aplicarCupon}
                 disabled={validandoCupon || !cuponInput.trim()}
-                className="rounded-xl border-2 border-orange-300 text-orange-600 font-bold px-4 py-2.5 text-sm disabled:opacity-50"
+                className="rounded-xl border-2 border-brand-300 text-brand-600 font-bold px-4 py-2.5 text-sm disabled:opacity-50"
               >
                 {validandoCupon ? 'Validando…' : 'Aplicar'}
               </button>
@@ -1337,7 +1412,7 @@ export function Wizard({
 
         {esCuponTotal ? (
           <div className="mt-4 bg-green-50 border border-green-100 rounded-xl p-4 text-sm">
-            <p className="font-bold text-green-700">🎁 Este pedido está 100% bonificado</p>
+            <p className="font-bold text-green-700 flex items-center gap-2"><IconGift className="w-4 h-4" /> Este pedido está 100% bonificado</p>
             <p className="text-stone-500 mt-1">No necesitás pagar nada. Al confirmar, arrancamos directo con tu libro.</p>
           </div>
         ) : (
@@ -1355,7 +1430,7 @@ export function Wizard({
                     onClick={() => setMedioPago(m.id)}
                     className={[
                       'rounded-xl border-2 py-2.5 text-sm font-bold transition-all',
-                      medioPago === m.id ? 'border-orange-400 bg-orange-50 text-orange-600' : 'border-stone-100 text-stone-500 hover:border-orange-200',
+                      medioPago === m.id ? 'border-brand-400 bg-brand-50 text-brand-600' : 'border-stone-100 text-stone-500 hover:border-brand-200',
                     ].join(' ')}
                   >
                     {m.label}
@@ -1365,7 +1440,7 @@ export function Wizard({
             </div>
 
             {medioPago === 'TRANSFERENCIA' && (
-              <div className="mt-4 bg-orange-50 border border-orange-100 rounded-xl p-4 text-sm space-y-1">
+              <div className="mt-4 bg-brand-50 border border-brand-100 rounded-xl p-4 text-sm space-y-1">
                 <p className="font-bold text-stone-700 mb-2">Datos para transferir</p>
                 <p className="text-stone-600">Banco: <b>{DATOS_BANCARIOS.banco}</b></p>
                 <p className="text-stone-600">Alias: <b>{DATOS_BANCARIOS.alias}</b></p>
@@ -1399,7 +1474,7 @@ export function Wizard({
   return (
     <Shell>
       <div className="text-center py-6">
-        <div className="text-5xl mb-4">🎉</div>
+        <IconGift className="w-14 h-14 mx-auto mb-4 text-brand-500" />
         <h1 className="text-2xl font-black text-stone-800 mb-3" style={{ fontFamily: 'var(--font-display)' }}>
           ¡Pedido recibido!
         </h1>
@@ -1412,7 +1487,7 @@ export function Wizard({
         </p>
         <Link
           href="/"
-          className="inline-block mt-8 w-full py-4 rounded-2xl font-black text-base bg-orange-500 hover:bg-orange-600 text-white active:scale-[0.98] shadow-lg shadow-orange-200 transition-all"
+          className="inline-block mt-8 w-full py-4 rounded-2xl font-black text-base bg-brand-500 hover:bg-brand-600 text-white active:scale-[0.98] shadow-lg shadow-brand-200 transition-all"
           style={{ fontFamily: 'var(--font-display)' }}
         >
           Volver al inicio

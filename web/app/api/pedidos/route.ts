@@ -53,7 +53,19 @@ export async function POST(req: NextRequest) {
     if (!PAGINAS_POR_TAMANO[tamano]) {
       return NextResponse.json({ error: 'Tamaño inválido' }, { status: 400 })
     }
-    if (!Array.isArray(tematicas) || tematicas.length === 0) {
+    if (!Array.isArray(tematicas)) {
+      return NextResponse.json({ error: 'Temáticas inválidas' }, { status: 400 })
+    }
+    if (
+      tematicasPersonalizadas !== undefined &&
+      (!Array.isArray(tematicasPersonalizadas) ||
+        tematicasPersonalizadas.length > MAX_TEMATICAS_PERSONALIZADAS ||
+        !tematicasPersonalizadas.every((t: unknown) => typeof t === 'string' && t.trim()))
+    ) {
+      return NextResponse.json({ error: 'Temáticas personalizadas inválidas' }, { status: 400 })
+    }
+    const hayTematicaPersonalizada = Array.isArray(tematicasPersonalizadas) && tematicasPersonalizadas.some((t: string) => t.trim())
+    if (tematicas.length === 0 && !hayTematicaPersonalizada) {
       return NextResponse.json({ error: 'Falta al menos una temática' }, { status: 400 })
     }
     if (!Array.isArray(estilos) || estilos.length === 0) {
@@ -82,14 +94,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: resultadoCupon.error }, { status: 400 })
       }
       cuponInfo = { codigo: resultadoCupon.codigo, descuentoPorcentaje: resultadoCupon.descuentoPorcentaje }
-    }
-    if (
-      tematicasPersonalizadas !== undefined &&
-      (!Array.isArray(tematicasPersonalizadas) ||
-        tematicasPersonalizadas.length > MAX_TEMATICAS_PERSONALIZADAS ||
-        !tematicasPersonalizadas.every((t: unknown) => typeof t === 'string' && t.trim()))
-    ) {
-      return NextResponse.json({ error: 'Temáticas personalizadas inválidas' }, { status: 400 })
     }
     // La dirección es opcional cuando se retira en sucursal (el cliente puede no saber cuál es)
     const camposEnvioObligatorios =

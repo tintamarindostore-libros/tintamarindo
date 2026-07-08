@@ -3,6 +3,17 @@
 @theme {
   --font-display: "Nunito", sans-serif;
   --font-body: "Inter", sans-serif;
+
+  /* Paleta de la landing (bermellón) — usada en /crear para que el wizard
+     comparta la identidad visual del resto del sitio en vez del naranja genérico. */
+  --color-brand-50: #FCEEE9;
+  --color-brand-100: #F8DCD1;
+  --color-brand-200: #F0B8A3;
+  --color-brand-300: #E79B7D;
+  --color-brand-400: #E4643D;
+  --color-brand-500: #E24C2E;
+  --color-brand-600: #C93E23;
+  --color-brand-700: #A63018;
 }
 
 body {

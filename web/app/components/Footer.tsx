@@ -10,6 +10,9 @@ export default function Footer() {
           <p className="text-stone-400 text-sm mt-2">
             Libros de colorear personalizados · Enviamos a todo el país
           </p>
+          <a href="mailto:hola@tintamarindo.com" className="text-stone-400 hover:text-white transition-colors text-sm mt-1">
+            hola@tintamarindo.com
+          </a>
         </div>
 
         <a
@@ -27,16 +30,16 @@ export default function Footer() {
         </a>
 
         <nav className="flex flex-col items-center gap-2 text-sm text-stone-400 md:items-end">
-          <Link href="/faq" className="hover:text-white transition-colors">
+          <Link href="/faq" target="_blank" className="hover:text-white transition-colors">
             Preguntas frecuentes
           </Link>
-          <Link href="/arrepentimiento" className="hover:text-white transition-colors">
+          <Link href="/arrepentimiento" target="_blank" className="hover:text-white transition-colors">
             Botón de arrepentimiento
           </Link>
-          <Link href="/privacidad" className="hover:text-white transition-colors">
+          <Link href="/privacidad" target="_blank" className="hover:text-white transition-colors">
             Política de privacidad
           </Link>
-          <Link href="/terminos" className="hover:text-white transition-colors">
+          <Link href="/terminos" target="_blank" className="hover:text-white transition-colors">
             Términos y condiciones
           </Link>
         </nav>
