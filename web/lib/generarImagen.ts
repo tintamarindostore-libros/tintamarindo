@@ -44,7 +44,9 @@ export async function generarImagenLibro({
         ],
       },
     ],
-    tools: [{ type: 'image_generation', quality: 'high', size: '1024x1536' } as never],
+    // quality 'medium' en vez de 'high': con el plan gratuito de Vercel las funciones
+    // se cortan a los 60s y 'high' suele superar ese tiempo (sobre todo la tapa a color)
+    tools: [{ type: 'image_generation', quality: 'medium', size: '1024x1536' } as never],
   })
 
   const imageBlock = response.output.find(

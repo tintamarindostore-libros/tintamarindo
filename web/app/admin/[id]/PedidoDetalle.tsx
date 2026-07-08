@@ -3,6 +3,21 @@
 import { useRef, useState } from 'react'
 import { formatoARS, PRECIO_LIBRO, precioTransferencia } from '@/lib/precios'
 
+// La generación de imágenes puede tardar y, si se corta a mitad de camino
+// (timeout del servidor), llega una respuesta vacía que rompe JSON.parse.
+// Esto da un mensaje entendible en vez de ese error críptico.
+async function parsearRespuesta(res: Response) {
+  const texto = await res.text()
+  if (!texto) {
+    throw new Error('La generación tardó demasiado y se cortó. Probá de nuevo — a veces la segunda vez es más rápida.')
+  }
+  try {
+    return JSON.parse(texto)
+  } catch {
+    throw new Error('Respuesta inesperada del servidor. Probá de nuevo.')
+  }
+}
+
 type Imagen = {
   id: string
   orden: number
@@ -110,7 +125,7 @@ export function PedidoDetalle({
 
   const refrescarImagen = async () => {
     const res = await fetch(`/api/admin/pedidos/${pedido.id}/generar`, { method: 'POST' })
-    return res.json()
+    return parsearRespuesta(res)
   }
 
   const generarTodas = async () => {
@@ -174,7 +189,7 @@ export function PedidoDetalle({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accion: 'regenerar' }),
       })
-      const data = await res.json()
+      const data = await parsearRespuesta(res)
       if (!res.ok) throw new Error(data.error ?? 'Error al generar la imagen')
       window.location.reload()
     } catch (err) {
