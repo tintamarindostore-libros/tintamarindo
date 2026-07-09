@@ -99,6 +99,12 @@ export default async function AdminPage({
               🎟 Cupones
             </Link>
             <Link
+              href="/admin/mensajes"
+              className="text-xs font-bold px-3 py-1.5 rounded-full bg-stone-900 text-stone-300 border border-stone-800 hover:border-brand-500"
+            >
+              💬 Mensajes
+            </Link>
+            <Link
               href="/salir"
               className="text-xs font-bold px-3 py-1.5 rounded-full bg-stone-900 text-stone-300 border border-stone-800 hover:border-red-500"
             >

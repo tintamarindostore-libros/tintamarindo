@@ -144,6 +144,19 @@ model Cupon {
   createdAt DateTime @default(now())
 }
 
+// —— Plantillas de mensajes al cliente (editables desde el admin) ————————
+
+model PlantillaMensaje {
+  id        String   @id @default(cuid())
+  clave     String   @unique // identifica la instancia del proceso, ej. "DESPACHO"
+  nombre    String // etiqueta legible para el panel admin
+  asunto    String? // para cuando se mande por email
+  cuerpo    String   @db.Text // con variables tipo {{nombre}}
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
 // —— Fotos del cliente (input) ————————————————————————————————
 
 model FotoCliente {

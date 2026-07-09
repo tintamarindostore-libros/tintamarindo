@@ -137,12 +137,10 @@ Cómo usar este archivo:
 - [x] Aviso al ADMIN por WhatsApp cuando entra un pedido pagado (vía webhook saliente a un workflow nuevo de n8n, `web/lib/notificarPedido.ts` + env var `N8N_PEDIDO_WEBHOOK_URL`) — *pendiente: crear el workflow del lado de n8n*
 - [ ] Integración pago por transferencia bancaria (conciliación manual o automática a definir)
 - [ ] Integración API MiCorreo para cotización y generación de etiquetas de envío
-- [ ] Email 1: Confirmación de pedido (inmediato al pago)
-- [ ] Email 2: PDF con marca de agua para aprobación del cliente
-- [ ] Aviso por WhatsApp cuando se envía el Email 2
+- [x] Textos para cada instancia del proceso (confirmación, PDF listo, recordatorio, aprobado, despacho, recordatorio transferencia) — editables desde `/admin/mensajes`, guardados en DB (modelo `PlantillaMensaje`). Por ahora se usan a mano (botón "Copiar mensaje" en el detalle de cada pedido, ya completado con los datos reales); están pensados para reusarse tal cual cuando se automatice el envío
+- [ ] Automatizar el envío real de los mensajes de arriba: Email 1 (confirmación), Email 2 (PDF para aprobar) + aviso por WhatsApp, Email 3 (despacho)
 - [ ] Recordatorio automático diario mientras el pedido espera aprobación
 - [ ] Job/cron de aprobación automática a los 5 días
-- [ ] Email 3: Despacho con número de tracking
 - [ ] Lógica de eliminación automática de imágenes a los 30 días
 - [ ] Testing de flujo completo de pago
 

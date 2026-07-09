@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { formatoARS, precioFinalLibro } from '@/lib/precios'
+import { renderPlantilla } from '@/lib/plantillas'
 
 // La generación de imágenes puede tardar y, si se corta a mitad de camino
 // (timeout del servidor), llega una respuesta vacía que rompe JSON.parse.
@@ -68,14 +69,67 @@ const ESTADO_LABEL: Record<string, string> = {
   ENVIADO: 'Enviado',
 }
 
+type Plantilla = {
+  id: string
+  clave: string
+  nombre: string
+  cuerpo: string
+  camposManuales: readonly string[]
+}
+
+function MensajePlantilla({ plantilla, variablesAuto }: { plantilla: Plantilla; variablesAuto: Record<string, string> }) {
+  const [manuales, setManuales] = useState<Record<string, string>>({})
+  const [copiado, setCopiado] = useState(false)
+
+  const texto = renderPlantilla(plantilla.cuerpo, { ...variablesAuto, ...manuales })
+
+  const copiar = () => {
+    navigator.clipboard.writeText(texto)
+    setCopiado(true)
+    setTimeout(() => setCopiado(false), 1500)
+  }
+
+  return (
+    <div className="rounded-xl border border-stone-800 p-3">
+      <p className="text-xs font-bold text-stone-400 mb-2">{plantilla.nombre}</p>
+      {plantilla.camposManuales.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          {plantilla.camposManuales.map((campo) => (
+            <input
+              key={campo}
+              type="text"
+              placeholder={`Completar: ${campo}`}
+              value={manuales[campo] ?? ''}
+              onChange={(e) => setManuales((prev) => ({ ...prev, [campo]: e.target.value }))}
+              className="flex-1 min-w-[160px] rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 px-2 py-1 text-xs outline-none focus:border-amber-400 placeholder:text-amber-500/60"
+            />
+          ))}
+        </div>
+      )}
+      <pre className="whitespace-pre-wrap text-xs text-stone-300 bg-stone-950 rounded-lg p-3 mb-2 font-sans">{texto}</pre>
+      <button
+        type="button"
+        onClick={copiar}
+        className="text-xs font-bold px-3 py-1.5 rounded-full bg-stone-800 text-stone-300 hover:bg-brand-500 hover:text-white transition-colors"
+      >
+        {copiado ? '✓ Copiado' : '📋 Copiar mensaje'}
+      </button>
+    </div>
+  )
+}
+
 export function PedidoDetalle({
   pedido,
   fotos,
   imagenesIniciales,
+  plantillas,
+  variablesAuto,
 }: {
   pedido: Pedido
   fotos: { id: string; urlFirmada: string }[]
   imagenesIniciales: Imagen[]
+  plantillas: Plantilla[]
+  variablesAuto: Record<string, string>
 }) {
   const [imagenes, setImagenes] = useState<Imagen[]>(imagenesIniciales)
   const [promptExtras, setPromptExtras] = useState<Record<string, string>>(
@@ -457,6 +511,18 @@ export function PedidoDetalle({
             >
               {guardandoTracking ? 'Guardando…' : 'Marcar como enviado'}
             </button>
+          </div>
+        </div>
+
+        <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">Mensajes para el cliente</p>
+            <a href="/admin/mensajes" className="text-xs text-brand-400 hover:text-brand-300">Editar textos →</a>
+          </div>
+          <div className="space-y-3">
+            {plantillas.map((p) => (
+              <MensajePlantilla key={p.id} plantilla={p} variablesAuto={variablesAuto} />
+            ))}
           </div>
         </div>
       </div>

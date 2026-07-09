@@ -2,7 +2,9 @@ import { redirect, notFound } from 'next/navigation'
 import { checkAdminAccess } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { obtenerUrlFirmada } from '@/lib/r2'
-import { formatoFechaHora } from '@/lib/fecha'
+import { formatoFechaHora, diasDesde } from '@/lib/fecha'
+import { formatoARS, precioFinalLibro } from '@/lib/precios'
+import { PLANTILLAS_CONFIG } from '@/lib/plantillas'
 import { PedidoDetalle } from './PedidoDetalle'
 import { AccesoDenegado } from '../AccesoDenegado'
 
@@ -34,6 +36,23 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
   const pdfUrlFirmada = pedido.pdfUrl ? await obtenerUrlFirmada(pedido.pdfUrl) : null
 
   const fotoFamiliarUrl = pedido.fotoFamiliarKey ? await obtenerUrlFirmada(pedido.fotoFamiliarKey) : null
+
+  const plantillas = await prisma.plantillaMensaje.findMany({ orderBy: { clave: 'asc' } })
+  const nombreDeClave = Object.fromEntries(PLANTILLAS_CONFIG.map((p) => [p.clave, p.nombre]))
+  const camposManualesDeClave = Object.fromEntries(PLANTILLAS_CONFIG.map((p) => [p.clave, p.camposManuales]))
+
+  const diasRestantesAprobacion = pedido.pdfSubidoAt ? Math.max(0, 5 - diasDesde(pedido.pdfSubidoAt)) : null
+  const variablesAuto: Record<string, string> = {
+    nombre: pedido.nombreCompleto.split(' ')[0],
+    codigo: pedido.id.slice(-8).toUpperCase(),
+    tamano: pedido.tamano === 'CHICO' ? '24 páginas' : '32 páginas',
+    tematicas: [...pedido.tematicas, ...pedido.tematicasPersonalizadas].join(', '),
+    monto: formatoARS(precioFinalLibro(pedido.tamano, pedido.medioPago, pedido.cuponDescuentoPorcentaje)),
+    link: pdfUrlFirmada ?? '',
+    localidad: `${pedido.localidad}, ${pedido.provincia}`,
+    tracking: pedido.trackingNumero ?? '',
+    diasRestantes: diasRestantesAprobacion !== null ? String(diasRestantesAprobacion) : '',
+  }
 
   return (
     <PedidoDetalle
@@ -77,6 +96,14 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         generada: Boolean(i.url),
         promptExtra: i.promptExtra,
       }))}
+      plantillas={plantillas.map((p) => ({
+        id: p.id,
+        clave: p.clave,
+        nombre: nombreDeClave[p.clave] ?? p.nombre,
+        cuerpo: p.cuerpo,
+        camposManuales: camposManualesDeClave[p.clave] ?? [],
+      }))}
+      variablesAuto={variablesAuto}
     />
   )
 }
