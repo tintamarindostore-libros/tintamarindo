@@ -5,6 +5,7 @@ import { obtenerUrlFirmada } from '@/lib/r2'
 import { formatoFechaHora, diasDesde } from '@/lib/fecha'
 import { formatoARS, precioFinalLibro } from '@/lib/precios'
 import { PLANTILLAS_CONFIG } from '@/lib/plantillas'
+import { calcularAsignacionPagina } from '@/lib/paginacion'
 import { PedidoDetalle } from './PedidoDetalle'
 import { AccesoDenegado } from '../AccesoDenegado'
 
@@ -89,15 +90,24 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         situacionesPorTematica: (pedido.situacionesPorTematica as Record<string, string[]> | null) ?? {},
       }}
       fotos={fotosConUrl.map((f) => ({ id: f.id, urlFirmada: f.urlFirmada }))}
-      imagenesIniciales={imagenesConUrl.map((i) => ({
-        id: i.id,
-        orden: i.orden,
-        tipo: i.tipo,
-        aprobada: i.aprobada,
-        urlFirmada: i.urlFirmada,
-        generada: Boolean(i.url),
-        promptExtra: i.promptExtra,
-      }))}
+      imagenesIniciales={imagenesConUrl.map((i) => {
+        const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
+        const asignacion =
+          i.tipo === 'TAPA' || tematicasEfectivas.length === 0
+            ? null
+            : calcularAsignacionPagina(i.orden, tematicasEfectivas, pedido.estilos)
+        return {
+          id: i.id,
+          orden: i.orden,
+          tipo: i.tipo,
+          tematica: i.tipo === 'TAPA' ? (pedido.estiloTapa ? 'Tapa' : null) : asignacion?.tematica ?? null,
+          estilo: i.tipo === 'TAPA' ? pedido.estiloTapa : asignacion?.estilo ?? null,
+          aprobada: i.aprobada,
+          urlFirmada: i.urlFirmada,
+          generada: Boolean(i.url),
+          promptExtra: i.promptExtra,
+        }
+      })}
       plantillas={plantillas.map((p) => ({
         id: p.id,
         clave: p.clave,

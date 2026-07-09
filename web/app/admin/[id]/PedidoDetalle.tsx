@@ -23,6 +23,8 @@ type Imagen = {
   id: string
   orden: number
   tipo: string
+  tematica: string | null
+  estilo: string | null
   aprobada: boolean
   urlFirmada: string | null
   generada: boolean
@@ -511,7 +513,9 @@ export function PedidoDetalle({
                 </div>
                 <div className="p-2 space-y-1">
                   <p className="text-[10px] text-stone-500 font-bold">
-                    {img.tipo === 'TAPA' ? 'Tapa (color)' : `Pág. ${img.orden + 1} · Tipo ${img.tipo}`}
+                    {img.tipo === 'TAPA' ? 'Tapa (color)' : `Pág. ${img.orden + 1}`}
+                    {img.tematica && img.tipo !== 'TAPA' ? ` · ${img.tematica}` : ''}
+                    {img.estilo ? ` (${img.estilo})` : ''}
                   </p>
                   <div className="flex gap-1">
                     <button

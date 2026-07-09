@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { descargarArchivo, subirArchivo } from '@/lib/r2'
 import { generarImagenLibro } from '@/lib/generarImagen'
+import { calcularAsignacionPagina } from '@/lib/paginacion'
 
 // Con Vercel Pro el límite de plan sube a 300s — la generación de imágenes con IA
 // puede tardar bastante más que los 60s del plan gratuito, sobre todo la tapa a color.
@@ -42,12 +43,11 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     estilo = pedido.estiloTapa
   } else {
     const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
+    const asignacion = calcularAsignacionPagina(siguiente.orden, tematicasEfectivas, pedido.estilos)
     fotoUrl = pedido.fotos[siguiente.orden % pedido.fotos.length].url
-    estilo = pedido.estilos[siguiente.orden % pedido.estilos.length] ?? pedido.estilos[0]
-    tematica = tematicasEfectivas[siguiente.orden % tematicasEfectivas.length] ?? tematicasEfectivas[0]
-    // Cuántas veces se repitió el ciclo de temáticas hasta esta página — así, cuando la
-    // misma temática se repite en varias páginas, cada una pide una variante distinta.
-    varianteIndex = Math.floor(siguiente.orden / tematicasEfectivas.length)
+    estilo = asignacion.estilo
+    tematica = asignacion.tematica
+    varianteIndex = asignacion.varianteIndex
     const situaciones = pedido.situacionesPorTematica as Record<string, string[]> | null
     situacionesManuales = situaciones?.[tematica]
   }
