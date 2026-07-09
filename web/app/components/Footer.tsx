@@ -10,8 +10,8 @@ export default function Footer() {
           <p className="text-stone-400 text-sm mt-2">
             Libros de colorear personalizados · Enviamos a todo el país
           </p>
-          <a href="mailto:hola@tintamarindo.com" className="text-stone-400 hover:text-white transition-colors text-sm mt-1">
-            hola@tintamarindo.com
+          <a href="mailto:tintamarindo.store@gmail.com" className="text-stone-400 hover:text-white transition-colors text-sm mt-1">
+            tintamarindo.store@gmail.com
           </a>
         </div>
 

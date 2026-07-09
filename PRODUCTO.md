@@ -73,7 +73,7 @@ Blanco, ahuesado o combinado. No cambia el precio. Se elige junto con tamaño/te
 1. **Configuración** — pantalla con dos solapas: **Interior** (tamaño 24/32 páginas; hasta 3 temáticas en 24 pág / hasta 5 en 32 pág, más hasta 3 temáticas personalizadas; hasta 2 estilos en 24 pág / hasta 3 en 32 pág; tipo de papel; opción de imagen familiar en 32 pág) y **Tapa** (título, subtítulo, observaciones, imagen específica, estilo de tapa, dedicatoria).
 2. **Login con Google + subida de fotos + popup de términos** — login obligatorio, sube 2-5 fotos, acepta política de privacidad de imágenes mediante popup con scroll obligatorio y checkbox.
 3. **Imagen de prueba** — se genera 1 imagen gratuita con marca de agua, ligada al Google ID. Botón de descarga. Si ya generó una prueba antes, se le muestra esa misma y se lo invita a completar el pedido.
-4. **Checkout** — formulario de datos de envío (incluye tipo de entrega: a domicilio o retiro en sucursal) + resumen del pedido con desglose de precio (libro + envío estimado + total) + pago (MercadoPago o transferencia con descuento), todo en una sola pantalla. Navegación con botones "Atrás" y "Siguiente" uno al lado del otro en todos los pasos.
+4. **Checkout** — formulario de datos de envío (incluye tipo de entrega: a domicilio o retiro en sucursal) + resumen del pedido con desglose de precio (libro + envío "a confirmar" + total a pagar ahora) + pago (MercadoPago o transferencia con descuento), todo en una sola pantalla. Navegación con botones "Atrás" y "Siguiente" uno al lado del otro en todos los pasos.
 
 *Posterior al pago:*
 
@@ -96,20 +96,13 @@ Blanco, ahuesado o combinado. No cambia el precio. Se elige junto con tamaño/te
 
 Tipo de entrega (a domicilio / retiro en sucursal) / Nombre completo / Dirección *(obligatoria a domicilio, opcional en sucursal — el cliente puede no saber cuál es, se coordina después por WhatsApp o email)* / Código postal / Localidad / Provincia (selector AR) / Teléfono / Email (pre-completado).
 
-## Envíos — estimado por zona (interino, sin API de MiCorreo)
+## Envíos — costo "a confirmar", sin API de MiCorreo
 
 - Se planea usar la API de **MiCorreo** (Correo Argentino), no Paq.Ar (que requiere acuerdo comercial y no tiene cotización en tiempo real).
 - Registro ya realizado, gratuito y sin volumen mínimo — **pendiente que Correo Argentino se contacte** para habilitar el acceso a la API (requiere una charla comercial previa).
-- **Mientras tanto**, el checkout muestra un estimado propio por zona y tipo de entrega (`web/lib/envio.ts`):
-
-  | Zona | Sucursal | Domicilio |
-  |---|---|---|
-  | CABA | $5.500 | $8.500 |
-  | Interior (resto del país) | $6.600 | A confirmar |
-  | Patagonia / Tierra del Fuego | $7.500 | A confirmar |
-
-  Cuando el precio de domicilio no está definido para la zona, se muestra "a confirmar" y se coordina por WhatsApp o email antes de despachar.
-- **Pendiente:** definir peso y dimensiones reales del libro ya armado (24 y 32 páginas pesan distinto) y precio de domicilio para Interior/Patagonia — necesario para la cotización real vía API cuando esté disponible.
+- **Mientras tanto, decisión de lanzamiento:** no se cobra ningún monto de envío en el checkout (`estimarEnvio()` en `web/lib/envio.ts` devuelve siempre `null`). El cliente ve un aviso de que el costo se confirma por WhatsApp o email antes de despachar, y se cobra aparte en ese momento. Así el checkout no depende de tener tarifas reales para poder lanzar.
+- Los precios por zona investigados antes (CABA $5.500 sucursal/$8.500 domicilio, Interior $6.600 sucursal, Patagonia $7.500 sucursal) quedaron comentados en `web/lib/envio.ts` como referencia para cuando se reactive la cotización automática.
+- **Pendiente:** definir peso y dimensiones reales del libro ya armado (24 y 32 páginas pesan distinto) — necesario para la cotización real vía API cuando esté disponible.
 - Evaluar más adelante la API de Andreani como alternativa/complemento.
 
 ## Pagos

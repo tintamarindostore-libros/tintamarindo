@@ -102,9 +102,9 @@ Cómo usar este archivo:
 - [x] Validaciones de todos los campos
 - [x] Campo: Dedicatoria (opcional)
 - [x] Resumen del pedido
-- [x] Cotización de envío estimada por zona (CABA / interior / Patagonia, sucursal o domicilio) — solución interina en `web/lib/envio.ts` mientras Correo Argentino no habilita la API de MiCorreo (cuenta en trámite comercial, esperando que contacten). Domicilio en interior y Patagonia todavía no tiene precio — se muestra "a confirmar" y se coordina por WhatsApp/email
-- [ ] Reemplazar el estimado por zona por la cotización real en tiempo real vía API de MiCorreo, cuando Correo Argentino dé acceso
-- [x] Desglose de precio (libro + envío estimado por zona + total)
+- [x] Costo de envío: por ahora **no se cobra en el checkout** (`estimarEnvio()` en `web/lib/envio.ts` devuelve siempre "a confirmar") mientras Correo Argentino no habilita la API de MiCorreo — decisión tomada para que esto no bloquee el lanzamiento. El cliente ve un aviso de que el costo se confirma por WhatsApp/email antes de despachar, y se cobra aparte en ese momento. Los precios por zona investigados anteriormente quedaron comentados en el código como referencia.
+- [ ] Reactivar la cotización automática por zona (o en tiempo real vía API de MiCorreo) cuando Correo Argentino dé acceso, y volver a cobrar el envío en el checkout
+- [x] Desglose de precio (libro + envío a confirmar + total a pagar ahora)
 - [x] Mostrar precio con descuento si paga por transferencia bancaria
 - [x] Selector de medio de pago (MercadoPago / Transferencia) en el checkout, con datos bancarios (`web/lib/datosBancarios.ts`) visibles al elegir transferencia
 - [x] Integración MercadoPago *(código listo — falta confirmar en la cuenta real que las credenciales sean de producción y no de prueba, y cargar `MERCADOPAGO_WEBHOOK_SECRET` en Vercel)*

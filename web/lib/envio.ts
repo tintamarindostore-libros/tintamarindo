@@ -1,29 +1,21 @@
-// Estimación de envío por zona — interino mientras Correo Argentino no habilita
-// el acceso a la API de MiCorreo (cuenta registrada, en trámite comercial).
-// El costo real a domicilio en Interior y Patagonia no está definido todavía:
-// se confirma por WhatsApp o email antes de despachar el pedido.
+// Costo de envío — interino mientras Correo Argentino no habilita el acceso a
+// la API de MiCorreo (cuenta registrada, en trámite comercial, todavía sin
+// resolución). Hasta tener tarifas reales no se cobra ningún monto de envío
+// en el checkout: se confirma el costo real por WhatsApp o email antes de
+// despachar el pedido, y se cobra aparte en ese momento.
+//
+// Los precios de abajo quedan comentados como referencia para cuando se pueda
+// reactivar la cotización automática por zona.
+//
+// const PRECIO_ENVIO: Record<Zona, { sucursal: number; domicilio: number | null }> = {
+//   CABA: { sucursal: 5500, domicilio: 8500 },
+//   INTERIOR: { sucursal: 6600, domicilio: null },
+//   PATAGONIA: { sucursal: 7500, domicilio: null },
+// }
 
 export type TipoEntrega = 'SUCURSAL' | 'DOMICILIO'
 
-type Zona = 'CABA' | 'PATAGONIA' | 'INTERIOR'
-
-const PROVINCIAS_PATAGONIA = ['Chubut', 'Neuquén', 'Río Negro', 'Santa Cruz', 'Tierra del Fuego']
-
-function zonaDeProvincia(provincia: string): Zona {
-  if (provincia === 'CABA') return 'CABA'
-  if (PROVINCIAS_PATAGONIA.includes(provincia)) return 'PATAGONIA'
-  return 'INTERIOR'
-}
-
-const PRECIO_ENVIO: Record<Zona, { sucursal: number; domicilio: number | null }> = {
-  CABA: { sucursal: 5500, domicilio: 8500 },
-  INTERIOR: { sucursal: 6600, domicilio: null },
-  PATAGONIA: { sucursal: 7500, domicilio: null },
-}
-
-// Devuelve el costo estimado, o null si todavía no hay un precio de domicilio para esa zona
-// (en ese caso se debe mostrar "a confirmar" en vez de un monto).
-export function estimarEnvio(provincia: string, tipoEntrega: TipoEntrega): number | null {
-  const zona = zonaDeProvincia(provincia)
-  return PRECIO_ENVIO[zona][tipoEntrega === 'SUCURSAL' ? 'sucursal' : 'domicilio']
+// Devuelve siempre null (costo "a confirmar") hasta tener acceso a la API de MiCorreo.
+export function estimarEnvio(_provincia: string, _tipoEntrega: TipoEntrega): number | null {
+  return null
 }

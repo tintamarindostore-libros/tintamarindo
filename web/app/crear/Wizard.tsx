@@ -1223,6 +1223,9 @@ export function Wizard({
     return (
       <Shell>
         <PasoHeader paso={4} total={5} titulo="Datos de envío" />
+        <div className="bg-brand-50 border border-brand-100 rounded-xl p-3 mb-4 text-xs text-stone-600">
+          Dejanos tu dirección y el costo de envío te lo confirmamos por WhatsApp o email después de tu pedido, según tu zona.
+        </div>
         <div className="space-y-3">
           <div>
             <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 block">Tipo de entrega</label>
@@ -1364,14 +1367,19 @@ export function Wizard({
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-stone-400">Envío ({envio.tipoEntrega === 'SUCURSAL' ? 'sucursal' : 'domicilio'}, estimado)</span>
+            <span className="text-stone-400">Envío ({envio.tipoEntrega === 'SUCURSAL' ? 'sucursal' : 'domicilio'})</span>
             <span className="font-bold text-stone-700">
               {esCuponTotal ? 'Gratis (cupón)' : costoEnvioEstimado !== null ? formatoARS(costoEnvioEstimado) : 'A confirmar'}
             </span>
           </div>
+          {!esCuponTotal && (
+            <p className="text-xs text-stone-400 -mt-1">
+              El costo de envío no se cobra ahora — te lo confirmamos por WhatsApp o email antes de despachar.
+            </p>
+          )}
           {config.tamano && (
             <div className="flex justify-between border-t border-stone-200 pt-2">
-              <span className="text-stone-500 font-bold">Total estimado</span>
+              <span className="text-stone-500 font-bold">{esCuponTotal ? 'Total' : 'Total a pagar ahora'}</span>
               <span className="font-black text-stone-800">{formatoARS(totalEstimado)}</span>
             </div>
           )}
@@ -1455,7 +1463,6 @@ export function Wizard({
             {config.tamano && (
               <p className="text-xs text-stone-400 mt-3">
                 Precio especial de lanzamiento. Pagando por transferencia bancaria tenés un 10% de descuento sobre el libro.
-                {costoEnvioEstimado === null && ' El costo de envío a domicilio para tu zona todavía no está confirmado — te lo pasamos por WhatsApp o email antes de despachar.'}
               </p>
             )}
           </>

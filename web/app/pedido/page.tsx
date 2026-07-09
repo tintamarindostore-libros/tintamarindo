@@ -60,8 +60,8 @@ export default async function PedidoPage({
         ) : (
           <p className="text-stone-400 text-sm">
             ¿Dudas? Contactanos por WhatsApp o a{' '}
-            <a href="mailto:hola@tintamarindo.com" className="text-orange-500 underline">
-              hola@tintamarindo.com
+            <a href="mailto:tintamarindo.store@gmail.com" className="text-orange-500 underline">
+              tintamarindo.store@gmail.com
             </a>
           </p>
         )}

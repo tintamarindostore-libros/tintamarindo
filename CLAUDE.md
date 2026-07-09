@@ -11,7 +11,7 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
 - Next.js 15 + TypeScript + Tailwind CSS v4
 - Autenticación: Google OAuth (next-auth v5, sesiones en DB)
 - Pagos: MercadoPago (desactivado en localhost) + transferencia bancaria directa (con descuento) — Fase 3, en desarrollo
-- Envíos: estimado por zona (CABA / Interior / Patagonia, sucursal u domicilio) en `web/lib/envio.ts` — solución interina mientras Correo Argentino no habilita el acceso a la API de MiCorreo (cuenta registrada, en trámite comercial)
+- Envíos: costo "a confirmar" (no se cobra en el checkout) en `web/lib/envio.ts` — mientras Correo Argentino no habilita el acceso a la API de MiCorreo (cuenta registrada, en trámite comercial), se confirma por WhatsApp/email antes de despachar
 - Almacenamiento de imágenes: Cloudflare R2 (bucket privado, URLs firmadas)
 - Base de datos: PostgreSQL en Supabase (São Paulo) — `DATABASE_URL` transaction pooler, `DIRECT_URL` session pooler
 - Commits en español
@@ -40,7 +40,7 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
 | Aprobación final | Cliente aprueba PDF con marca de agua; 5 días de plazo, luego auto-aprobación |
 | Producción | El dueño arma e imprime cada libro manualmente (escala después) |
 | Quién puede comprar | No se restringe a padres/tutores — cualquiera con autorización de la familia |
-| Envíos | Estimado por zona (CABA/Interior/Patagonia, sucursal/domicilio) hasta tener acceso a la API de MiCorreo |
+| Envíos | Costo "a confirmar" (no se cobra en el checkout) hasta tener acceso a la API de MiCorreo — se confirma por WhatsApp/email antes de despachar |
 | Pago | MercadoPago (precio de lista) o transferencia bancaria (10% descuento) |
 | Botón de arrepentimiento | Obligatorio por ley, pero el producto es personalizado (excepción art. 1116 CCCN) — solo aplica si se cancela dentro de 48hs y antes de iniciar la generación |
 | Tapa | Solapa dentro de la pantalla de configuración, no un paso del checkout. La opción "Regalo" (tarjeta personalizada) se evaluó y se **eliminó** del producto — no reabrir sin pedido explícito |
@@ -87,7 +87,7 @@ tintamarindo/
 │   │   ├── generarImagen.ts        ← wrapper GPT-4o image generation (interior y tapa)
 │   │   ├── prompts.ts              ← prompts de generación (line art interior + color/tipografía tapa)
 │   │   ├── precios.ts              ← precios de lanzamiento del libro + descuento transferencia
-│   │   ├── envio.ts                ← estimador de envío por zona (interino, sin API de MiCorreo)
+│   │   ├── envio.ts                ← costo de envío "a confirmar" (interino, sin API de MiCorreo)
 │   │   └── admin.ts                ← helpers del panel admin
 │   ├── prisma/schema.prisma        ← esquema DB (User, Pedido, FotoCliente, ImagenPedido)
 │   ├── auth.ts                     ← config NextAuth v5 (Google OAuth + Prisma adapter)
