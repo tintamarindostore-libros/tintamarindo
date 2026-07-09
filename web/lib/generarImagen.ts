@@ -44,8 +44,8 @@ export async function generarImagenLibro({
         ],
       },
     ],
-    // quality 'medium' en vez de 'high': con el plan gratuito de Vercel las funciones
-    // se cortan a los 60s y 'high' suele superar ese tiempo (sobre todo la tapa a color)
+    // quality 'medium': buen equilibrio de velocidad/costo para line art. Con Vercel Pro
+    // (maxDuration 300s) ya hay margen de sobra para subir a 'high' si se quiere más detalle.
     tools: [{ type: 'image_generation', quality: 'medium', size: '1024x1536' } as never],
   })
 

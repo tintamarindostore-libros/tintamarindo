@@ -4,7 +4,9 @@ import { prisma } from '@/lib/prisma'
 import { descargarArchivo, subirArchivo } from '@/lib/r2'
 import { generarImagenLibro } from '@/lib/generarImagen'
 
-export const maxDuration = 60
+// Con Vercel Pro el límite de plan sube a 300s — la generación de imágenes con IA
+// puede tardar bastante más que los 60s del plan gratuito, sobre todo la tapa a color.
+export const maxDuration = 300
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string; imgId: string }> }) {
   const session = await requireAdmin()
