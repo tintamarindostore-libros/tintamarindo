@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { mpPayment } from '@/lib/mp'
-import { prisma } from '@/lib/prisma'
+import { confirmarPagoAprobado } from '@/lib/confirmarPago'
 
 function verificarFirma(req: NextRequest, body: string): boolean {
   const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET
@@ -44,33 +43,7 @@ export async function POST(req: NextRequest) {
   if (!paymentId) return NextResponse.json({ ok: true })
 
   try {
-    const payment = await mpPayment.get({ id: Number(paymentId) })
-
-    if (payment.status !== 'approved') {
-      return NextResponse.json({ ok: true })
-    }
-
-    // external_reference contiene el pedido.id que seteamos al crear la preferencia
-    const pedidoId = payment.external_reference
-    if (!pedidoId) return NextResponse.json({ ok: true })
-
-    const pedido = await prisma.pedido.findUnique({
-      where: { id: pedidoId },
-    })
-
-    if (!pedido || pedido.estado !== 'ESPERANDO_PAGO') {
-      return NextResponse.json({ ok: true })
-    }
-
-    await prisma.pedido.update({
-      where: { id: pedido.id },
-      data: {
-        mpPaymentId: String(paymentId),
-        pagadoAt: new Date(),
-        estado: 'ESPERANDO_GENERACION',
-      },
-    })
-
+    await confirmarPagoAprobado(String(paymentId))
     // TODO Fase 3: enviar email de confirmación al cliente
   } catch (err) {
     console.error('[webhook/mp] error:', err)

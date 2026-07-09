@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { prisma } from '@/lib/prisma'
+import { confirmarPagoAprobado } from '@/lib/confirmarPago'
 
 export const metadata: Metadata = {
   title: 'Estado de tu pedido — Tintamarindo',
@@ -32,10 +34,33 @@ type Status = keyof typeof MENSAJES
 export default async function PedidoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; pid?: string }>
+  searchParams: Promise<{ status?: string; pid?: string; payment_id?: string; collection_id?: string }>
 }) {
   const params = await searchParams
-  const status = (params.status ?? 'rechazado') as Status
+  let status = (params.status ?? 'rechazado') as Status
+
+  // MercadoPago redirige acá antes (o incluso sin) de que llegue el webhook.
+  // No confiamos solo en el parámetro de la URL: si dice "aprobado", verificamos
+  // de verdad el pago contra la API de MercadoPago y confirmamos el pedido acá
+  // mismo si todavía no estaba confirmado (el webhook puede llegar tarde o fallar).
+  if (status === 'aprobado') {
+    const paymentId = params.payment_id ?? params.collection_id
+    if (paymentId) {
+      try {
+        const { confirmado } = await confirmarPagoAprobado(paymentId)
+        if (!confirmado) status = 'pendiente'
+      } catch (err) {
+        console.error('[pedido] Error al verificar el pago:', err)
+        status = 'pendiente'
+      }
+    } else if (params.pid) {
+      // Sin payment_id en la URL: chequeamos el estado ya guardado (puede haberlo
+      // confirmado el webhook antes de que cargue esta pantalla).
+      const pedido = await prisma.pedido.findUnique({ where: { id: params.pid }, select: { estado: true } })
+      if (!pedido || pedido.estado === 'ESPERANDO_PAGO') status = 'pendiente'
+    }
+  }
+
   const msg = MENSAJES[status] ?? MENSAJES.rechazado
 
   return (
