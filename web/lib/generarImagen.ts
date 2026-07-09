@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { construirPromptEscena, construirPromptDirecto, construirPromptTapa } from './prompts'
+import { construirPromptEscena, construirPromptTapa } from './prompts'
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
@@ -24,12 +24,14 @@ export async function generarImagenLibro({
   observaciones?: string | null
   promptExtra?: string | null
 }): Promise<{ base64: string; prompt: string }> {
+  // Todas las páginas interiores (A/B/C) llevan escena temática — antes el Tipo B
+  // convertía la foto "tal cual" sin tema, y por una coincidencia de módulos esto
+  // hacía que las temáticas personalizadas nunca se usaran cuando había 1 predefinida
+  // + 1 personalizada (ambas rotaciones usan %2 y quedaban siempre sincronizadas).
   let prompt =
     tipo === 'TAPA'
       ? construirPromptTapa({ estilo, titulo, subtitulo, observaciones })
-      : tipo === 'A' || tipo === 'C'
-      ? construirPromptEscena(estilo, tematica!)
-      : construirPromptDirecto(estilo)
+      : construirPromptEscena(estilo, tematica!)
 
   if (promptExtra) prompt += `\n\nINSTRUCCIONES ADICIONALES PARA ESTA IMAGEN: ${promptExtra}`
 

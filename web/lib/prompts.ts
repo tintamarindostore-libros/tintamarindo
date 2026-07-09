@@ -25,13 +25,8 @@ FACES (most important): preserve individual likeness and expression of the child
 
 export function construirPromptEscena(estilo: string, tematica: string) {
   const escena = TEMATICA_PROMPT[tematica]
-    ?? `Place the child in a scene related to: ${tematica}. Design a vivid, imaginative setting with relevant props and background elements.`
+    ?? `Place the child in a scene themed around: "${tematica}". Include clearly recognizable, iconic props, symbols and background elements strongly associated with this specific theme, so the theme is immediately identifiable — not a generic setting.`
   return `${BASE_PROMPT}\n\n${ESTILO_PROMPT[estilo]}\n\nSCENE: ${escena}\n\nPure white background. All lines strictly black. No color, no gray.`
-}
-
-// Tipo B — convierte la foto directamente a line art, sin escena temática agregada
-export function construirPromptDirecto(estilo: string) {
-  return `${BASE_PROMPT}\n\n${ESTILO_PROMPT[estilo]}\n\nDo not add any background scene — keep the original setting simplified to clean outlines.\n\nPure white background. All lines strictly black. No color, no gray.`
 }
 
 // Tapa — a diferencia de las páginas interiores, va a color y con tipografía (título/subtítulo)
