@@ -2,7 +2,7 @@ import { mpPayment } from './mp'
 import { prisma } from './prisma'
 import { notificarPedidoPagado } from './notificarPedido'
 
-type ResultadoConfirmacion = { pedidoId: string | null; confirmado: boolean }
+type ResultadoConfirmacion = { pedidoId: string | null; confirmado: boolean; mpStatus: string | null }
 
 // Marca un pedido como pagado si MercadoPago confirma el pago como aprobado.
 // Se usa tanto desde el webhook (aviso async de MercadoPago) como desde la
@@ -11,17 +11,17 @@ type ResultadoConfirmacion = { pedidoId: string | null; confirmado: boolean }
 export async function confirmarPagoAprobado(paymentId: string | number): Promise<ResultadoConfirmacion> {
   const payment = await mpPayment.get({ id: Number(paymentId) })
   if (payment.status !== 'approved') {
-    return { pedidoId: payment.external_reference ?? null, confirmado: false }
+    return { pedidoId: payment.external_reference ?? null, confirmado: false, mpStatus: payment.status ?? null }
   }
 
   const pedidoId = payment.external_reference
-  if (!pedidoId) return { pedidoId: null, confirmado: false }
+  if (!pedidoId) return { pedidoId: null, confirmado: false, mpStatus: 'approved' }
 
   const pedido = await prisma.pedido.findUnique({ where: { id: pedidoId } })
-  if (!pedido) return { pedidoId, confirmado: false }
+  if (!pedido) return { pedidoId, confirmado: false, mpStatus: 'approved' }
 
   // Ya estaba confirmado (por el webhook, o por una visita anterior a esta pantalla)
-  if (pedido.estado !== 'ESPERANDO_PAGO') return { pedidoId, confirmado: true }
+  if (pedido.estado !== 'ESPERANDO_PAGO') return { pedidoId, confirmado: true, mpStatus: 'approved' }
 
   await prisma.pedido.update({
     where: { id: pedido.id },
@@ -30,5 +30,5 @@ export async function confirmarPagoAprobado(paymentId: string | number): Promise
 
   await notificarPedidoPagado(pedido)
 
-  return { pedidoId, confirmado: true }
+  return { pedidoId, confirmado: true, mpStatus: 'approved' }
 }

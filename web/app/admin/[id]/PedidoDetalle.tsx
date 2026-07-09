@@ -233,6 +233,9 @@ export function PedidoDetalle({
   const [subiendoPdf, setSubiendoPdf] = useState(false)
   const [guardandoTracking, setGuardandoTracking] = useState(false)
   const [simulandoPago, setSimulandoPago] = useState(false)
+  const [verificarPagoInput, setVerificarPagoInput] = useState('')
+  const [verificando, setVerificando] = useState(false)
+  const [errorVerificar, setErrorVerificar] = useState<string | null>(null)
   const [mostrarEliminar, setMostrarEliminar] = useState(false)
   const [confirmEliminar, setConfirmEliminar] = useState('')
   const [eliminando, setEliminando] = useState(false)
@@ -388,6 +391,25 @@ export function PedidoDetalle({
     }
   }
 
+  const verificarPago = async () => {
+    setVerificando(true)
+    setErrorVerificar(null)
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}/verificar-pago`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId: verificarPagoInput.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setEstado('ESPERANDO_GENERACION')
+    } catch (err) {
+      setErrorVerificar((err as Error).message)
+    } finally {
+      setVerificando(false)
+    }
+  }
+
   const eliminarPedido = async () => {
     setEliminando(true)
     try {
@@ -421,28 +443,55 @@ export function PedidoDetalle({
     <div className="min-h-screen bg-stone-950 px-6 py-12" style={{ fontFamily: 'var(--font-body)' }}>
       <div className="max-w-4xl mx-auto space-y-6">
         {estado === 'ESPERANDO_PAGO' && (
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between">
-            <p className="text-sm text-amber-300 font-medium">
-              🔒 Pago pendiente ({pedido.medioPago === 'TRANSFERENCIA' ? 'transferencia' : 'MercadoPago'}) — el cliente aún no pagó
-            </p>
-            <div className="flex gap-2">
-              {pedido.medioPago === 'TRANSFERENCIA' && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-amber-300 font-medium">
+                🔒 Pago pendiente ({pedido.medioPago === 'TRANSFERENCIA' ? 'transferencia' : 'MercadoPago'}) — el cliente aún no pagó
+              </p>
+              <div className="flex gap-2">
+                {pedido.medioPago === 'TRANSFERENCIA' && (
+                  <button
+                    onClick={confirmarTransferencia}
+                    disabled={confirmandoTransferencia}
+                    className="bg-green-500 hover:bg-green-600 disabled:bg-stone-700 text-white text-xs font-black px-4 py-2 rounded-full transition-colors"
+                  >
+                    {confirmandoTransferencia ? 'Confirmando…' : '✓ Confirmar transferencia recibida'}
+                  </button>
+                )}
                 <button
-                  onClick={confirmarTransferencia}
-                  disabled={confirmandoTransferencia}
-                  className="bg-green-500 hover:bg-green-600 disabled:bg-stone-700 text-white text-xs font-black px-4 py-2 rounded-full transition-colors"
+                  onClick={simularPago}
+                  disabled={simulandoPago}
+                  className="bg-amber-500 hover:bg-amber-600 disabled:bg-stone-700 text-stone-900 text-xs font-black px-4 py-2 rounded-full transition-colors"
                 >
-                  {confirmandoTransferencia ? 'Confirmando…' : '✓ Confirmar transferencia recibida'}
+                  {simulandoPago ? 'Simulando…' : '🧪 Simular pago (dev)'}
                 </button>
-              )}
-              <button
-                onClick={simularPago}
-                disabled={simulandoPago}
-                className="bg-amber-500 hover:bg-amber-600 disabled:bg-stone-700 text-stone-900 text-xs font-black px-4 py-2 rounded-full transition-colors"
-              >
-                {simulandoPago ? 'Simulando…' : '🧪 Simular pago (dev)'}
-              </button>
+              </div>
             </div>
+            {pedido.medioPago === 'MERCADOPAGO' && (
+              <div className="pt-3 border-t border-amber-500/20">
+                <p className="text-xs text-amber-300/80 mb-2">
+                  Si el cliente ya pagó pero acá sigue "pendiente" (el aviso de MercadoPago no llegó), pegá el ID del pago —
+                  lo ves en el detalle de la operación en tu app o cuenta de MercadoPago — para verificarlo y confirmarlo acá.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={verificarPagoInput}
+                    onChange={(e) => setVerificarPagoInput(e.target.value)}
+                    placeholder="ID del pago en MercadoPago"
+                    className="flex-1 rounded-lg border border-amber-500/30 bg-stone-900 text-white px-3 py-1.5 text-xs outline-none focus:border-amber-400 placeholder:text-stone-600"
+                  />
+                  <button
+                    onClick={verificarPago}
+                    disabled={verificando || !verificarPagoInput.trim()}
+                    className="bg-amber-500 hover:bg-amber-600 disabled:bg-stone-700 disabled:opacity-50 text-stone-900 text-xs font-black px-4 py-2 rounded-full transition-colors whitespace-nowrap"
+                  >
+                    {verificando ? 'Verificando…' : 'Verificar pago'}
+                  </button>
+                </div>
+                {errorVerificar && <p className="text-xs text-red-400 mt-2">{errorVerificar}</p>}
+              </div>
+            )}
           </div>
         )}
 

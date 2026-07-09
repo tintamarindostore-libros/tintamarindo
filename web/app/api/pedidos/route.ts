@@ -239,10 +239,13 @@ export async function POST(req: NextRequest) {
         body: {
           items,
           external_reference: pedido.id,
+          // OJO: no usar "status" como nombre de parámetro acá — MercadoPago agrega su
+          // propio "status" (en inglés: approved/rejected/pending) al redirigir, y pisa
+          // cualquier "status" que pongamos nosotros en la URL. Por eso "resultado".
           back_urls: {
-            success: `${siteUrl}/pedido?status=aprobado&pid=${pedido.id}`,
-            failure: `${siteUrl}/pedido?status=rechazado&pid=${pedido.id}`,
-            pending: `${siteUrl}/pedido?status=pendiente&pid=${pedido.id}`,
+            success: `${siteUrl}/pedido?resultado=aprobado&pid=${pedido.id}`,
+            failure: `${siteUrl}/pedido?resultado=rechazado&pid=${pedido.id}`,
+            pending: `${siteUrl}/pedido?resultado=pendiente&pid=${pedido.id}`,
           },
           auto_return: 'approved',
           notification_url: `${siteUrl}/api/webhooks/mercadopago`,
