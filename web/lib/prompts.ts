@@ -5,14 +5,55 @@ Variable line weight: thick bold outer contours, thin fine interior detail lines
   ANIME: `STYLE: Japanese anime line art — large expressive eyes, clean defined lines, dynamic hair shapes. Keep the child's likeness recognizable but stylized.`,
 }
 
-export const TEMATICA_PROMPT: Record<string, string> = {
-  Aventura: 'Place the child in an adventurous jungle exploration scene with vines, a treasure map and ancient ruins in the background.',
-  Princesas: 'Place the child as a princess/prince in a fairy tale castle scene with towers and a grand staircase in the background.',
-  Dinosaurios: 'Place the child in a prehistoric scene surrounded by friendly cartoon dinosaurs and tropical prehistoric plants.',
-  Espacio: 'Place the child as an astronaut floating among planets, stars and a rocket ship in the background.',
-  Animales: 'Place the child surrounded by friendly cartoon animals (lion cub, rabbit, bird) in a cheerful forest scene.',
-  'Letras y números': 'Place the child leaning against or sitting on one giant, three-dimensional, corporeal-looking letter or number (like a big walk-in sculpture the size of a small building), with a few smaller decorative letters and numbers playfully scattered in the background — a whimsical alphabet/numbers playground scene.',
+// Varias situaciones por temática — para que páginas repetidas con la misma
+// temática (ej. dos páginas de "Princesas") no salgan casi idénticas.
+export const TEMATICA_PROMPT: Record<string, string[]> = {
+  Aventura: [
+    'an adventurous jungle exploration scene with vines, a treasure map and ancient ruins in the background',
+    'climbing a rocky mountain trail with a waterfall and lush cliffs in the background',
+    'crossing a rope bridge over a canyon, with a distant ancient temple silhouette in the background',
+    'paddling a small wooden boat down a jungle river, surrounded by exotic birds and giant leaves',
+  ],
+  Princesas: [
+    'a fairy tale castle scene with towers and a grand staircase in the background, dressed as a princess/prince',
+    'dancing at a grand ballroom, twirling under a golden chandelier, dressed in a beautiful gown',
+    'sitting in a blooming enchanted garden with a fountain and rose bushes, wearing a royal outfit',
+    'riding in a majestic horse-drawn carriage on the way to a royal ball',
+  ],
+  Dinosaurios: [
+    'a prehistoric scene surrounded by friendly cartoon dinosaurs and tropical prehistoric plants',
+    'discovering giant dinosaur eggs in a nest, with a gentle dinosaur family nearby',
+    'riding on the back of a friendly long-necked dinosaur across a prehistoric valley',
+    'exploring a volcano-rimmed prehistoric landscape with dinosaurs in the distance',
+  ],
+  Espacio: [
+    'floating as an astronaut among planets, stars and a rocket ship in the background',
+    'exploring the surface of the moon, planting a flag, with Earth visible in the sky',
+    'piloting a friendly cartoon spaceship through a colorful asteroid field',
+    'meeting a friendly cartoon alien on a distant colorful planet',
+  ],
+  Animales: [
+    'surrounded by friendly cartoon animals (lion cub, rabbit, bird) in a cheerful forest scene',
+    'having a picnic with friendly farm animals (a cow, chickens and a happy pig) in a sunny meadow',
+    'swimming underwater with friendly dolphins, fish and a sea turtle',
+    'having a tea party with woodland animals in a cozy treehouse',
+  ],
+  'Letras y números': [
+    'leaning against or sitting on one giant, three-dimensional, corporeal-looking letter, sculpture-sized, with a few smaller decorative letters scattered in the background',
+    'leaning against or sitting on one giant, three-dimensional, corporeal-looking number, sculpture-sized, with a few smaller decorative numbers scattered in the background',
+    'climbing and playing among a row of giant colorful building-block letters like a playground',
+    'sitting atop a giant number balanced like a seesaw, with smaller numbers scattered playfully around',
+  ],
 }
+
+// Variantes de encuadre/momento para temáticas personalizadas (no están en el
+// diccionario de arriba) — así tampoco se repiten entre sí.
+const VARIANTES_GENERICAS = [
+  'in an active, dynamic moment full of movement and energy',
+  'in a calm, joyful posed moment, smiling directly at the viewer',
+  'from a close-up perspective focusing on genuine excitement and expression',
+  'from a wide establishing shot showing the full themed environment',
+]
 
 const BASE_PROMPT = `Transform this photo into a premium personalized coloring book page.
 
@@ -23,9 +64,14 @@ CRITICAL — THIS IS A COLORING PAGE:
 
 FACES (most important): preserve individual likeness and expression of the child.`
 
-export function construirPromptEscena(estilo: string, tematica: string) {
-  const escena = TEMATICA_PROMPT[tematica]
-    ?? `Place the child in a scene themed around: "${tematica}". Include clearly recognizable, iconic props, symbols and background elements strongly associated with this specific theme, so the theme is immediately identifiable — not a generic setting.`
+// varianteIndex distingue páginas repetidas con la misma temática (ver
+// generarImagen.ts: se calcula a partir de cuántas veces se repitió el ciclo
+// de temáticas hasta esta página), para que no salgan casi idénticas.
+export function construirPromptEscena(estilo: string, tematica: string, varianteIndex = 0) {
+  const variantes = TEMATICA_PROMPT[tematica]
+  const escena = variantes
+    ? `Place the child in a scene: ${variantes[varianteIndex % variantes.length]}.`
+    : `Place the child in a scene themed around: "${tematica}" — ${VARIANTES_GENERICAS[varianteIndex % VARIANTES_GENERICAS.length]}. Include clearly recognizable, iconic props, symbols and background elements strongly associated with this specific theme, so the theme is immediately identifiable — not a generic setting.`
   return `${BASE_PROMPT}\n\n${ESTILO_PROMPT[estilo]}\n\nSCENE: ${escena}\n\nPure white background. All lines strictly black. No color, no gray.`
 }
 

@@ -31,6 +31,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   let fotoUrl: string
   let estilo: string
   let tematica: string | undefined
+  let varianteIndex = 0
 
   if (siguiente.tipo === 'TAPA') {
     if (!pedido.imagenTapaKey || !pedido.estiloTapa) {
@@ -43,6 +44,9 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     fotoUrl = pedido.fotos[siguiente.orden % pedido.fotos.length].url
     estilo = pedido.estilos[siguiente.orden % pedido.estilos.length] ?? pedido.estilos[0]
     tematica = tematicasEfectivas[siguiente.orden % tematicasEfectivas.length] ?? tematicasEfectivas[0]
+    // Cuántas veces se repitió el ciclo de temáticas hasta esta página — así, cuando la
+    // misma temática se repite en varias páginas, cada una pide una variante distinta.
+    varianteIndex = Math.floor(siguiente.orden / tematicasEfectivas.length)
   }
 
   try {
@@ -53,6 +57,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       fotoMime: contentType,
       estilo,
       tematica,
+      varianteIndex,
       tipo: siguiente.tipo,
       titulo: pedido.tituloTapa,
       subtitulo: pedido.subtituloTapa,
