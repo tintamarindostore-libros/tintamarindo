@@ -133,6 +133,8 @@ Cómo usar este archivo:
 ## 🔲 FASE 3 — Pagos y notificaciones
 
 - [x] Integración MercadoPago base (webhook de confirmación) — *desactivado en dev, activo en producción*
+- [x] Fix: la confirmación de pago no dependía solo del webhook — ahora `web/lib/confirmarPago.ts` también verifica el pago contra la API de MercadoPago desde la pantalla de retorno (`/pedido`), como respaldo si el webhook falla
+- [x] Aviso al ADMIN por WhatsApp cuando entra un pedido pagado (vía webhook saliente a un workflow nuevo de n8n, `web/lib/notificarPedido.ts` + env var `N8N_PEDIDO_WEBHOOK_URL`) — *pendiente: crear el workflow del lado de n8n*
 - [ ] Integración pago por transferencia bancaria (conciliación manual o automática a definir)
 - [ ] Integración API MiCorreo para cotización y generación de etiquetas de envío
 - [ ] Email 1: Confirmación de pedido (inmediato al pago)

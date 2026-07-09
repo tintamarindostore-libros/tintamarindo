@@ -62,15 +62,15 @@ export function CuponesAdmin({ cuponesIniciales }: { cuponesIniciales: Cupon[] }
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl border border-stone-100 p-5 space-y-3">
-        <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Nuevo cupón</p>
+      <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5 space-y-3">
+        <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">Nuevo cupón</p>
         <div className="grid grid-cols-2 gap-3">
           <input
             type="text"
             value={codigo}
             onChange={(e) => setCodigo(e.target.value)}
             placeholder="Código (ej. INFLUENCER2026)"
-            className="rounded-xl border-2 border-stone-100 px-4 py-2.5 text-sm outline-none focus:border-orange-300 uppercase col-span-2"
+            className="rounded-xl border-2 border-stone-800 bg-stone-800 text-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 uppercase col-span-2 placeholder:text-stone-600"
           />
           <input
             type="number"
@@ -79,7 +79,7 @@ export function CuponesAdmin({ cuponesIniciales }: { cuponesIniciales: Cupon[] }
             value={descuento}
             onChange={(e) => setDescuento(e.target.value)}
             placeholder="% descuento"
-            className="rounded-xl border-2 border-stone-100 px-4 py-2.5 text-sm outline-none focus:border-orange-300"
+            className="rounded-xl border-2 border-stone-800 bg-stone-800 text-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 placeholder:text-stone-600"
           />
           <input
             type="number"
@@ -87,38 +87,44 @@ export function CuponesAdmin({ cuponesIniciales }: { cuponesIniciales: Cupon[] }
             value={usosMaximos}
             onChange={(e) => setUsosMaximos(e.target.value)}
             placeholder="Usos máximos (vacío = sin límite)"
-            className="rounded-xl border-2 border-stone-100 px-4 py-2.5 text-sm outline-none focus:border-orange-300"
+            className="rounded-xl border-2 border-stone-800 bg-stone-800 text-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 placeholder:text-stone-600"
           />
           <input
             type="text"
             value={nota}
             onChange={(e) => setNota(e.target.value)}
             placeholder="Nota interna (ej. Regalo influencer X)"
-            className="rounded-xl border-2 border-stone-100 px-4 py-2.5 text-sm outline-none focus:border-orange-300 col-span-2"
+            className="rounded-xl border-2 border-stone-800 bg-stone-800 text-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 col-span-2 placeholder:text-stone-600"
           />
         </div>
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
         <button
           type="button"
           onClick={crearCupon}
           disabled={creando || !codigo.trim()}
-          className="rounded-xl bg-orange-500 text-white font-bold px-5 py-2.5 text-sm disabled:opacity-50"
+          className="rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold px-5 py-2.5 text-sm disabled:opacity-50"
         >
           {creando ? 'Creando…' : 'Crear cupón'}
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-stone-100 overflow-hidden">
+      <div className="bg-stone-900 rounded-2xl border border-stone-800 overflow-hidden">
         {cupones.length === 0 ? (
-          <p className="p-6 text-sm text-stone-400">Todavía no creaste ningún cupón.</p>
+          <p className="p-6 text-sm text-stone-500">Todavía no creaste ningún cupón.</p>
         ) : (
-          cupones.map((c) => (
-            <div key={c.id} className="flex items-center justify-between px-6 py-4 border-b border-stone-50 last:border-0">
+          cupones.map((c, i) => (
+            <div
+              key={c.id}
+              className={[
+                'flex items-center justify-between px-6 py-4 border-b border-stone-800/60 last:border-0',
+                i % 2 === 1 ? 'bg-stone-800/50' : '',
+              ].join(' ')}
+            >
               <div>
-                <p className="font-bold text-stone-800 text-sm">
-                  {c.codigo} <span className="text-orange-500">— {c.descuentoPorcentaje}% off</span>
+                <p className="font-bold text-white text-sm">
+                  {c.codigo} <span className="text-brand-400">— {c.descuentoPorcentaje}% off</span>
                 </p>
-                <p className="text-xs text-stone-400">
+                <p className="text-xs text-stone-500">
                   {c.usosActuales} usos{c.usosMaximos !== null ? ` / ${c.usosMaximos} máx` : ' (sin límite)'}
                   {c.nota ? ` · ${c.nota}` : ''}
                 </p>
@@ -127,7 +133,7 @@ export function CuponesAdmin({ cuponesIniciales }: { cuponesIniciales: Cupon[] }
                 type="button"
                 onClick={() => toggleActivo(c)}
                 className={`text-xs font-bold px-3 py-1.5 rounded-full ${
-                  c.activo ? 'bg-green-100 text-green-700' : 'bg-stone-100 text-stone-400'
+                  c.activo ? 'bg-green-500/15 text-green-400' : 'bg-stone-800 text-stone-500'
                 }`}
               >
                 {c.activo ? 'Activo' : 'Inactivo'}

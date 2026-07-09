@@ -5,6 +5,7 @@ import { mpPreference } from '@/lib/mp'
 import { PRECIO_LIBRO } from '@/lib/precios'
 import { estimarEnvio } from '@/lib/envio'
 import { validarCupon } from '@/lib/cupones'
+import { notificarPedidoPagado } from '@/lib/notificarPedido'
 
 const PAGINAS_POR_TAMANO: Record<string, number> = { CHICO: 24, GRANDE: 32 }
 const ESTILOS_VALIDOS = ['REALISTA', 'PIXAR', 'ANIME']
@@ -180,6 +181,17 @@ export async function POST(req: NextRequest) {
       await prisma.pedido.update({
         where: { id: pedido.id },
         data: { estado: 'ESPERANDO_GENERACION', pagadoAt: new Date() },
+      })
+      await notificarPedidoPagado({
+        id: pedido.id,
+        nombreCompleto,
+        tamano,
+        medioPago: medioPagoFinal,
+        cuponDescuentoPorcentaje: cuponInfo.descuentoPorcentaje,
+        cuponCodigo: cuponInfo.codigo,
+        tematicas,
+        telefono,
+        emailEnvio,
       })
       return NextResponse.json({ id: pedido.id, mpInitPoint: null })
     }

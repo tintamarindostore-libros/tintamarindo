@@ -1,5 +1,6 @@
 import { mpPayment } from './mp'
 import { prisma } from './prisma'
+import { notificarPedidoPagado } from './notificarPedido'
 
 type ResultadoConfirmacion = { pedidoId: string | null; confirmado: boolean }
 
@@ -26,6 +27,8 @@ export async function confirmarPagoAprobado(paymentId: string | number): Promise
     where: { id: pedido.id },
     data: { mpPaymentId: String(paymentId), pagadoAt: new Date(), estado: 'ESPERANDO_GENERACION' },
   })
+
+  await notificarPedidoPagado(pedido)
 
   return { pedidoId, confirmado: true }
 }

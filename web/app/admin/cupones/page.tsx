@@ -12,9 +12,10 @@ export default async function AdminCuponesPage() {
   const cupones = await prisma.cupon.findMany({ orderBy: { createdAt: 'desc' } })
 
   return (
-    <div className="min-h-screen bg-[#FEF9F0] px-6 py-12" style={{ fontFamily: 'var(--font-body)' }}>
+    <div className="min-h-screen bg-stone-950 px-6 py-12" style={{ fontFamily: 'var(--font-body)' }}>
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-black text-stone-800 mb-6" style={{ fontFamily: 'var(--font-display)' }}>
+        <a href="/admin" className="text-sm text-stone-500 hover:text-stone-300">← Volver al panel</a>
+        <h1 className="text-3xl font-black text-white mt-2 mb-6" style={{ fontFamily: 'var(--font-display)' }}>
           Cupones de descuento
         </h1>
         <CuponesAdmin

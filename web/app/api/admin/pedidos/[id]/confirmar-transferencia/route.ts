@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
+import { notificarPedidoPagado } from '@/lib/notificarPedido'
 
 // El admin confirma a mano que la transferencia bancaria se acreditó
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -25,6 +26,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       pagadoAt: new Date(),
     },
   })
+
+  await notificarPedidoPagado(pedido)
 
   return NextResponse.json({ ok: true, estado: 'ESPERANDO_GENERACION' })
 }
