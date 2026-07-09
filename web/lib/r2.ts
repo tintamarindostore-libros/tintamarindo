@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 const r2 = new S3Client({
@@ -35,4 +35,16 @@ export async function descargarArchivo(key: string): Promise<{ buffer: Buffer; c
   const res = await r2.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }))
   const bytes = await res.Body!.transformToByteArray()
   return { buffer: Buffer.from(bytes), contentType: res.ContentType || 'image/jpeg' }
+}
+
+// Borra hasta 1000 objetos de una — el límite de DeleteObjects de S3/R2 por request.
+// Un pedido nunca tiene tantos archivos, así que no hace falta paginar en lotes.
+export async function eliminarArchivos(keys: string[]): Promise<void> {
+  if (keys.length === 0) return
+  await r2.send(
+    new DeleteObjectsCommand({
+      Bucket: BUCKET,
+      Delete: { Objects: keys.map((Key) => ({ Key })) },
+    }),
+  )
 }

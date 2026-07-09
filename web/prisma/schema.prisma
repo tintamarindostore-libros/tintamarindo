@@ -134,6 +134,28 @@ model Pedido {
   fotos    FotoCliente[]
 }
 
+// —— Registro de compradores (sobrevive al borrado de un pedido) ————————
+// Al eliminar un pedido de prueba desde el admin se borran el pedido, sus fotos,
+// imágenes y PDFs — pero se guarda antes un snapshot de los datos del comprador acá.
+
+model CompradorHistorial {
+  id               String   @id @default(cuid())
+  pedidoIdOriginal String
+  nombreCompleto   String
+  email            String
+  telefono         String
+  direccion        String
+  codigoPostal     String
+  localidad        String
+  provincia        String
+  tamano           Tamano
+  tematicas        String[]
+  medioPago        MedioPago
+  montoARS         Int?
+  pedidoCreadoEn   DateTime
+  eliminadoEn      DateTime @default(now())
+}
+
 // —— Cupones de descuento (para promos/influencers) ————————————————
 
 model Cupon {

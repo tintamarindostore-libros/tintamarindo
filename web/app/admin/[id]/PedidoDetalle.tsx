@@ -233,6 +233,9 @@ export function PedidoDetalle({
   const [subiendoPdf, setSubiendoPdf] = useState(false)
   const [guardandoTracking, setGuardandoTracking] = useState(false)
   const [simulandoPago, setSimulandoPago] = useState(false)
+  const [mostrarEliminar, setMostrarEliminar] = useState(false)
+  const [confirmEliminar, setConfirmEliminar] = useState('')
+  const [eliminando, setEliminando] = useState(false)
   const [confirmandoTransferencia, setConfirmandoTransferencia] = useState(false)
   const [codigoCopiado, setCodigoCopiado] = useState(false)
   const pdfInputRef = useRef<HTMLInputElement>(null)
@@ -382,6 +385,19 @@ export function PedidoDetalle({
       window.location.reload()
     } finally {
       setSubiendoPdf(false)
+    }
+  }
+
+  const eliminarPedido = async () => {
+    setEliminando(true)
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      window.location.href = '/admin'
+    } catch (err) {
+      alert((err as Error).message)
+      setEliminando(false)
     }
   }
 
@@ -672,6 +688,48 @@ export function PedidoDetalle({
               <MensajePlantilla key={p.id} plantilla={p} variablesAuto={variablesAuto} />
             ))}
           </div>
+        </div>
+
+        <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-5">
+          <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Zona de peligro</p>
+          <p className="text-xs text-stone-500 mb-3">
+            Borra el pedido y todos sus archivos (fotos, imágenes generadas, PDFs) de forma permanente — pensado para pedidos de prueba. Los datos del comprador quedan guardados en un registro aparte (ver "Compradores"). Esta acción no se puede deshacer.
+          </p>
+          {!mostrarEliminar ? (
+            <button
+              onClick={() => setMostrarEliminar(true)}
+              className="text-xs font-bold px-4 py-2 rounded-full bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-colors"
+            >
+              Eliminar pedido
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs text-stone-400">
+                Escribí <b className="text-white font-mono">{pedido.id.slice(-8).toUpperCase()}</b> para confirmar:
+              </p>
+              <input
+                type="text"
+                value={confirmEliminar}
+                onChange={(e) => setConfirmEliminar(e.target.value)}
+                className="w-full max-w-xs rounded-lg border border-red-500/30 bg-stone-800 text-white px-3 py-2 text-sm outline-none focus:border-red-400"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={eliminarPedido}
+                  disabled={confirmEliminar.trim().toUpperCase() !== pedido.id.slice(-8).toUpperCase() || eliminando}
+                  className="text-xs font-black px-4 py-2 rounded-full bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                >
+                  {eliminando ? 'Eliminando…' : 'Confirmar borrado permanente'}
+                </button>
+                <button
+                  onClick={() => { setMostrarEliminar(false); setConfirmEliminar('') }}
+                  className="text-xs font-bold px-4 py-2 rounded-full bg-stone-800 text-stone-400 hover:bg-stone-700 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
