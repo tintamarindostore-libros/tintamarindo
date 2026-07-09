@@ -95,12 +95,17 @@ export default function PrivacidadPage() {
         </Section>
 
         <Section num="4" title="Cuánto tiempo conservamos tus datos">
-          <Sub title="Fotografías e imágenes generadas">
+          <Sub title="Fotografías originales">
             <p>
-              Las fotos que subís y todas las imágenes generadas a partir de ellas (incluyendo la imagen de prueba y las páginas del libro) se eliminan de forma <strong>permanente e irreversible</strong> a los 30 días corridos de la fecha del pedido.
+              Las fotos originales que subís (las de la persona protagonista, la foto familiar y la imagen de tapa, si subiste una) se eliminan de forma <strong>permanente e irreversible</strong> a los 30 días corridos de la fecha del pedido.
             </p>
             <p>
               Podés solicitar la eliminación anticipada en cualquier momento contactándonos. Ejecutamos la eliminación dentro de las 48 horas hábiles de recibida la solicitud.
+            </p>
+          </Sub>
+          <Sub title="Ilustraciones generadas y PDF del libro">
+            <p>
+              Las ilustraciones generadas por IA (incluida la imagen de prueba y las páginas del libro) y el PDF final se conservan por más tiempo que las fotos originales, para poder ofrecerte una reimpresión o resolver cualquier reclamo sobre tu pedido. Podés solicitar su eliminación en cualquier momento contactándonos.
             </p>
           </Sub>
           <Sub title="Datos de cuenta y pedido">

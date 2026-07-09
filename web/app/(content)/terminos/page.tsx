@@ -174,7 +174,7 @@ export default function TerminosPage() {
           </Sub>
           <Sub title="6.3 Retención y eliminación">
             <p>
-              Las imágenes subidas se conservan durante 30 días corridos desde la fecha del pedido y luego se eliminan de forma permanente e irreversible. El cliente puede solicitar la eliminación anticipada de sus imágenes escribiendo a nuestro contacto de privacidad en cualquier momento antes de ese plazo.
+              Las fotos originales subidas por el cliente se conservan durante 30 días corridos desde la fecha del pedido y luego se eliminan de forma permanente e irreversible. Las ilustraciones generadas por IA y el PDF final del libro se conservan por más tiempo, para poder ofrecer reimpresiones o resolver reclamos. El cliente puede solicitar la eliminación anticipada de cualquiera de estos archivos escribiendo a nuestro contacto de privacidad en cualquier momento.
             </p>
           </Sub>
           <Sub title="6.4 Declaración del cliente sobre las imágenes subidas">
