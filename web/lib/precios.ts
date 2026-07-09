@@ -14,3 +14,15 @@ export function precioTransferencia(tamano: string): number {
 export function formatoARS(monto: number): string {
   return monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 }
+
+// Precio final del libro para un pedido puntual: aplica el descuento por
+// transferencia y, si corresponde, el descuento del cupón sobre ese monto.
+export function precioFinalLibro(
+  tamano: string,
+  medioPago: string,
+  cuponDescuentoPorcentaje: number | null,
+): number {
+  const base = medioPago === 'TRANSFERENCIA' ? precioTransferencia(tamano) : PRECIO_LIBRO[tamano]
+  if (!cuponDescuentoPorcentaje) return base
+  return Math.round(base * (1 - cuponDescuentoPorcentaje / 100))
+}

@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { checkAdminAccess } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { obtenerUrlFirmada } from '@/lib/r2'
+import { formatoFechaHora } from '@/lib/fecha'
 import { PedidoDetalle } from './PedidoDetalle'
 import { AccesoDenegado } from '../AccesoDenegado'
 
@@ -38,6 +39,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
     <PedidoDetalle
       pedido={{
         id: pedido.id,
+        creadoEn: formatoFechaHora(pedido.createdAt),
         estado: pedido.estado,
         tamano: pedido.tamano,
         tematicas: pedido.tematicas,

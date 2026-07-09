@@ -172,37 +172,46 @@ function PrivacidadPopup({ onClose }: { onClose: () => void }) {
 const NOMBRES_PASOS = ['Fotos', 'Diseño', 'Prueba', 'Envío', 'Pago']
 
 function PasoHeader({ paso, total, titulo }: { paso: number; total: number; titulo: string }) {
+  const cols = { gridTemplateColumns: `repeat(${total}, 1fr)` }
+  // Círculo N queda centrado en su columna en (N - 0.5) / total del ancho total.
+  // La línea de fondo va de centro-a-centro entre el primer y el último círculo.
+  const mitadColumna = 50 / total
   return (
     <div className="mb-8">
-      <div className="flex items-center mb-1.5">
+      <div className="relative grid mb-1.5" style={cols}>
+        <div
+          className="absolute top-3 h-0.5 bg-stone-100"
+          style={{ left: `${mitadColumna}%`, right: `${mitadColumna}%` }}
+        />
+        <div
+          className="absolute top-3 h-0.5 bg-brand-500 transition-all"
+          style={{ left: `${mitadColumna}%`, width: `${((paso - 1) * 100) / total}%` }}
+        />
         {NOMBRES_PASOS.slice(0, total).map((_, i) => {
           const n = i + 1
           const hecho = n < paso
           const activo = n === paso
           return (
-            <div key={n} className="flex items-center flex-1 last:flex-none">
+            <div key={n} className="flex justify-center">
               <div
                 className={[
-                  'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 transition-colors',
+                  'relative w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 transition-colors',
                   hecho ? 'bg-brand-500 text-white' : activo ? 'border-2 border-brand-500 text-brand-500 bg-white' : 'bg-stone-100 text-stone-400',
                 ].join(' ')}
               >
                 {hecho ? <IconCheck className="w-3 h-3" /> : n}
               </div>
-              {n < total && (
-                <div className={`flex-1 h-0.5 mx-1 ${hecho ? 'bg-brand-500' : 'bg-stone-100'}`} />
-              )}
             </div>
           )
         })}
       </div>
-      <div className="flex mb-4">
+      <div className="grid mb-4" style={cols}>
         {NOMBRES_PASOS.slice(0, total).map((label, i) => {
           const n = i + 1
           const activo = n === paso
           const hecho = n < paso
           return (
-            <div key={label} className="flex-1 last:flex-none text-center">
+            <div key={label} className="text-center">
               <span
                 className={[
                   'text-[9px] font-bold uppercase tracking-wide',

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { formatoARS, PRECIO_LIBRO, precioTransferencia } from '@/lib/precios'
+import { formatoARS, precioFinalLibro } from '@/lib/precios'
 
 // La generación de imágenes puede tardar y, si se corta a mitad de camino
 // (timeout del servidor), llega una respuesta vacía que rompe JSON.parse.
@@ -30,6 +30,7 @@ type Imagen = {
 
 type Pedido = {
   id: string
+  creadoEn: string
   estado: string
   tamano: string
   tematicas: string[]
@@ -262,10 +263,15 @@ export function PedidoDetalle({
         <div>
           <a href="/admin" className="text-sm text-stone-400 hover:text-stone-600">← Volver al panel</a>
           <div className="flex items-center justify-between mt-2">
-            <h1 className="text-2xl font-black text-stone-800" style={{ fontFamily: 'var(--font-display)' }}>
-              {pedido.nombreCompleto}
-            </h1>
-            <span className="text-xs font-bold bg-stone-100 text-stone-600 px-3 py-1 rounded-full">
+            <div>
+              <h1 className="text-2xl font-black text-stone-800" style={{ fontFamily: 'var(--font-display)' }}>
+                {pedido.nombreCompleto}
+              </h1>
+              <p className="text-xs text-stone-400 mt-0.5 font-mono">
+                #{pedido.id.slice(-8).toUpperCase()} · {pedido.creadoEn}
+              </p>
+            </div>
+            <span className="text-xs font-bold bg-stone-100 text-stone-600 px-3 py-1 rounded-full shrink-0">
               {ESTADO_LABEL[estado] ?? estado}
             </span>
           </div>
@@ -315,20 +321,7 @@ export function PedidoDetalle({
             <p className="text-sm text-stone-600 mt-2 pt-2 border-t border-stone-100">
               Pago: <b>{pedido.cuponDescuentoPorcentaje === 100 ? 'Bonificado (cupón)' : pedido.medioPago === 'TRANSFERENCIA' ? 'Transferencia bancaria' : 'MercadoPago'}</b>
               {' · Libro: '}
-              <b>
-                {pedido.cuponDescuentoPorcentaje
-                  ? formatoARS(
-                      Math.round(
-                        (pedido.medioPago === 'TRANSFERENCIA' ? precioTransferencia(pedido.tamano) : PRECIO_LIBRO[pedido.tamano]) *
-                          (1 - pedido.cuponDescuentoPorcentaje / 100),
-                      ),
-                    )
-                  : formatoARS(
-                      pedido.medioPago === 'TRANSFERENCIA'
-                        ? precioTransferencia(pedido.tamano)
-                        : PRECIO_LIBRO[pedido.tamano],
-                    )}
-              </b>
+              <b>{formatoARS(precioFinalLibro(pedido.tamano, pedido.medioPago, pedido.cuponDescuentoPorcentaje))}</b>
             </p>
             {pedido.cuponCodigo && (
               <p className="text-xs font-bold text-green-700 bg-green-50 border border-green-100 rounded-lg px-2.5 py-1 mt-2 inline-block">
