@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { descargarArchivo, subirArchivo } from '@/lib/r2'
 import { generarImagenLibro } from '@/lib/generarImagen'
-import { calcularAsignacionPagina } from '@/lib/paginacion'
+import { calcularAsignacionPagina, esTipoManual } from '@/lib/paginacion'
 
 // Con Vercel Pro el límite de plan sube a 300s — la generación de imágenes con IA
 // puede tardar bastante más que los 60s del plan gratuito, sobre todo la tapa a color.
@@ -21,12 +21,15 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 })
   if (pedido.fotos.length === 0) return NextResponse.json({ error: 'El pedido no tiene fotos' }, { status: 400 })
 
-  const siguiente = pedido.imagenes.find((img) => !img.url)
+  const siguiente = pedido.imagenes.find((img) => !img.url && !esTipoManual(img.tipo))
   if (!siguiente) {
-    if (pedido.estado === 'ESPERANDO_GENERACION') {
-      await prisma.pedido.update({ where: { id }, data: { estado: 'EN_REVISION' } })
+    const faltanManuales = pedido.imagenes.some((img) => !img.url && esTipoManual(img.tipo))
+    let estadoFinal = pedido.estado
+    if (pedido.estado === 'ESPERANDO_GENERACION' && !faltanManuales) {
+      const actualizado = await prisma.pedido.update({ where: { id }, data: { estado: 'EN_REVISION' } })
+      estadoFinal = actualizado.estado
     }
-    return NextResponse.json({ done: true })
+    return NextResponse.json({ done: true, estado: estadoFinal, faltanManuales })
   }
 
   let fotoUrl: string

@@ -5,7 +5,7 @@ import { obtenerUrlFirmada } from '@/lib/r2'
 import { formatoFechaHora, diasDesde } from '@/lib/fecha'
 import { formatoARS, precioFinalLibro } from '@/lib/precios'
 import { PLANTILLAS_CONFIG } from '@/lib/plantillas'
-import { calcularAsignacionPagina } from '@/lib/paginacion'
+import { calcularAsignacionPagina, esTipoManual, compararPaginasLibro } from '@/lib/paginacion'
 import { PedidoDetalle } from './PedidoDetalle'
 import { AccesoDenegado } from '../AccesoDenegado'
 
@@ -35,6 +35,8 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
     })),
   )
   const pdfUrlFirmada = pedido.pdfUrl ? await obtenerUrlFirmada(pedido.pdfUrl) : null
+  const pdfMuestraKey = pedido.pdfUrl?.replace(/\/libro\.pdf$/, '/libro-muestra.pdf') ?? null
+  const pdfMuestraUrlFirmada = pdfMuestraKey ? await obtenerUrlFirmada(pdfMuestraKey) : null
 
   const fotoFamiliarUrl = pedido.fotoFamiliarKey ? await obtenerUrlFirmada(pedido.fotoFamiliarKey) : null
 
@@ -49,7 +51,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
     tamano: pedido.tamano === 'CHICO' ? '24 páginas' : '32 páginas',
     tematicas: [...pedido.tematicas, ...pedido.tematicasPersonalizadas].join(', '),
     monto: formatoARS(precioFinalLibro(pedido.tamano, pedido.medioPago, pedido.cuponDescuentoPorcentaje)),
-    link: pdfUrlFirmada ?? '',
+    link: pdfMuestraUrlFirmada ?? '',
     localidad: `${pedido.localidad}, ${pedido.provincia}`,
     tracking: pedido.trackingNumero ?? '',
     diasRestantes: diasRestantesAprobacion !== null ? String(diasRestantesAprobacion) : '',
@@ -86,20 +88,23 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         cuponDescuentoPorcentaje: pedido.cuponDescuentoPorcentaje,
         trackingNumero: pedido.trackingNumero,
         pdfUrlFirmada,
+        pdfMuestraUrlFirmada,
         tematicasEfectivas: [...pedido.tematicas, ...pedido.tematicasPersonalizadas],
         situacionesPorTematica: (pedido.situacionesPorTematica as Record<string, string[]> | null) ?? {},
       }}
       fotos={fotosConUrl.map((f) => ({ id: f.id, urlFirmada: f.urlFirmada }))}
-      imagenesIniciales={imagenesConUrl.map((i) => {
+      imagenesIniciales={[...imagenesConUrl].sort(compararPaginasLibro).map((i) => {
         const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
+        const manual = esTipoManual(i.tipo)
         const asignacion =
-          i.tipo === 'TAPA' || tematicasEfectivas.length === 0
+          i.tipo === 'TAPA' || manual || tematicasEfectivas.length === 0
             ? null
             : calcularAsignacionPagina(i.orden, tematicasEfectivas, pedido.estilos)
         return {
           id: i.id,
           orden: i.orden,
           tipo: i.tipo,
+          manual,
           tematica: i.tipo === 'TAPA' ? (pedido.estiloTapa ? 'Tapa' : null) : asignacion?.tematica ?? null,
           estilo: i.tipo === 'TAPA' ? pedido.estiloTapa : asignacion?.estilo ?? null,
           aprobada: i.aprobada,

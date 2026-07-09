@@ -158,11 +158,14 @@ export async function POST(req: NextRequest) {
         },
         imagenes: {
           create: [
-            ...(imagenTapaKey ? [{ orden: -1, tipo: 'TAPA' as const }] : []),
+            ...(imagenTapaKey ? [{ orden: -2, tipo: 'TAPA' as const }] : []),
+            { orden: -1, tipo: 'RETIRACION_TAPA' as const },
             ...Array.from({ length: cantidadPaginas }, (_, i) => ({
               orden: i,
               tipo: i % 2 === 0 ? ('A' as const) : ('B' as const),
             })),
+            { orden: cantidadPaginas, tipo: 'RETIRACION_CONTRATAPA' as const },
+            { orden: cantidadPaginas + 1, tipo: 'CONTRATAPA' as const },
           ],
         },
       },

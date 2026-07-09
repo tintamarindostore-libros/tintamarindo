@@ -23,12 +23,19 @@ type Imagen = {
   id: string
   orden: number
   tipo: string
+  manual: boolean
   tematica: string | null
   estilo: string | null
   aprobada: boolean
   urlFirmada: string | null
   generada: boolean
   promptExtra: string | null
+}
+
+const LABEL_TIPO_MANUAL: Record<string, string> = {
+  RETIRACION_TAPA: 'Retiración de tapa',
+  CONTRATAPA: 'Contratapa',
+  RETIRACION_CONTRATAPA: 'Retiración de contratapa',
 }
 
 type Pedido = {
@@ -60,6 +67,7 @@ type Pedido = {
   cuponDescuentoPorcentaje: number | null
   trackingNumero: string | null
   pdfUrlFirmada: string | null
+  pdfMuestraUrlFirmada: string | null
   tematicasEfectivas: string[]
   situacionesPorTematica: Record<string, string[]>
 }
@@ -213,8 +221,14 @@ export function PedidoDetalle({
   const [generandoImg, setGenerandoImg] = useState<string | null>(null)
   const [estado, setEstado] = useState(pedido.estado)
   const [generando, setGenerando] = useState(false)
-  const [progreso, setProgreso] = useState({ hechas: imagenesIniciales.filter((i) => i.generada).length, total: imagenesIniciales.length })
+  const [progreso, setProgreso] = useState({
+    hechas: imagenesIniciales.filter((i) => i.generada && !i.manual).length,
+    total: imagenesIniciales.filter((i) => !i.manual).length,
+  })
   const [errorGen, setErrorGen] = useState<string | null>(null)
+  const [avisoGen, setAvisoGen] = useState<string | null>(null)
+  const [subiendoManual, setSubiendoManual] = useState<string | null>(null)
+  const manualInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const [trackingInput, setTrackingInput] = useState(pedido.trackingNumero ?? '')
   const [subiendoPdf, setSubiendoPdf] = useState(false)
   const [guardandoTracking, setGuardandoTracking] = useState(false)
@@ -267,12 +281,16 @@ export function PedidoDetalle({
   const generarTodas = async () => {
     setGenerando(true)
     setErrorGen(null)
+    setAvisoGen(null)
     try {
       while (true) {
         const data = await refrescarImagen()
         if (data.error) throw new Error(data.error)
         if (data.done) {
-          setEstado('EN_REVISION')
+          setEstado(data.estado ?? estado)
+          if (data.faltanManuales) {
+            setAvisoGen('Faltan subir las páginas manuales (tapa/contratapa) para pasar a revisión.')
+          }
           break
         }
         setProgreso((p) => ({ ...p, hechas: p.hechas + 1 }))
@@ -284,6 +302,23 @@ export function PedidoDetalle({
       setErrorGen((err as Error).message)
     } finally {
       setGenerando(false)
+    }
+  }
+
+  const subirManual = async (img: Imagen) => {
+    const file = manualInputRefs.current[img.id]?.files?.[0]
+    if (!file) return
+    setSubiendoManual(img.id)
+    try {
+      const fd = new FormData()
+      fd.append('imagen', file)
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}/imagenes/${img.id}/subir`, { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      window.location.reload()
+    } catch (err) {
+      setErrorGen((err as Error).message)
+      setSubiendoManual(null)
     }
   }
 
@@ -344,7 +379,7 @@ export function PedidoDetalle({
       const res = await fetch(`/api/admin/pedidos/${pedido.id}/pdf`, { method: 'POST', body: fd })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setEstado('ESPERANDO_APROBACION')
+      window.location.reload()
     } finally {
       setSubiendoPdf(false)
     }
@@ -498,6 +533,7 @@ export function PedidoDetalle({
             </button>
           </div>
           {errorGen && <p className="text-sm text-red-400 mb-3">{errorGen}</p>}
+          {avisoGen && <p className="text-sm text-amber-400 mb-3">{avisoGen}</p>}
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {imagenes.map((img) => (
@@ -507,13 +543,13 @@ export function PedidoDetalle({
                     <img src={img.urlFirmada} alt={img.tipo === 'TAPA' ? 'Tapa' : `Página ${img.orden + 1}`} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-xs text-stone-600">
-                      {generandoImg === img.id ? 'Generando…' : 'Sin generar'}
+                      {generandoImg === img.id ? 'Generando…' : img.manual ? 'Sin subir' : 'Sin generar'}
                     </span>
                   )}
                 </div>
                 <div className="p-2 space-y-1">
                   <p className="text-[10px] text-stone-500 font-bold">
-                    {img.tipo === 'TAPA' ? 'Tapa (color)' : `Pág. ${img.orden + 1}`}
+                    {img.manual ? LABEL_TIPO_MANUAL[img.tipo] : img.tipo === 'TAPA' ? 'Tapa (color)' : `Pág. ${img.orden + 1}`}
                     {img.tematica && img.tipo !== 'TAPA' ? ` · ${img.tematica}` : ''}
                     {img.estilo ? ` (${img.estilo})` : ''}
                   </p>
@@ -528,31 +564,53 @@ export function PedidoDetalle({
                     >
                       {img.aprobada ? '✓ Aprobada' : 'Aprobar'}
                     </button>
-                    <button
-                      onClick={() => regenerar(img)}
-                      disabled={generandoImg === img.id}
-                      className={[
-                        'flex-1 text-[10px] font-bold py-1 rounded-full disabled:opacity-50',
-                        img.urlFirmada ? 'bg-stone-800 text-stone-400' : 'bg-brand-500 text-white',
-                      ].join(' ')}
-                    >
-                      {generandoImg === img.id ? 'Generando…' : img.urlFirmada ? 'Regenerar' : 'Generar'}
-                    </button>
+                    {!img.manual && (
+                      <button
+                        onClick={() => regenerar(img)}
+                        disabled={generandoImg === img.id}
+                        className={[
+                          'flex-1 text-[10px] font-bold py-1 rounded-full disabled:opacity-50',
+                          img.urlFirmada ? 'bg-stone-800 text-stone-400' : 'bg-brand-500 text-white',
+                        ].join(' ')}
+                      >
+                        {generandoImg === img.id ? 'Generando…' : img.urlFirmada ? 'Regenerar' : 'Generar'}
+                      </button>
+                    )}
                   </div>
-                  <textarea
-                    value={promptExtras[img.id] ?? ''}
-                    onChange={(e) => setPromptExtras((prev) => ({ ...prev, [img.id]: e.target.value }))}
-                    placeholder="Instrucciones extra para el prompt de esta imagen (opcional)..."
-                    rows={2}
-                    className="w-full rounded-lg border border-stone-700 bg-stone-800 text-stone-200 px-2 py-1 text-[10px] focus:border-brand-500 focus:outline-none placeholder:text-stone-600"
-                  />
-                  <button
-                    onClick={() => guardarPrompt(img)}
-                    disabled={guardandoPrompt === img.id}
-                    className="w-full text-[10px] font-bold py-1 rounded-full bg-stone-800 text-stone-400"
-                  >
-                    {guardandoPrompt === img.id ? 'Guardando…' : 'Guardar prompt'}
-                  </button>
+                  {img.manual ? (
+                    <>
+                      <input
+                        ref={(el) => { manualInputRefs.current[img.id] = el }}
+                        type="file"
+                        accept="image/*"
+                        className="w-full text-[10px] text-stone-400"
+                      />
+                      <button
+                        onClick={() => subirManual(img)}
+                        disabled={subiendoManual === img.id}
+                        className="w-full text-[10px] font-bold py-1 rounded-full bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-50"
+                      >
+                        {subiendoManual === img.id ? 'Subiendo…' : img.urlFirmada ? 'Reemplazar' : 'Subir'}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <textarea
+                        value={promptExtras[img.id] ?? ''}
+                        onChange={(e) => setPromptExtras((prev) => ({ ...prev, [img.id]: e.target.value }))}
+                        placeholder="Instrucciones extra para el prompt de esta imagen (opcional)..."
+                        rows={2}
+                        className="w-full rounded-lg border border-stone-700 bg-stone-800 text-stone-200 px-2 py-1 text-[10px] focus:border-brand-500 focus:outline-none placeholder:text-stone-600"
+                      />
+                      <button
+                        onClick={() => guardarPrompt(img)}
+                        disabled={guardandoPrompt === img.id}
+                        className="w-full text-[10px] font-bold py-1 rounded-full bg-stone-800 text-stone-400"
+                      >
+                        {guardandoPrompt === img.id ? 'Guardando…' : 'Guardar prompt'}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -562,9 +620,17 @@ export function PedidoDetalle({
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
             <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">PDF del libro</p>
+            <p className="text-xs text-stone-500 mb-3">
+              Subí el PDF completo, en alta calidad y sin marca de agua (tapa, retiración de tapa, páginas interiores, retiración de contratapa y contratapa, en ese orden). El sistema genera automáticamente una copia con marca de agua en las páginas interiores para mandarle al cliente a aprobar.
+            </p>
             {pedido.pdfUrlFirmada && (
-              <a href={pedido.pdfUrlFirmada} target="_blank" className="text-sm text-brand-400 underline block mb-3">
-                Ver PDF actual
+              <a href={pedido.pdfUrlFirmada} target="_blank" className="text-sm text-brand-400 underline block mb-1">
+                📥 Descargar PDF alta calidad (sin marca de agua, para imprimir)
+              </a>
+            )}
+            {pedido.pdfMuestraUrlFirmada && (
+              <a href={pedido.pdfMuestraUrlFirmada} target="_blank" className="text-sm text-stone-400 underline block mb-3">
+                👁 Ver muestra con marca de agua (lo que recibe el cliente)
               </a>
             )}
             <input ref={pdfInputRef} type="file" accept="application/pdf" className="text-xs text-stone-400 mb-2" />

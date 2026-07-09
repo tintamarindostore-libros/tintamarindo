@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { descargarArchivo, subirArchivo } from '@/lib/r2'
 import { generarImagenLibro } from '@/lib/generarImagen'
-import { calcularAsignacionPagina } from '@/lib/paginacion'
+import { calcularAsignacionPagina, esTipoManual } from '@/lib/paginacion'
 
 // Con Vercel Pro el límite de plan sube a 300s — la generación de imágenes con IA
 // puede tardar bastante más que los 60s del plan gratuito, sobre todo la tapa a color.
@@ -99,7 +99,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         data: { url: key, promptUsado: prompt, aprobada: false },
       })
 
-      // Si esta era la última imagen pendiente, el pedido pasa a "En revisión"
+      // Si esta era la última imagen pendiente (generada o subida a mano), el pedido pasa a "En revisión"
       if (pedido.estado === 'ESPERANDO_GENERACION') {
         const pendientes = await prisma.imagenPedido.count({ where: { pedidoId: id, url: null } })
         if (pendientes === 0) {

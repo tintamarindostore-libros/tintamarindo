@@ -22,7 +22,7 @@ export async function generarImagenLibro({
   tematica?: string
   varianteIndex?: number
   situacionesManuales?: string[]
-  tipo: 'A' | 'B' | 'C' | 'TAPA'
+  tipo: string
   titulo?: string | null
   subtitulo?: string | null
   observaciones?: string | null
