@@ -52,6 +52,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     let estilo: string
     let tematica: string | undefined
     let varianteIndex = 0
+    let situacionesManuales: string[] | undefined
 
     if (imagen.tipo === 'TAPA') {
       if (!pedido.imagenTapaKey || !pedido.estiloTapa) {
@@ -65,6 +66,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       estilo = pedido.estilos[imagen.orden % pedido.estilos.length] ?? pedido.estilos[0]
       tematica = tematicasEfectivas[imagen.orden % tematicasEfectivas.length] ?? tematicasEfectivas[0]
       varianteIndex = Math.floor(imagen.orden / tematicasEfectivas.length)
+      const situaciones = pedido.situacionesPorTematica as Record<string, string[]> | null
+      situacionesManuales = situaciones?.[tematica]
     }
 
     try {
@@ -76,6 +79,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         estilo,
         tematica,
         varianteIndex,
+        situacionesManuales,
         tipo: imagen.tipo,
         titulo: pedido.tituloTapa,
         subtitulo: pedido.subtituloTapa,

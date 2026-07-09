@@ -46,13 +46,31 @@ export const TEMATICA_PROMPT: Record<string, string[]> = {
   ],
 }
 
-// Variantes de encuadre/momento para temáticas personalizadas (no están en el
-// diccionario de arriba) — así tampoco se repiten entre sí.
-const VARIANTES_GENERICAS = [
-  'in an active, dynamic moment full of movement and energy',
-  'in a calm, joyful posed moment, smiling directly at the viewer',
-  'from a close-up perspective focusing on genuine excitement and expression',
-  'from a wide establishing shot showing the full themed environment',
+// Descripción genérica para temáticas personalizadas sin situaciones manuales
+// cargadas (ver situacionesPorTematica del pedido) y sin entrada en el
+// diccionario de arriba.
+function escenaGenerica(tematica: string) {
+  return `themed around: "${tematica}" — include clearly recognizable, iconic props, symbols and background elements strongly associated with this specific theme, so the theme is immediately identifiable, not a generic setting`
+}
+
+// Pose y ángulo rotan de forma independiente a la situación — así, aunque el
+// libro repita mucho una misma temática (ej. 8 páginas de "Princesas" en un
+// libro de 24 con 3 temáticas), el conjunto no se repite hasta pasadas varias
+// decenas de páginas, sin depender de escribir a mano una variante por página.
+const POSE_MODIFIERS = [
+  'in a joyful, dynamic action pose, mid-movement',
+  'in a calm, gentle pose, smiling softly at the viewer',
+  'laughing with arms raised triumphantly',
+  'in a curious pose, leaning in to look closely at something',
+  'waving cheerfully with a big bright smile',
+  'in a confident, heroic pose',
+]
+
+const ANGULO_MODIFIERS = [
+  'shown in a close-up framing',
+  'shown in a wide, full-body framing',
+  'shown from a slightly low, heroic angle',
+  'shown from a three-quarter view',
 ]
 
 const BASE_PROMPT = `Transform this photo into a premium personalized coloring book page.
@@ -67,11 +85,21 @@ FACES (most important): preserve individual likeness and expression of the child
 // varianteIndex distingue páginas repetidas con la misma temática (ver
 // generarImagen.ts: se calcula a partir de cuántas veces se repitió el ciclo
 // de temáticas hasta esta página), para que no salgan casi idénticas.
-export function construirPromptEscena(estilo: string, tematica: string, varianteIndex = 0) {
-  const variantes = TEMATICA_PROMPT[tematica]
-  const escena = variantes
-    ? `Place the child in a scene: ${variantes[varianteIndex % variantes.length]}.`
-    : `Place the child in a scene themed around: "${tematica}" — ${VARIANTES_GENERICAS[varianteIndex % VARIANTES_GENERICAS.length]}. Include clearly recognizable, iconic props, symbols and background elements strongly associated with this specific theme, so the theme is immediately identifiable — not a generic setting.`
+//
+// situacionesManuales: lista de situaciones puntuales cargadas por el admin
+// para esta temática en ESTE pedido (ver campo situacionesPorTematica) — si
+// están cargadas, se usan en vez de las predefinidas o la descripción genérica.
+export function construirPromptEscena(
+  estilo: string,
+  tematica: string,
+  varianteIndex = 0,
+  situacionesManuales?: string[],
+) {
+  const variantes = situacionesManuales?.length ? situacionesManuales : TEMATICA_PROMPT[tematica]
+  const situacion = variantes ? variantes[varianteIndex % variantes.length] : escenaGenerica(tematica)
+  const pose = POSE_MODIFIERS[varianteIndex % POSE_MODIFIERS.length]
+  const angulo = ANGULO_MODIFIERS[varianteIndex % ANGULO_MODIFIERS.length]
+  const escena = `Place the child in this scene: ${situacion}. The child is ${pose}, ${angulo}.`
   return `${BASE_PROMPT}\n\n${ESTILO_PROMPT[estilo]}\n\nSCENE: ${escena}\n\nPure white background. All lines strictly black. No color, no gray.`
 }
 

@@ -32,6 +32,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   let estilo: string
   let tematica: string | undefined
   let varianteIndex = 0
+  let situacionesManuales: string[] | undefined
 
   if (siguiente.tipo === 'TAPA') {
     if (!pedido.imagenTapaKey || !pedido.estiloTapa) {
@@ -47,6 +48,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     // Cuántas veces se repitió el ciclo de temáticas hasta esta página — así, cuando la
     // misma temática se repite en varias páginas, cada una pide una variante distinta.
     varianteIndex = Math.floor(siguiente.orden / tematicasEfectivas.length)
+    const situaciones = pedido.situacionesPorTematica as Record<string, string[]> | null
+    situacionesManuales = situaciones?.[tematica]
   }
 
   try {
@@ -58,6 +61,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       estilo,
       tematica,
       varianteIndex,
+      situacionesManuales,
       tipo: siguiente.tipo,
       titulo: pedido.tituloTapa,
       subtitulo: pedido.subtituloTapa,

@@ -85,6 +85,8 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         cuponDescuentoPorcentaje: pedido.cuponDescuentoPorcentaje,
         trackingNumero: pedido.trackingNumero,
         pdfUrlFirmada,
+        tematicasEfectivas: [...pedido.tematicas, ...pedido.tematicasPersonalizadas],
+        situacionesPorTematica: (pedido.situacionesPorTematica as Record<string, string[]> | null) ?? {},
       }}
       fotos={fotosConUrl.map((f) => ({ id: f.id, urlFirmada: f.urlFirmada }))}
       imagenesIniciales={imagenesConUrl.map((i) => ({

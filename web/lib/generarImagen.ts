@@ -9,6 +9,7 @@ export async function generarImagenLibro({
   estilo,
   tematica,
   varianteIndex,
+  situacionesManuales,
   tipo,
   titulo,
   subtitulo,
@@ -20,6 +21,7 @@ export async function generarImagenLibro({
   estilo: string
   tematica?: string
   varianteIndex?: number
+  situacionesManuales?: string[]
   tipo: 'A' | 'B' | 'C' | 'TAPA'
   titulo?: string | null
   subtitulo?: string | null
@@ -33,7 +35,7 @@ export async function generarImagenLibro({
   let prompt =
     tipo === 'TAPA'
       ? construirPromptTapa({ estilo, titulo, subtitulo, observaciones })
-      : construirPromptEscena(estilo, tematica!, varianteIndex)
+      : construirPromptEscena(estilo, tematica!, varianteIndex, situacionesManuales)
 
   if (promptExtra) prompt += `\n\nINSTRUCCIONES ADICIONALES PARA ESTA IMAGEN: ${promptExtra}`
 

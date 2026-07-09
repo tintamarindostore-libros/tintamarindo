@@ -79,6 +79,10 @@ model Pedido {
   estilos               Estilo[]
   tipoPapel             TipoPapel @default(BLANCO)
   fotoFamiliarKey       String?
+  // Situaciones puntuales cargadas por el admin para este pedido, por temática
+  // (ej. {"River Plate": ["el nene con la camiseta en el Monumental", "..."]})
+  // — se usan en vez de las genéricas/predefinidas cuando están cargadas.
+  situacionesPorTematica Json?
 
   // Configuración — Tapa
   tituloTapa        String?

@@ -58,6 +58,8 @@ type Pedido = {
   cuponDescuentoPorcentaje: number | null
   trackingNumero: string | null
   pdfUrlFirmada: string | null
+  tematicasEfectivas: string[]
+  situacionesPorTematica: Record<string, string[]>
 }
 
 const ESTADO_LABEL: Record<string, string> = {
@@ -113,6 +115,76 @@ function MensajePlantilla({ plantilla, variablesAuto }: { plantilla: Plantilla; 
         className="text-xs font-bold px-3 py-1.5 rounded-full bg-stone-800 text-stone-300 hover:bg-brand-500 hover:text-white transition-colors"
       >
         {copiado ? '✓ Copiado' : '📋 Copiar mensaje'}
+      </button>
+    </div>
+  )
+}
+
+function SituacionesPorTematica({
+  pedidoId,
+  tematicasEfectivas,
+  situacionesIniciales,
+}: {
+  pedidoId: string
+  tematicasEfectivas: string[]
+  situacionesIniciales: Record<string, string[]>
+}) {
+  const [textos, setTextos] = useState<Record<string, string>>(
+    Object.fromEntries(tematicasEfectivas.map((t) => [t, (situacionesIniciales[t] ?? []).join('\n')])),
+  )
+  const [guardando, setGuardando] = useState(false)
+  const [guardado, setGuardado] = useState(false)
+
+  const guardar = async () => {
+    setGuardando(true)
+    setGuardado(false)
+    try {
+      const situacionesPorTematica = Object.fromEntries(
+        Object.entries(textos)
+          .map(([tema, texto]) => [tema, texto.split('\n').map((l) => l.trim()).filter(Boolean)])
+          .filter(([, lineas]) => (lineas as string[]).length > 0),
+      )
+      const res = await fetch(`/api/admin/pedidos/${pedidoId}/situaciones`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ situacionesPorTematica }),
+      })
+      if (res.ok) {
+        setGuardado(true)
+        setTimeout(() => setGuardado(false), 1500)
+      }
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  return (
+    <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
+      <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Situaciones específicas por temática</p>
+      <p className="text-xs text-stone-500 mb-3">
+        Una idea por línea. El sistema va rotando entre ellas en las páginas que le toquen esa temática. Si lo dejás vacío, usa el sistema automático con variedad de poses y ángulos.
+      </p>
+      <div className="space-y-3">
+        {tematicasEfectivas.map((tema) => (
+          <div key={tema}>
+            <label className="text-xs font-bold text-stone-400 mb-1 block">{tema}</label>
+            <textarea
+              value={textos[tema] ?? ''}
+              onChange={(e) => setTextos((prev) => ({ ...prev, [tema]: e.target.value }))}
+              placeholder={`Ej: el nene con la camiseta jugando dentro del estadio Monumental de River\nel nene con la camiseta en la tribuna, alentando con una bandera\nel nene con la camiseta y el estadio de River de fondo`}
+              rows={3}
+              className="w-full rounded-lg border border-stone-800 bg-stone-800 text-stone-200 px-3 py-2 text-xs outline-none focus:border-brand-500 placeholder:text-stone-600"
+            />
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={guardar}
+        disabled={guardando}
+        className="mt-3 rounded-full bg-brand-500 hover:bg-brand-600 text-white font-bold px-4 py-2 text-xs disabled:opacity-50"
+      >
+        {guardando ? 'Guardando…' : guardado ? '✓ Guardado' : 'Guardar situaciones'}
       </button>
     </div>
   )
@@ -403,6 +475,12 @@ export function PedidoDetalle({
             ))}
           </div>
         </div>
+
+        <SituacionesPorTematica
+          pedidoId={pedido.id}
+          tematicasEfectivas={pedido.tematicasEfectivas}
+          situacionesIniciales={pedido.situacionesPorTematica}
+        />
 
         <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
           <div className="flex items-center justify-between mb-4">
