@@ -65,39 +65,45 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       tematica = tematicasEfectivas[imagen.orden % tematicasEfectivas.length] ?? tematicasEfectivas[0]
     }
 
-    const { buffer, contentType } = await descargarArchivo(fotoUrl)
+    try {
+      const { buffer, contentType } = await descargarArchivo(fotoUrl)
 
-    const { base64, prompt } = await generarImagenLibro({
-      fotoBase64: buffer.toString('base64'),
-      fotoMime: contentType,
-      estilo,
-      tematica,
-      tipo: imagen.tipo,
-      titulo: pedido.tituloTapa,
-      subtitulo: pedido.subtituloTapa,
-      observaciones: pedido.observacionesTapa,
-      promptExtra: imagen.promptExtra,
-    })
+      const { base64, prompt } = await generarImagenLibro({
+        fotoBase64: buffer.toString('base64'),
+        fotoMime: contentType,
+        estilo,
+        tematica,
+        tipo: imagen.tipo,
+        titulo: pedido.tituloTapa,
+        subtitulo: pedido.subtituloTapa,
+        observaciones: pedido.observacionesTapa,
+        promptExtra: imagen.promptExtra,
+      })
 
-    const key = imagen.tipo === 'TAPA'
-      ? `pedidos/${id}/tapa.png`
-      : `pedidos/${id}/pagina-${String(imagen.orden + 1).padStart(2, '0')}.png`
-    await subirArchivo(key, Buffer.from(base64, 'base64'), 'image/png')
+      const key = imagen.tipo === 'TAPA'
+        ? `pedidos/${id}/tapa.png`
+        : `pedidos/${id}/pagina-${String(imagen.orden + 1).padStart(2, '0')}.png`
+      await subirArchivo(key, Buffer.from(base64, 'base64'), 'image/png')
 
-    const actualizada = await prisma.imagenPedido.update({
-      where: { id: imgId },
-      data: { url: key, promptUsado: prompt, aprobada: false },
-    })
+      const actualizada = await prisma.imagenPedido.update({
+        where: { id: imgId },
+        data: { url: key, promptUsado: prompt, aprobada: false },
+      })
 
-    // Si esta era la última imagen pendiente, el pedido pasa a "En revisión"
-    if (pedido.estado === 'ESPERANDO_GENERACION') {
-      const pendientes = await prisma.imagenPedido.count({ where: { pedidoId: id, url: null } })
-      if (pendientes === 0) {
-        await prisma.pedido.update({ where: { id }, data: { estado: 'EN_REVISION' } })
+      // Si esta era la última imagen pendiente, el pedido pasa a "En revisión"
+      if (pedido.estado === 'ESPERANDO_GENERACION') {
+        const pendientes = await prisma.imagenPedido.count({ where: { pedidoId: id, url: null } })
+        if (pendientes === 0) {
+          await prisma.pedido.update({ where: { id }, data: { estado: 'EN_REVISION' } })
+        }
       }
-    }
 
-    return NextResponse.json({ imagen: actualizada })
+      return NextResponse.json({ imagen: actualizada })
+    } catch (err) {
+      console.error('[imagenes/regenerar] Error al generar imagen:', err)
+      const message = err instanceof Error ? err.message : 'Error inesperado al generar la imagen'
+      return NextResponse.json({ error: message }, { status: 500 })
+    }
   }
 
   return NextResponse.json({ error: 'Acción inválida' }, { status: 400 })

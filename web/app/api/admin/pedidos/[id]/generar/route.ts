@@ -45,29 +45,35 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     tematica = tematicasEfectivas[siguiente.orden % tematicasEfectivas.length] ?? tematicasEfectivas[0]
   }
 
-  const { buffer, contentType } = await descargarArchivo(fotoUrl)
+  try {
+    const { buffer, contentType } = await descargarArchivo(fotoUrl)
 
-  const { base64, prompt } = await generarImagenLibro({
-    fotoBase64: buffer.toString('base64'),
-    fotoMime: contentType,
-    estilo,
-    tematica,
-    tipo: siguiente.tipo,
-    titulo: pedido.tituloTapa,
-    subtitulo: pedido.subtituloTapa,
-    observaciones: pedido.observacionesTapa,
-    promptExtra: siguiente.promptExtra,
-  })
+    const { base64, prompt } = await generarImagenLibro({
+      fotoBase64: buffer.toString('base64'),
+      fotoMime: contentType,
+      estilo,
+      tematica,
+      tipo: siguiente.tipo,
+      titulo: pedido.tituloTapa,
+      subtitulo: pedido.subtituloTapa,
+      observaciones: pedido.observacionesTapa,
+      promptExtra: siguiente.promptExtra,
+    })
 
-  const key = siguiente.tipo === 'TAPA'
-    ? `pedidos/${id}/tapa.png`
-    : `pedidos/${id}/pagina-${String(siguiente.orden + 1).padStart(2, '0')}.png`
-  await subirArchivo(key, Buffer.from(base64, 'base64'), 'image/png')
+    const key = siguiente.tipo === 'TAPA'
+      ? `pedidos/${id}/tapa.png`
+      : `pedidos/${id}/pagina-${String(siguiente.orden + 1).padStart(2, '0')}.png`
+    await subirArchivo(key, Buffer.from(base64, 'base64'), 'image/png')
 
-  const actualizada = await prisma.imagenPedido.update({
-    where: { id: siguiente.id },
-    data: { url: key, promptUsado: prompt },
-  })
+    const actualizada = await prisma.imagenPedido.update({
+      where: { id: siguiente.id },
+      data: { url: key, promptUsado: prompt },
+    })
 
-  return NextResponse.json({ done: false, imagen: { id: actualizada.id, orden: actualizada.orden } })
+    return NextResponse.json({ done: false, imagen: { id: actualizada.id, orden: actualizada.orden } })
+  } catch (err) {
+    console.error('[generar] Error al generar imagen:', err)
+    const message = err instanceof Error ? err.message : 'Error inesperado al generar la imagen'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }
