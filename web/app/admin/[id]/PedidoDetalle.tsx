@@ -743,12 +743,20 @@ export function PedidoDetalle({
           <p className="text-xs text-stone-500 mb-3">
             Baja todas las imágenes del pedido (tapa, retiración de tapa/contratapa, contratapa y páginas interiores) juntas en un .zip, numeradas en el orden real del libro — para armar el PDF final a mano.
           </p>
-          <a
-            href={`/api/admin/pedidos/${pedido.id}/descargar-imagenes`}
-            className="inline-block bg-brand-500 hover:bg-brand-600 text-white text-xs font-black px-4 py-2 rounded-full transition-colors"
-          >
-            📦 Descargar todas las imágenes (.zip)
-          </a>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href={`/api/admin/pedidos/${pedido.id}/descargar-imagenes`}
+              className="inline-block bg-brand-500 hover:bg-brand-600 text-white text-xs font-black px-4 py-2 rounded-full transition-colors"
+            >
+              📦 Descargar todas las imágenes (.zip)
+            </a>
+            <a
+              href={`/api/admin/pedidos/${pedido.id}/descargar-prompts`}
+              className="inline-block bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-black px-4 py-2 rounded-full transition-colors"
+            >
+              📝 Descargar prompts (.txt)
+            </a>
+          </div>
         </div>
 
         <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
