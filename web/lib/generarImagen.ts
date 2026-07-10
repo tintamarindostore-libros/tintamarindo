@@ -50,9 +50,9 @@ export async function generarImagenLibro({
         ],
       },
     ],
-    // Subido de 'medium' a 'high' para probar si mejora el detalle del line art —
-    // más lento y más caro por imagen, pero con Vercel Pro (maxDuration 300s) hay margen.
-    tools: [{ type: 'image_generation', quality: 'high', size: '1024x1536' } as never],
+    // quality 'medium': buen equilibrio de velocidad/costo para line art. Con Vercel Pro
+    // (maxDuration 300s) ya hay margen de sobra para subir a 'high' si se quiere más detalle.
+    tools: [{ type: 'image_generation', quality: 'medium', size: '1024x1536' } as never],
   })
 
   const imageBlock = response.output.find(
