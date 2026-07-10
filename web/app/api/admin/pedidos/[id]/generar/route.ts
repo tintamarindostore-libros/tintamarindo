@@ -63,6 +63,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       fotoMime: contentType,
       estilo,
       tematica,
+      orden: siguiente.orden,
       varianteIndex,
       situacionesManuales,
       tipo: siguiente.tipo,

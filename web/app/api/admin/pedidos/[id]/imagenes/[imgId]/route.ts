@@ -80,6 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         fotoMime: contentType,
         estilo,
         tematica,
+        orden: imagen.orden,
         varianteIndex,
         situacionesManuales,
         tipo: imagen.tipo,

@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
           role: 'user',
           content: [
             { type: 'input_image', image_url: `data:${contentType};base64,${base64Image}`, detail: 'high' },
-            { type: 'input_text', text: construirPromptEscena(estilo, tematica) },
+            { type: 'input_text', text: construirPromptEscena(estilo, tematica, 0) },
           ],
         },
       ],

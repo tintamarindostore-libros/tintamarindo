@@ -86,19 +86,26 @@ FACES (most important): preserve individual likeness and expression of the child
 // generarImagen.ts: se calcula a partir de cuántas veces se repitió el ciclo
 // de temáticas hasta esta página), para que no salgan casi idénticas.
 //
+// Pose y ángulo, en cambio, rotan según `orden` (la página global del libro),
+// NO según varianteIndex: cuando la cantidad de temáticas coincide con el
+// "tamaño de bloque" de la rotación de variantes (ej. 3 temáticas → varianteIndex
+// se mantiene igual durante 3 páginas seguidas), usar varianteIndex acá hacía que
+// varias páginas consecutivas con temáticas distintas compartieran la misma pose.
+//
 // situacionesManuales: lista de situaciones puntuales cargadas por el admin
 // para esta temática en ESTE pedido (ver campo situacionesPorTematica) — si
 // están cargadas, se usan en vez de las predefinidas o la descripción genérica.
 export function construirPromptEscena(
   estilo: string,
   tematica: string,
+  orden: number,
   varianteIndex = 0,
   situacionesManuales?: string[],
 ) {
   const variantes = situacionesManuales?.length ? situacionesManuales : TEMATICA_PROMPT[tematica]
   const situacion = variantes ? variantes[varianteIndex % variantes.length] : escenaGenerica(tematica)
-  const pose = POSE_MODIFIERS[varianteIndex % POSE_MODIFIERS.length]
-  const angulo = ANGULO_MODIFIERS[varianteIndex % ANGULO_MODIFIERS.length]
+  const pose = POSE_MODIFIERS[orden % POSE_MODIFIERS.length]
+  const angulo = ANGULO_MODIFIERS[orden % ANGULO_MODIFIERS.length]
   const escena = `Place the child in this scene: ${situacion}. The child is ${pose}, ${angulo}.`
   return `${BASE_PROMPT}\n\n${ESTILO_PROMPT[estilo]}\n\nSCENE: ${escena}\n\nPure white background. All lines strictly black. No color, no gray.`
 }
