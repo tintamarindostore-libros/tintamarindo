@@ -4,19 +4,12 @@ import { checkAdminAccess } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { formatoFechaHora, diasDesde, inicioDiaBuenosAires } from '@/lib/fecha'
 import { formatoARS, precioFinalLibro } from '@/lib/precios'
+import { ESTADOS_PEDIDO, ESTADO_LABEL } from '@/lib/estados'
 import { AccesoDenegado } from './AccesoDenegado'
 import { CopiarCodigo } from './CopiarCodigo'
+import { EstadoSelector } from './EstadoSelector'
 
-const ESTADOS = ['ESPERANDO_PAGO', 'ESPERANDO_GENERACION', 'EN_REVISION', 'ESPERANDO_APROBACION', 'APROBADO', 'ENVIADO']
-
-const ESTADO_LABEL: Record<string, string> = {
-  ESPERANDO_PAGO: 'Esperando pago',
-  ESPERANDO_GENERACION: 'Esperando generación',
-  EN_REVISION: 'En revisión',
-  ESPERANDO_APROBACION: 'Esperando aprobación',
-  APROBADO: 'Aprobado',
-  ENVIADO: 'Enviado',
-}
+const ESTADOS = ESTADOS_PEDIDO
 
 function BadgeAprobacion({ pdfSubidoAt }: { pdfSubidoAt: Date | null }) {
   if (!pdfSubidoAt) return null
@@ -206,9 +199,7 @@ export default async function AdminPage({
                     )}
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-bold bg-stone-800 text-stone-300 px-2.5 py-1 rounded-full">
-                      {ESTADO_LABEL[p.estado]}
-                    </span>
+                    <EstadoSelector pedidoId={p.id} estadoInicial={p.estado} />
                     <p className="text-xs font-bold text-stone-300 mt-1">
                       {formatoARS(precioFinalLibro(p.tamano, p.medioPago, p.cuponDescuentoPorcentaje))}
                     </p>

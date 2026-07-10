@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { formatoARS, precioFinalLibro } from '@/lib/precios'
 import { renderPlantilla } from '@/lib/plantillas'
+import { ESTADOS_PEDIDO, ESTADO_LABEL } from '@/lib/estados'
 
 // La generación de imágenes puede tardar y, si se corta a mitad de camino
 // (timeout del servidor), llega una respuesta vacía que rompe JSON.parse.
@@ -70,15 +71,6 @@ type Pedido = {
   pdfMuestraUrlFirmada: string | null
   tematicasEfectivas: string[]
   situacionesPorTematica: Record<string, string[]>
-}
-
-const ESTADO_LABEL: Record<string, string> = {
-  ESPERANDO_PAGO: 'Esperando pago',
-  ESPERANDO_GENERACION: 'Esperando generación',
-  EN_REVISION: 'En revisión',
-  ESPERANDO_APROBACION: 'Esperando aprobación',
-  APROBADO: 'Aprobado',
-  ENVIADO: 'Enviado',
 }
 
 type Plantilla = {
@@ -242,6 +234,7 @@ export function PedidoDetalle({
   const [eliminando, setEliminando] = useState(false)
   const [confirmandoTransferencia, setConfirmandoTransferencia] = useState(false)
   const [codigoCopiado, setCodigoCopiado] = useState(false)
+  const [cambiandoEstado, setCambiandoEstado] = useState(false)
   const pdfInputRef = useRef<HTMLInputElement>(null)
 
   const aprobadas = imagenes.filter((i) => i.aprobada).length
@@ -424,6 +417,25 @@ export function PedidoDetalle({
     }
   }
 
+  const cambiarEstado = async (nuevo: string) => {
+    const anterior = estado
+    setEstado(nuevo)
+    setCambiandoEstado(true)
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}/estado`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: nuevo }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      setEstado(anterior)
+      alert('No se pudo cambiar el estado')
+    } finally {
+      setCambiandoEstado(false)
+    }
+  }
+
   const guardarTracking = async () => {
     setGuardandoTracking(true)
     try {
@@ -510,9 +522,18 @@ export function PedidoDetalle({
                 {' · '}{pedido.creadoEn}
               </p>
             </div>
-            <span className="text-xs font-bold bg-stone-800 text-stone-300 px-3 py-1 rounded-full shrink-0">
-              {ESTADO_LABEL[estado] ?? estado}
-            </span>
+            <select
+              value={estado}
+              disabled={cambiandoEstado}
+              onChange={(e) => cambiarEstado(e.target.value)}
+              className="text-xs font-bold bg-stone-800 text-stone-300 px-3 py-1 rounded-full border border-stone-700 shrink-0 focus:outline-none focus:border-brand-500 cursor-pointer disabled:opacity-50"
+            >
+              {ESTADOS_PEDIDO.map((e) => (
+                <option key={e} value={e}>
+                  {ESTADO_LABEL[e]}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

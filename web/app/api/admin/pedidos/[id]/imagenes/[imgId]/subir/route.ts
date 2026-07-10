@@ -35,5 +35,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     data: { url: key, aprobada: false },
   })
 
+  // Si esta era la última imagen pendiente (generada o subida a mano), el pedido pasa a "En revisión"
+  const pedido = await prisma.pedido.findUnique({ where: { id } })
+  if (pedido?.estado === 'ESPERANDO_GENERACION') {
+    const pendientes = await prisma.imagenPedido.count({ where: { pedidoId: id, url: null } })
+    if (pendientes === 0) {
+      await prisma.pedido.update({ where: { id }, data: { estado: 'EN_REVISION' } })
+    }
+  }
+
   return NextResponse.json({ imagen: actualizada })
 }
