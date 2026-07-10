@@ -228,6 +228,7 @@ export function PedidoDetalle({
   const [errorGen, setErrorGen] = useState<string | null>(null)
   const [avisoGen, setAvisoGen] = useState<string | null>(null)
   const [subiendoManual, setSubiendoManual] = useState<string | null>(null)
+  const [archivoManualNombre, setArchivoManualNombre] = useState<Record<string, string>>({})
   const manualInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const [trackingInput, setTrackingInput] = useState(pedido.trackingNumero ?? '')
   const [subiendoPdf, setSubiendoPdf] = useState(false)
@@ -648,8 +649,18 @@ export function PedidoDetalle({
                         ref={(el) => { manualInputRefs.current[img.id] = el }}
                         type="file"
                         accept="image/*"
-                        className="w-full text-[10px] text-stone-400"
+                        className="hidden"
+                        onChange={(e) =>
+                          setArchivoManualNombre((prev) => ({ ...prev, [img.id]: e.target.files?.[0]?.name ?? '' }))
+                        }
                       />
+                      <button
+                        type="button"
+                        onClick={() => manualInputRefs.current[img.id]?.click()}
+                        className="w-full text-[10px] font-bold py-1 rounded-full bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors truncate px-2"
+                      >
+                        {archivoManualNombre[img.id] || 'Elegir archivo…'}
+                      </button>
                       <button
                         onClick={() => subirManual(img)}
                         disabled={subiendoManual === img.id}
