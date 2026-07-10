@@ -750,6 +750,19 @@ export function PedidoDetalle({
           </div>
         </div>
 
+        <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
+          <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Descargar todo</p>
+          <p className="text-xs text-stone-500 mb-3">
+            Baja todas las imágenes del pedido (tapa, retiración de tapa/contratapa, contratapa y páginas interiores) juntas en un .zip, numeradas en el orden real del libro — para armar el PDF final a mano.
+          </p>
+          <a
+            href={`/api/admin/pedidos/${pedido.id}/descargar-imagenes`}
+            className="inline-block bg-brand-500 hover:bg-brand-600 text-white text-xs font-black px-4 py-2 rounded-full transition-colors"
+          >
+            📦 Descargar todas las imágenes (.zip)
+          </a>
+        </div>
+
         <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-5">
           <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Zona de peligro</p>
           <p className="text-xs text-stone-500 mb-3">
