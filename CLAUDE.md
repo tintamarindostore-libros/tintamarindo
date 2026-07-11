@@ -44,6 +44,8 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
 | Pago | MercadoPago (precio de lista) o transferencia bancaria (10% descuento) |
 | Botón de arrepentimiento | Obligatorio por ley, pero el producto es personalizado (excepción art. 1116 CCCN) — solo aplica si se cancela dentro de 48hs y antes de iniciar la generación |
 | Tapa | Solapa dentro de la pantalla de configuración, no un paso del checkout. La opción "Regalo" (tarjeta personalizada) se evaluó y se **eliminó** del producto — no reabrir sin pedido explícito |
+| Tarjeta de dedicatoria | El cliente elige entre diseños prediseñados en miniatura (o "Sin tarjeta"), no escribe un mensaje digital. Se imprime en blanco en la retiración de tapa para completar a mano. Catálogo en `web/lib/tarjetasDedicatoria.ts` |
+| Estados del pedido | `ESPERANDO_PAGO → ESPERANDO_GENERACION → EN_REVISION → ESPERANDO_APROBACION → APROBADO → EN_IMPOSICION → IMPRIMIENDO → ENVIADO`. Se puede mover manualmente con un desplegable en el admin (lista y detalle) — ver `web/lib/estados.ts` |
 | Temáticas por tamaño | 24 pág: hasta 8. 32 pág: hasta 15 + hasta 3 temáticas personalizadas (texto libre) |
 | Estilos por tamaño | 24 pág: hasta 3. 32 pág: hasta 4. Si hay varios, se aplican aleatoriamente |
 | Estilo de tapa | Selector obligatorio (Realista/Pixar/Anime/Ghibli), independiente de los estilos del interior |
@@ -71,24 +73,38 @@ tintamarindo/
 │   │   │   ├── faq/page.tsx        ← preguntas frecuentes
 │   │   │   ├── arrepentimiento/page.tsx ← botón de arrepentimiento
 │   │   │   └── terminos/page.tsx   ← términos y condiciones
-│   │   ├── crear/Wizard.tsx        ← wizard de pedido (state machine, 5 pasos + confirmación)
+│   │   ├── crear/Wizard.tsx        ← wizard de pedido (state machine, 5 pasos + confirmación; progreso persistido en sessionStorage para volver atrás sin recargar)
 │   │   ├── admin/                  ← panel de administración (protegido por ADMIN_EMAIL)
-│   │   │   ├── page.tsx            ← lista de pedidos con filtros
-│   │   │   └── [id]/PedidoDetalle.tsx ← detalle, generación imagen por imagen (tapa + páginas)
+│   │   │   ├── page.tsx            ← lista de pedidos con filtros + EstadoSelector (desplegable de estado)
+│   │   │   ├── EstadoSelector.tsx  ← desplegable para mover el estado de un pedido manualmente
+│   │   │   ├── cupones/            ← alta/edición de cupones de descuento
+│   │   │   ├── mensajes/           ← edición de plantillas de mensajes (PlantillaMensaje)
+│   │   │   ├── compradores/        ← listado de compradores
+│   │   │   └── [id]/PedidoDetalle.tsx ← detalle, generación imagen por imagen (tapa + páginas), desplegable de estado, descarga .zip de todas las imágenes, exportar prompts .txt
 │   │   └── api/
 │   │       ├── auth/[...nextauth]/ ← handler de NextAuth v5
-│   │       ├── upload/             ← subida de fotos a R2
-│   │       ├── preview/            ← generación de imagen de prueba con marca de agua
+│   │       ├── upload/             ← subida de fotos a R2 (+ upload/urls: firma URLs para fotos ya subidas, usado al restaurar el wizard)
+│   │       ├── preview/            ← generación de imagen de prueba con marca de agua (requiere sesión, 1 por usuario)
 │   │       ├── pedidos/            ← crear pedido, listar pedidos
-│   │       └── admin/pedidos/[id]/ ← generar (secuencial), imagenes/[imgId] (generar/regenerar/aprobar/prompt puntual), PDF, tracking
+│   │       ├── cupones/validar/    ← valida un cupón cargado por el cliente en el checkout
+│   │       ├── webhooks/mercadopago/ ← recibe confirmación de pago (firma HMAC verificada)
+│   │       └── admin/pedidos/[id]/ ← generar (secuencial), imagenes/[imgId] (generar/regenerar/aprobar/subir manual/prompt puntual), estado (mover manualmente), PDF, tracking, descargar-imagenes (.zip), descargar-prompts (.txt), verificar-pago, confirmar-transferencia
 │   ├── lib/
 │   │   ├── prisma.ts               ← cliente Prisma
 │   │   ├── r2.ts                   ← cliente Cloudflare R2 + URLs firmadas
 │   │   ├── generarImagen.ts        ← wrapper GPT-4o image generation (interior y tapa)
-│   │   ├── prompts.ts              ← prompts de generación (line art interior + color/tipografía tapa)
+│   │   ├── prompts.ts              ← prompts de generación (line art interior + color/tipografía tapa, por temática y estilo)
 │   │   ├── precios.ts              ← precios de lanzamiento del libro + descuento transferencia
 │   │   ├── envio.ts                ← costo de envío "a confirmar" (interino, sin API de MiCorreo)
-│   │   └── admin.ts                ← helpers del panel admin
+│   │   ├── estados.ts              ← lista de estados del pedido + labels, usado en admin y API
+│   │   ├── tarjetasDedicatoria.ts  ← catálogo de diseños de tarjeta de dedicatoria
+│   │   ├── cupones.ts              ← validación de cupones de descuento
+│   │   ├── confirmarPago.ts        ← reconfirma un pago contra la API de MercadoPago (webhook y pantalla de retorno)
+│   │   ├── notificarPedido.ts      ← aviso al dueño por WhatsApp vía webhook a n8n
+│   │   ├── datosBancarios.ts       ← datos para pago por transferencia
+│   │   ├── paginacion.ts           ← asignación de temática/estilo por página del libro
+│   │   ├── plantillas.ts           ← config de plantillas de mensajes
+│   │   └── admin.ts                ← helpers del panel admin (checkAdminAccess / requireAdmin)
 │   ├── prisma/schema.prisma        ← esquema DB (User, Pedido, FotoCliente, ImagenPedido)
 │   ├── auth.ts                     ← config NextAuth v5 (Google OAuth + Prisma adapter)
 │   ├── .env.local                  ← vars de entorno local (no commitear)
@@ -119,6 +135,16 @@ npx prisma db push   # aplicar cambios al esquema (no se usan migrations, ver no
 ```
 
 **Nota sobre el esquema de base de datos:** este proyecto usa `prisma db push` en vez de `prisma migrate` (no hay carpeta `prisma/migrations`). Cada cambio de schema requiere `npx prisma db push` seguido de `npx prisma generate`, y **reiniciar el servidor de desarrollo** — el proceso de `next dev` ya corriendo se queda con el cliente Prisma viejo en memoria y tira `Unknown argument` hasta reiniciarlo.
+
+## Seguridad
+
+Auditoría completa realizada el 2026-07-11 (código estático, autenticación/IDOR + validación de inputs/pagos). El hallazgo crítico (`/api/generate`, endpoint de generación de imágenes sin autenticación y sin uso real) se eliminó ese mismo día. Quedan pendientes, de riesgo medio, sin resolver todavía:
+
+- Webhook de MercadoPago (`app/api/webhooks/mercadopago/route.ts`) acepta avisos sin firma si falta `MERCADOPAGO_WEBHOOK_SECRET` en producción — debería fallar cerrado en vez de dejar pasar. Mitigado porque el pago igual se reconfirma contra la API de MercadoPago antes de aprobar un pedido.
+- `/api/preview` tiene una condición de carrera: dos pedidos simultáneos del mismo usuario podrían generar más de 1 vista previa gratis.
+- `/api/cupones/validar` no tiene límite de intentos — se podría probar códigos por fuerza bruta.
+
+No reabrir la revisión completa sin necesidad — son mejoras puntuales, no hay nada explotable hoy que comprometa datos, pagos o pedidos ajenos.
 
 ## Skills disponibles en este workspace
 

@@ -60,7 +60,8 @@ El cliente sube entre 2 y 5 fotos del niño o niña. Cuantas más fotos claras d
 
 - Se genera **a color** con IA (a diferencia del interior, que es blanco y negro para colorear), incluyendo el título/subtítulo como tipografía sobre la ilustración.
 - Vive como una **solapa** dentro de la Pantalla 1 (configuración), no es una pantalla aparte.
-- Campos: Título *(obligatorio)*, Subtítulo *(opcional)*, Observaciones *(opcional — se usan como instrucción adicional para el prompt de generación de la tapa)*, Dedicatoria *(opcional, se imprime en la contratapa o página especial)*.
+- Campos: Título *(obligatorio)*, Subtítulo *(opcional)*, Observaciones *(opcional — se usan como instrucción adicional para el prompt de generación de la tapa)*, Tarjeta de dedicatoria *(opcional)*.
+- **Tarjeta de dedicatoria:** el cliente no escribe un mensaje digital — elige entre varios diseños prediseñados en miniatura (o "Sin tarjeta"), con opción de ampliar cada uno antes de elegir. La tarjeta elegida se imprime en blanco en la retiración de tapa, para completar a mano. Catálogo en `web/lib/tarjetasDedicatoria.ts` (imágenes en `web/public/landing/tarjeta-dedicatoria-*.png`); se guarda el `id` del diseño en `Pedido.dedicatoria`.
 - Campo especial para subir una imagen de referencia para la tapa *(obligatorio)*, separado de las fotos del interior del libro.
 - **Estilo de tapa** *(obligatorio)*: Realista / Pixar / Anime / Ghibli — igual paleta de estilos que el interior, pero elegido aparte.
 - El admin puede cargar, por cada pedido, un "prompt extra" puntual para la generación de la tapa (por ejemplo indicaciones de color de letra o composición) antes de generarla o regenerarla.
@@ -71,7 +72,7 @@ Blanco, ahuesado o combinado. No cambia el precio. Se elige junto con tamaño/te
 
 ## Flujo del cliente (5 pantallas)
 
-1. **Configuración** — pantalla con dos solapas: **Interior** (tamaño 24/32 páginas; hasta 8 temáticas en 24 pág / hasta 15 en 32 pág, más hasta 3 temáticas personalizadas; hasta 3 estilos en 24 pág / hasta 4 en 32 pág; tipo de papel; opción de imagen familiar en 32 pág) y **Tapa** (título, subtítulo, observaciones, imagen específica, estilo de tapa, dedicatoria).
+1. **Configuración** — pantalla con dos solapas: **Interior** (tamaño 24/32 páginas; hasta 8 temáticas en 24 pág / hasta 15 en 32 pág, más hasta 3 temáticas personalizadas; hasta 3 estilos en 24 pág / hasta 4 en 32 pág; tipo de papel; opción de imagen familiar en 32 pág) y **Tapa** (título, subtítulo, observaciones, imagen específica, estilo de tapa, tarjeta de dedicatoria). Si el cliente sale a pagar y vuelve atrás, el progreso de estos pasos se conserva (no tiene que cargar todo de nuevo).
 2. **Login con Google + subida de fotos + popup de términos** — login obligatorio, sube 2-5 fotos, acepta política de privacidad de imágenes mediante popup con scroll obligatorio y checkbox.
 3. **Imagen de prueba** — se genera 1 imagen gratuita con marca de agua, ligada al Google ID. Botón de descarga. Si ya generó una prueba antes, se le muestra esa misma y se lo invita a completar el pedido.
 4. **Checkout** — formulario de datos de envío (incluye tipo de entrega: a domicilio o retiro en sucursal) + resumen del pedido con desglose de precio (libro + envío "a confirmar" + total a pagar ahora) + pago (MercadoPago o transferencia con descuento), todo en una sola pantalla. Navegación con botones "Atrás" y "Siguiente" uno al lado del otro en todos los pasos.
@@ -85,12 +86,12 @@ Blanco, ahuesado o combinado. No cambia el precio. Se elige junto con tamaño/te
 ## Flujo del dueño (panel de admin)
 
 1. Recibe notificación de pedido nuevo *(pendiente — hoy no hay notificación automática, hay que revisar el panel)*
-2. Ve las fotos, temática(s), estilo(s), tamaño, tipo de papel, datos de tapa (título/subtítulo/estilo/observaciones/dedicatoria) y datos de envío (tipo de entrega, estimado de costo) en el panel
-3. Genera las imágenes desde el panel — puede generar todas las faltantes en secuencia, o de a una por vez desde su propia card (para controlar el gasto de créditos y ajustar el resultado). La tapa se genera junto con las páginas interiores, a color y con tipografía
-4. Revisa cada imagen — puede regenerar las que no le gusten, y agregar un "prompt extra" puntual antes de regenerar
+2. Ve las fotos, temática(s), estilo(s), tamaño, tipo de papel, datos de tapa (título/subtítulo/estilo/observaciones/tarjeta de dedicatoria) y datos de envío (tipo de entrega, estimado de costo) en el panel
+3. Genera las imágenes desde el panel — puede generar todas las faltantes en secuencia, o de a una por vez desde su propia card (para controlar el gasto de créditos y ajustar el resultado). La tapa se genera junto con las páginas interiores, a color y con tipografía. También puede subir páginas manualmente (sin IA) cuando haga falta
+4. Revisa cada imagen — puede regenerar las que no le gusten, y agregar un "prompt extra" puntual antes de regenerar. Puede descargar todas las imágenes juntas en un .zip, o exportar los prompts en .txt para generarlas por afuera de la API si hiciera falta
 5. Arma el PDF completo
 6. Sube el PDF → *(pendiente: el cliente debería recibir email + WhatsApp con marca de agua para aprobarlo — hoy no hay envío de emails)*
-7. Cliente aprueba (o se aprueba automáticamente a los 5 días — cron pendiente) → dueño imprime, arma y envía
+7. Cliente aprueba (o se aprueba automáticamente a los 5 días — cron pendiente) → el pedido pasa por **Armando imposición** e **Imprimiendo** antes de enviarse. El estado de cada pedido (`ESPERANDO_PAGO` → `ESPERANDO_GENERACION` → `EN_REVISION` → `ESPERANDO_APROBACION` → `APROBADO` → `EN_IMPOSICION` → `IMPRIMIENDO` → `ENVIADO`) se puede mover manualmente con un desplegable al lado de cada pedido, tanto en el listado como en el detalle (`web/lib/estados.ts`)
 8. Carga el tracking → *(pendiente: el cliente debería recibir email de despacho — hoy no hay envío de emails)*
 
 ## Formulario de datos de envío

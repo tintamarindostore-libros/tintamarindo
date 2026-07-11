@@ -48,12 +48,12 @@ Cómo usar este archivo:
 - [x] Cards visuales: 24 páginas vs 32 páginas
 - [x] Mostrar diferencia de precio entre opciones
 - [x] Indicar qué incluye cada tamaño
-- [x] Selector de temática con preview visual (aventura, princesas, dinosaurios, espacio, animales, letras y números)
-- [ ] **Al seleccionar una temática, mostrar imagen de ejemplo real** — el dueño debe proveer imágenes de muestra por cada temática
-- [x] Limitar selección de temáticas según tamaño: hasta 3 en 24 páginas, hasta 5 en 32 páginas
+- [x] Selector de temáticas — listado tipo checklist de 2 columnas (más de 20 temáticas: aventura, princesas, dinosaurios, espacio, animales, letras y números, con un perrito, con un gatito, selección argentina, unicornios, sirenas, piratas, bomberos, policías, caballos, hadas, fútbol, circo, fondo del mar, robots, halloween, navidad)
+- [ ] **Al seleccionar una temática, mostrar imagen de ejemplo real** — el dueño debe proveer imágenes de muestra por cada temática (pendiente para la mayoría; ya están las de Ghibli en la landing)
+- [x] Limitar selección de temáticas según tamaño: hasta 8 en 24 páginas, hasta 15 en 32 páginas
 - [x] Campo de **temática personalizada** — permite cargar hasta 3 (antes solo una)
-- [x] Selector de estilo artístico (realista, Pixar, anime)
-- [x] Limitar selección de estilos según tamaño: hasta 2 en 24 páginas, hasta 3 en 32 páginas
+- [x] Selector de estilo artístico (Realista, Pixar, Anime, Ghibli)
+- [x] Limitar selección de estilos según tamaño: hasta 3 en 24 páginas, hasta 4 en 32 páginas
 - [x] Selector de tipo de papel: blanco / ahuesado / combinado
 - [x] Si el libro es de 32 páginas, habilitar opción de **imagen familiar**
 
@@ -66,7 +66,8 @@ Cómo usar este archivo:
 - [x] Validación: no se puede avanzar sin título e imagen de tapa
 - [x] Tabs Interior/Tapa repetidos al pie del paso 2 para que el cliente no se pierda
 - [ ] Vista previa de cómo queda la tapa con los datos cargados
-- [x] Selector de estilo para la tapa (Realista / Pixar / Anime, obligatorio junto con título e imagen)
+- [x] Selector de estilo para la tapa (Realista / Pixar / Anime / Ghibli, obligatorio junto con título e imagen)
+- [x] Tarjeta de dedicatoria — el cliente elige entre miniaturas de diseños prediseñados (o "Sin tarjeta"), con opción de ampliar cada una antes de elegir. Ya no es un campo de texto libre; se imprime en blanco en la retiración de tapa para completar a mano
 - [x] Generación real de la imagen de tapa con IA — integrada al mismo botón "Generar imágenes faltantes" del admin (se genera primero, antes que las páginas interiores). A color (no blanco y negro como el interior), incluye tipografía del título/subtítulo, usa `estiloTapa` + `observacionesTapa` como guía. Cada imagen (tapa o página) tiene un campo de "prompt extra" editable en el admin para instrucciones puntuales antes de generar/regenerar
 - [x] Botones "Atrás" y "Siguiente" uno al lado del otro en todos los pasos, con "Siguiente" destacado como acción principal
 
@@ -100,8 +101,8 @@ Cómo usar este archivo:
 - [x] Campos de envío completos (nombre, dirección, CP, localidad, provincia, teléfono, email)
 - [x] Dirección opcional si se elige "Retiro en sucursal" (el cliente puede no saber cuál es — se coordina después)
 - [x] Validaciones de todos los campos
-- [x] Campo: Dedicatoria (opcional)
 - [x] Resumen del pedido
+- [x] Si el cliente va a pagar y vuelve atrás, el progreso del wizard se conserva (sessionStorage) — no tiene que cargar todo de nuevo
 - [x] Costo de envío: por ahora **no se cobra en el checkout** (`estimarEnvio()` en `web/lib/envio.ts` devuelve siempre "a confirmar") mientras Correo Argentino no habilita la API de MiCorreo — decisión tomada para que esto no bloquee el lanzamiento. El cliente ve un aviso de que el costo se confirma por WhatsApp/email antes de despachar, y se cobra aparte en ese momento. Los precios por zona investigados anteriormente quedaron comentados en el código como referencia.
 - [ ] Reactivar la cotización automática por zona (o en tiempo real vía API de MiCorreo) cuando Correo Argentino dé acceso, y volver a cobrar el envío en el checkout
 - [x] Desglose de precio (libro + envío a confirmar + total a pagar ahora)
@@ -127,6 +128,11 @@ Cómo usar este archivo:
 - [x] Campo para número de tracking
 - [x] Indicador de días restantes para aprobación automática (5 días)
 - [ ] **Verificar:** que se guarden correctamente las 5 fotos al hacer un pedido nuevo (testear con pedido nuevo)
+- [x] Estados de "Armando imposición" e "Imprimiendo" agregados al flujo, entre Aprobado y Enviado
+- [x] Desplegable para mover el estado de un pedido manualmente (lista y detalle), en vez de depender solo de las transiciones automáticas
+- [x] Botón para descargar todas las imágenes del pedido juntas en un .zip
+- [x] Botón para exportar los prompts de cada página en un .txt, por si se generan las imágenes por afuera de la API
+- [x] Subida manual de páginas (sin IA) — corregido: ahora también dispara el pase a "En revisión" cuando se completa la última imagen pendiente (antes solo lo hacía la generación con IA)
 
 ---
 
@@ -180,11 +186,25 @@ Cómo usar este archivo:
 
 ---
 
+## 🔒 Seguridad
+
+Auditoría completa del sitio realizada el 2026-07-11.
+
+- [x] **Crítico:** eliminar `/api/generate` — endpoint viejo de generación de imágenes sin login, sin uso real (la muestra real ya usa `/api/preview`, protegido)
+- [ ] Riesgo medio: que el webhook de MercadoPago rechace avisos sin firma si falta `MERCADOPAGO_WEBHOOK_SECRET` en producción, en vez de dejarlos pasar
+- [ ] Riesgo medio: corregir condición de carrera en `/api/preview` que permitiría generar más de 1 vista previa gratis por usuario
+- [ ] Riesgo medio: límite de intentos en `/api/cupones/validar` para evitar prueba de códigos por fuerza bruta
+- [ ] Riesgo bajo: validar el contenido real (no solo el tipo declarado) de los archivos subidos en `/api/upload`
+- [ ] Riesgo bajo (opcional): atar `/pedido` (pantalla de estado post-pago) a la sesión del dueño del pedido
+- [ ] Agregar `middleware.ts` como red de respaldo para `/admin` y `/api/admin` (hoy cada página/endpoint chequea el acceso por su cuenta, y están todos bien protegidos, pero no hay una barrera central)
+- [ ] Agregar headers de seguridad estándar (CSP, etc.) en `next.config.ts`
+
 ## 📣 Campaña Día del Niño 2026
 
 - [ ] Día del Niño: domingo 9 de agosto de 2026
 - [ ] Fecha límite de pedido para entrega garantizada: antes del 15 de julio (a confirmar según tiempos reales de envío)
 - [x] Definir precio de lanzamiento para esta campaña — ver sección "Decisiones pendientes" / `web/lib/precios.ts`
+- [x] Badge destacado "🎁 Precio especial Día del Niño" en los precios de la home
 - [ ] Diseñar y difundir la campaña
 
 ---
