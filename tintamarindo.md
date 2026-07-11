@@ -245,11 +245,6 @@ Política de cancelación según Ley 24.240.
 
 ## 6. API Endpoints
 
-### Públicos (sin autenticación)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/generate` | Genera una página de colorear individual (home). Recibe `image` (File) + `style` (realista/infantil). Devuelve PNG en base64. Timeout: 120s. |
-
 ### Autenticados (requieren sesión Google)
 | Método | Ruta | Descripción |
 |--------|------|-------------|
