@@ -68,6 +68,78 @@ export const TEMATICA_PROMPT: Record<string, string[]> = {
     'braiding the rainbow mane of a gentle unicorn in a field of flowers',
     'flying through a starry sky on the back of a majestic winged unicorn',
   ],
+  Sirenas: [
+    'swimming through a colorful coral reef as a mermaid/merman, surrounded by tropical fish',
+    'sitting on a rock by the ocean under a starry sky, tail glimmering, waves below',
+    'exploring a sunken treasure chest with pearls and seashells scattered on the ocean floor',
+    'riding a friendly dolphin through crystal-clear underwater currents with sunlight beams',
+  ],
+  Piratas: [
+    'standing on the deck of a pirate ship, holding a spyglass, sails and waves in the background',
+    'digging for buried treasure on a tropical island with a treasure map and palm trees',
+    'steering the wheel of a pirate ship during an adventurous storm at sea',
+    'discovering a treasure chest overflowing with gold coins and jewels in a hidden cave',
+  ],
+  Bomberos: [
+    'riding on a fire truck with sirens and ladders, ready for action',
+    'wearing a firefighter helmet and uniform, holding a hose in front of a fire station',
+    'climbing a tall ladder on a fire truck, city buildings in the background',
+    'standing heroically next to a fire truck with hoses and rescue equipment nearby',
+  ],
+  Policías: [
+    'wearing a police uniform and badge, standing next to a police car with lights flashing',
+    'riding a police bike through a city street scene',
+    'wearing a police uniform, directing traffic at a busy intersection with a whistle',
+    'standing heroically in front of a police station with a badge shining',
+  ],
+  Caballos: [
+    'riding a majestic horse through an open meadow with mountains in the background',
+    'brushing and caring for a gentle horse in a cozy wooden stable',
+    'jumping over a fence on horseback at an equestrian show',
+    'standing beside a horse in a flower-filled pasture at sunset',
+  ],
+  Hadas: [
+    'flying through an enchanted forest with sparkling fairy dust trailing behind, tiny wings glowing',
+    'sitting on a giant mushroom in a magical garden, surrounded by fireflies and flowers',
+    'casting sparkling magic with a wand in a moonlit clearing full of fairy lights',
+    'perched on a flower petal alongside tiny fairy friends in an enchanted meadow',
+  ],
+  Fútbol: [
+    'kicking a soccer ball on the field, mid-action, stadium crowd cheering in the background',
+    'celebrating a goal with arms raised, confetti falling on the soccer field',
+    'wearing a soccer uniform, dribbling the ball past cones during practice',
+    'holding a soccer trophy up high, teammates cheering in the background',
+  ],
+  Circo: [
+    'walking a tightrope high above a circus ring, balancing pole in hand, spotlight shining',
+    'juggling colorful balls under the big top tent, circus audience cheering',
+    'riding a friendly circus elephant in a colorful parade under the big top',
+    'as a ringmaster in a circus ring, top hat and confetti falling, colorful tent in background',
+  ],
+  'Fondo del mar': [
+    'swimming among friendly sea turtles and colorful fish in a vibrant coral reef',
+    'exploring a sunken shipwreck surrounded by a curious octopus and schools of fish',
+    'meeting a gentle giant whale underwater, sunlight streaming from the surface above',
+    'discovering a hidden underwater cave full of glowing jellyfish and seashells',
+  ],
+  Robots: [
+    'piloting a giant friendly robot through a futuristic city skyline',
+    'building and tinkering with a cheerful robot friend in a workshop full of gears and gadgets',
+    'riding alongside a cute robot companion through a sci-fi laboratory full of blinking lights',
+    'exploring a futuristic space station with a friendly robot sidekick floating nearby',
+  ],
+  Halloween: [
+    'trick-or-treating in a cute costume through a spooky-but-friendly neighborhood with jack-o-lanterns',
+    'sitting in a pumpkin patch surrounded by friendly ghosts and carved pumpkins',
+    'wearing a fun costume at a Halloween party with bats, spider webs and candy decorations',
+    'walking through a friendly haunted house scene with cartoonish ghosts and cobwebs',
+  ],
+  Navidad: [
+    'decorating a Christmas tree with ornaments and lights next to a cozy fireplace',
+    'opening presents on Christmas morning surrounded by wrapped gifts and a decorated tree',
+    'building a snowman outside with a scarf and hat, snowflakes falling',
+    'sitting with Santa Claus by the Christmas tree, stockings hanging on the fireplace',
+  ],
 }
 
 // Descripción genérica para temáticas personalizadas sin situaciones manuales

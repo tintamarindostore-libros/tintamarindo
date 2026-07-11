@@ -60,6 +60,18 @@ const TEMATICAS: { id: string }[] = [
   { id: 'Con un gatito' },
   { id: 'Selección argentina' },
   { id: 'Unicornios' },
+  { id: 'Sirenas' },
+  { id: 'Piratas' },
+  { id: 'Bomberos' },
+  { id: 'Policías' },
+  { id: 'Caballos' },
+  { id: 'Hadas' },
+  { id: 'Fútbol' },
+  { id: 'Circo' },
+  { id: 'Fondo del mar' },
+  { id: 'Robots' },
+  { id: 'Halloween' },
+  { id: 'Navidad' },
 ]
 
 const ESTILOS: { id: Estilo; label: string; sub: string; Icon: (p: { className?: string }) => React.JSX.Element }[] = [
