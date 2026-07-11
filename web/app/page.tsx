@@ -304,6 +304,7 @@ export default function Page() {
           </div>
           <div className="pricing">
             <div className="card price-card">
+              <span className="badge-especial">🎁 Precio especial Día del Niño</span>
               <h3>24 páginas</h3>
               <div className="price">$49.900</div>
               <div className="price-transfer-box">
@@ -317,6 +318,7 @@ export default function Page() {
               <Link className="btn btn-primary" href="/crear">Crear un regalo personalizado →</Link>
             </div>
             <div className="card price-card">
+              <span className="badge-especial">🎁 Precio especial Día del Niño</span>
               <h3>32 páginas</h3>
               <div className="price">$59.900</div>
               <div className="price-transfer-box">
