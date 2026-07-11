@@ -352,7 +352,7 @@ export default function Page() {
               <path d="M4 4.5C28 6.5 56 3 84 5c25 1.8 48-2 72 .5" stroke="#E9A94A" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
             <h2>El momento de abrir el regalo</h2>
-            <p>La tapa lleva su nombre, a color. Adentro, una dedicatoria impresa escrita por vos: unas palabras que van a quedar guardadas junto con cada página que pinten.</p>
+            <p>La tapa lleva su nombre, a color. Adentro, una tarjeta de dedicatoria con el diseño que elijas, lista para completar a mano con unas palabras que van a quedar guardadas junto con cada página que pinten.</p>
             <p>Porque el libro se colorea una vez, pero se abre muchas más.</p>
           </div>
         </div>

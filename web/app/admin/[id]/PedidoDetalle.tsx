@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { formatoARS, precioFinalLibro } from '@/lib/precios'
 import { renderPlantilla } from '@/lib/plantillas'
 import { ESTADOS_PEDIDO, ESTADO_LABEL } from '@/lib/estados'
+import { TARJETAS_DEDICATORIA } from '@/lib/tarjetasDedicatoria'
 
 // La generación de imágenes puede tardar y, si se corta a mitad de camino
 // (timeout del servidor), llega una respuesta vacía que rompe JSON.parse.
@@ -562,8 +563,21 @@ export function PedidoDetalle({
                 {pedido.observacionesTapa && <p className="text-sm text-stone-300">Observaciones: <i>{pedido.observacionesTapa}</i></p>}
                 {pedido.dedicatoria && (
                   <div className="mt-2 p-2 bg-brand-500/10 rounded-lg border border-brand-500/20">
-                    <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-0.5">Dedicatoria</p>
-                    <p className="text-sm text-stone-200 italic">"{pedido.dedicatoria}"</p>
+                    <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Tarjeta de dedicatoria</p>
+                    {(() => {
+                      const tarjeta = TARJETAS_DEDICATORIA.find((t) => t.id === pedido.dedicatoria)
+                      return tarjeta ? (
+                        <div className="flex items-center gap-2">
+                          <img src={tarjeta.imagen} alt={tarjeta.label} className="w-12 h-16 object-cover rounded border border-stone-700" />
+                          <div>
+                            <p className="text-sm text-white font-medium">{tarjeta.label}</p>
+                            <a href={tarjeta.imagen} target="_blank" className="text-xs text-brand-400 underline">Ver / descargar para imprimir</a>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-stone-200">{pedido.dedicatoria}</p>
+                      )
+                    })()}
                   </div>
                 )}
               </div>

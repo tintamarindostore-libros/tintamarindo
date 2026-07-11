@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { PRECIO_LIBRO, precioTransferencia, formatoARS } from '@/lib/precios'
 import { estimarEnvio, type TipoEntrega } from '@/lib/envio'
 import { DATOS_BANCARIOS } from '@/lib/datosBancarios'
+import { TARJETAS_DEDICATORIA } from '@/lib/tarjetasDedicatoria'
 import '../landing.css'
 import {
   IconCamera, IconCheck, IconCircleDot, IconDownload,
@@ -436,6 +437,7 @@ export function Wizard({
   const [errorFamiliar, setErrorFamiliar] = useState<string | null>(null)
   const [subiendoImagenTapa, setSubiendoImagenTapa] = useState(false)
   const [errorImagenTapa, setErrorImagenTapa] = useState<string | null>(null)
+  const [tarjetaAmpliada, setTarjetaAmpliada] = useState<string | null>(null)
 
   // Paso 3 — Preview
   const [generandoPreview, setGenerandoPreview] = useState(false)
@@ -1186,17 +1188,45 @@ export function Wizard({
             </div>
 
             <div>
-              <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 block">
-                Dedicatoria <span className="font-normal normal-case">(opcional)</span>
+              <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 block">
+                Tarjeta de dedicatoria <span className="font-normal normal-case">(opcional)</span>
               </label>
-              <textarea
-                value={datosTapa.dedicatoria}
-                onChange={(e) => setDatosTapa((prev) => ({ ...prev, dedicatoria: e.target.value }))}
-                placeholder='Ej: "Con todo el amor del mundo, mamá y papá 💛"'
-                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-300 focus:outline-none"
-                rows={3}
-              />
-              <p className="text-xs text-stone-400 mt-1.5">Se imprime en la contratapa o en una página especial del libro</p>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDatosTapa((prev) => ({ ...prev, dedicatoria: '' }))}
+                  className={[
+                    'aspect-[4/5] rounded-xl border-2 flex flex-col items-center justify-center gap-1 text-center p-2 transition-all',
+                    datosTapa.dedicatoria === '' ? 'border-brand-400 bg-brand-50' : 'border-stone-100 hover:border-brand-200',
+                  ].join(' ')}
+                >
+                  <span className="text-xl">🚫</span>
+                  <span className="text-[10px] font-bold text-stone-600">Sin tarjeta</span>
+                </button>
+                {TARJETAS_DEDICATORIA.map((t) => (
+                  <div key={t.id} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setDatosTapa((prev) => ({ ...prev, dedicatoria: t.id }))}
+                      className={[
+                        'w-full aspect-[4/5] rounded-xl border-2 overflow-hidden transition-all',
+                        datosTapa.dedicatoria === t.id ? 'border-brand-400' : 'border-stone-100 hover:border-brand-200',
+                      ].join(' ')}
+                    >
+                      <img src={t.imagen} alt={t.label} className="w-full h-full object-cover" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTarjetaAmpliada(t.imagen)}
+                      className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs transition-colors"
+                      title="Ver en grande"
+                    >
+                      🔍
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-stone-400 mt-2">Esta tarjeta de dedicatoria se imprime en la retiración de tapa</p>
             </div>
           </div>
         )}
@@ -1233,6 +1263,26 @@ export function Wizard({
             ? 'Completá Tapa para continuar'
             : 'Siguiente →'}
         </PasoNav>
+
+        {tarjetaAmpliada && (
+          <div
+            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6"
+            onClick={() => setTarjetaAmpliada(null)}
+          >
+            <img
+              src={tarjetaAmpliada}
+              alt="Tarjeta de dedicatoria ampliada"
+              className="max-w-full max-h-full rounded-2xl shadow-2xl"
+            />
+            <button
+              type="button"
+              onClick={() => setTarjetaAmpliada(null)}
+              className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full w-9 h-9 flex items-center justify-center text-lg font-bold text-stone-700 transition-colors"
+            >
+              ×
+            </button>
+          </div>
+        )}
       </Shell>
     )
   }
