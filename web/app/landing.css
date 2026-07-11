@@ -342,6 +342,8 @@
   margin-top: var(--space-8); background: var(--ocre); color: var(--tinta); border-radius: var(--radius-card);
   padding: var(--space-5) var(--space-6); text-align: center; font-weight: var(--weight-button); font-size: var(--text-base);
 }
+.tm-landing .banner-dia-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-top: var(--space-8); }
+.tm-landing .banner-dia-grid .banner-dia { margin-top: 0; }
 
 /* ---------- FAQ ---------- */
 .tm-landing .faq-list { max-width: 720px; margin: 0 auto; }
@@ -374,6 +376,7 @@
   .tm-landing .diff-grid, .tm-landing .styles-grid, .tm-landing .trust-grid { grid-template-columns: 1fr; }
   .tm-landing .steps { grid-template-columns: 1fr; }
   .tm-landing .themes-grid { grid-template-columns: repeat(2, 1fr); }
+  .tm-landing .banner-dia-grid { grid-template-columns: 1fr; }
   .tm-landing .pricing { grid-template-columns: 1fr; }
   .tm-landing .dedic .wrap { grid-template-columns: 1fr; }
   .tm-landing .compare-grid { grid-template-columns: repeat(2, 1fr); }

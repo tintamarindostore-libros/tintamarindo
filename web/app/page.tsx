@@ -265,9 +265,15 @@ export default function Page() {
               </div>
             ))}
           </div>
-          <div className="banner-dia" style={{ backgroundColor: '#FDE6D5' }}>
-            <h3 style={{ fontSize: '22px', textAlign: 'center' }}>¿Otra idea?</h3>
-            <p style={{ color: '#111111B3' }}>Sumá hasta 3 temáticas propias. Por ejemplo: &ldquo;Danza clásica, automóviles o su equipo de fútbol&rdquo;.</p>
+          <div className="banner-dia-grid">
+            <div className="banner-dia" style={{ backgroundColor: '#FDE6D5' }}>
+              <h3 style={{ fontSize: '22px', textAlign: 'center' }}>¡Hay muchas más!</h3>
+              <p style={{ color: '#111111B3' }}>Estas son solo algunas — al armar tu libro vas a poder elegir entre muchas más temáticas.</p>
+            </div>
+            <div className="banner-dia" style={{ backgroundColor: '#FDE6D5' }}>
+              <h3 style={{ fontSize: '22px', textAlign: 'center' }}>¿Otra idea?</h3>
+              <p style={{ color: '#111111B3' }}>También podés sumar temáticas propias. Por ejemplo: &ldquo;Danza clásica, automóviles o su equipo de fútbol&rdquo;.</p>
+            </div>
           </div>
         </div>
       </section>
