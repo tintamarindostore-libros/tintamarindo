@@ -8,7 +8,9 @@ import { validarCupon } from '@/lib/cupones'
 import { notificarPedidoPagado } from '@/lib/notificarPedido'
 
 const PAGINAS_POR_TAMANO: Record<string, number> = { CHICO: 24, GRANDE: 32 }
-const ESTILOS_VALIDOS = ['REALISTA', 'PIXAR', 'ANIME']
+const MAX_TEMATICAS_POR_TAMANO: Record<string, number> = { CHICO: 8, GRANDE: 15 }
+const MAX_ESTILOS_POR_TAMANO: Record<string, number> = { CHICO: 3, GRANDE: 4 }
+const ESTILOS_VALIDOS = ['REALISTA', 'PIXAR', 'ANIME', 'GHIBLI']
 const PAPELES_VALIDOS = ['BLANCO', 'AHUESADO', 'COMBINADO']
 const TIPOS_ENTREGA_VALIDOS = ['SUCURSAL', 'DOMICILIO']
 const MEDIOS_PAGO_VALIDOS = ['MERCADOPAGO', 'TRANSFERENCIA']
@@ -69,11 +71,17 @@ export async function POST(req: NextRequest) {
     if (tematicas.length === 0 && !hayTematicaPersonalizada) {
       return NextResponse.json({ error: 'Falta al menos una temática' }, { status: 400 })
     }
+    if (tematicas.length > MAX_TEMATICAS_POR_TAMANO[tamano]) {
+      return NextResponse.json({ error: `Hasta ${MAX_TEMATICAS_POR_TAMANO[tamano]} temáticas para este tamaño` }, { status: 400 })
+    }
     if (!Array.isArray(estilos) || estilos.length === 0) {
       return NextResponse.json({ error: 'Falta al menos un estilo' }, { status: 400 })
     }
     if (!estilos.every((e: string) => ESTILOS_VALIDOS.includes(e))) {
       return NextResponse.json({ error: 'Estilo inválido' }, { status: 400 })
+    }
+    if (estilos.length > MAX_ESTILOS_POR_TAMANO[tamano]) {
+      return NextResponse.json({ error: `Hasta ${MAX_ESTILOS_POR_TAMANO[tamano]} estilos para este tamaño` }, { status: 400 })
     }
     if (tipoPapel && !PAPELES_VALIDOS.includes(tipoPapel)) {
       return NextResponse.json({ error: 'Tipo de papel inválido' }, { status: 400 })

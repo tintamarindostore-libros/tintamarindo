@@ -44,9 +44,9 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
 | Pago | MercadoPago (precio de lista) o transferencia bancaria (10% descuento) |
 | Botón de arrepentimiento | Obligatorio por ley, pero el producto es personalizado (excepción art. 1116 CCCN) — solo aplica si se cancela dentro de 48hs y antes de iniciar la generación |
 | Tapa | Solapa dentro de la pantalla de configuración, no un paso del checkout. La opción "Regalo" (tarjeta personalizada) se evaluó y se **eliminó** del producto — no reabrir sin pedido explícito |
-| Temáticas por tamaño | 24 pág: hasta 3. 32 pág: hasta 5 + hasta 3 temáticas personalizadas (texto libre) |
-| Estilos por tamaño | 24 pág: hasta 2. 32 pág: hasta 3. Si hay varios, se aplican aleatoriamente |
-| Estilo de tapa | Selector obligatorio (Realista/Pixar/Anime), independiente de los estilos del interior |
+| Temáticas por tamaño | 24 pág: hasta 8. 32 pág: hasta 15 + hasta 3 temáticas personalizadas (texto libre) |
+| Estilos por tamaño | 24 pág: hasta 3. 32 pág: hasta 4. Si hay varios, se aplican aleatoriamente |
+| Estilo de tapa | Selector obligatorio (Realista/Pixar/Anime/Ghibli), independiente de los estilos del interior |
 | Imagen familiar | Solo en 32 pág. El cliente sube foto grupal; la IA dibuja a todo el grupo como personajes en la escena |
 | Tipo de entrega | Sucursal (dirección opcional, se coordina después) o domicilio |
 

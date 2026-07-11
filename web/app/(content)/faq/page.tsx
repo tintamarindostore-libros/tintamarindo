@@ -81,8 +81,8 @@ export default function FAQPage() {
             q: '¿Qué temáticas puedo elegir?',
             a: (
               <>
-                <p>Por ahora ofrecemos seis temáticas: Aventura, Princesas, Dinosaurios, Espacio, Animales y Letras y números.</p>
-                <p>Si elegís el libro de 24 páginas, podés combinar hasta 3 temáticas distintas. Si elegís el libro de 32 páginas, podés combinar hasta 5. Además, en cualquiera de los dos tamaños podés agregar hasta 3 temáticas personalizadas: por ejemplo, podés pedir una temática de fútbol con el equipo favorito de tu hijo, un deporte en particular, u otras ideas. Vamos a ir sumando temáticas nuevas con el tiempo.</p>
+                <p>Tenemos más de 20 temáticas para elegir — Aventura, Princesas, Dinosaurios, Espacio, Animales, Letras y números, Piratas, Sirenas, Unicornios, Robots, y muchas más. Las vas a ver todas al armar tu libro.</p>
+                <p>Si elegís el libro de 24 páginas, podés combinar hasta 8 temáticas distintas. Si elegís el libro de 32 páginas, podés combinar hasta 15. Además, en cualquiera de los dos tamaños podés agregar hasta 3 temáticas personalizadas: por ejemplo, podés pedir una temática de fútbol con el equipo favorito de tu hijo, un deporte en particular, u otras ideas. Vamos a ir sumando temáticas nuevas con el tiempo.</p>
               </>
             ),
           },
@@ -94,13 +94,14 @@ export default function FAQPage() {
             q: '¿Qué estilos artísticos puedo elegir?',
             a: (
               <>
-                <p>Tenés tres estilos disponibles:</p>
+                <p>Tenés cuatro estilos disponibles:</p>
                 <ul className="list-disc list-inside space-y-1 ml-1">
                   <li><strong>Realista</strong> — trazos detallados, proporciones naturales, sombreado suave.</li>
                   <li><strong>Pixar</strong> — formas redondeadas, expresivo, fiel a los rasgos faciales.</li>
                   <li><strong>Anime</strong> — ojos grandes, líneas definidas, estética japonesa.</li>
+                  <li><strong>Ghibli</strong> — pintado a mano, cálido y fantástico, inspirado en el cine de animación japonés.</li>
                 </ul>
-                <p>En el libro de 24 páginas podés elegir hasta 2 estilos, y en el de 32 páginas hasta 3. Si elegís más de uno, los estilos seleccionados se aplican de forma aleatoria entre las distintas ilustraciones del libro.</p>
+                <p>En el libro de 24 páginas podés elegir hasta 3 estilos, y en el de 32 páginas hasta 4. Si elegís más de uno, los estilos seleccionados se aplican de forma aleatoria entre las distintas ilustraciones del libro.</p>
               </>
             ),
           },

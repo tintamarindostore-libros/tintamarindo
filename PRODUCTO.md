@@ -11,8 +11,8 @@
 
 ## Temáticas disponibles
 
-Aventura / Princesas / Dinosaurios / Espacio / Animales / Letras y números
-*(Lista configurable — no hardcodear en lógica, usar config)*
+Más de 20 temáticas predefinidas: Aventura, Princesas, Dinosaurios, Espacio, Animales, Letras y números, Con un perrito, Con un gatito, Selección argentina, Unicornios, Sirenas, Piratas, Bomberos, Policías, Caballos, Hadas, Fútbol, Circo, Fondo del mar, Robots, Halloween, Navidad.
+*(Lista configurable — no hardcodear en lógica, usar config. Ver `web/app/crear/Wizard.tsx` para la lista completa y actualizada.)*
 
 **Letras y números:** el niño o niña aparece apoyado/a en una letra o número gigante, corpóreo (como una escultura del tamaño de una construcción pequeña), con otras letras y números más chicos de fondo, a modo de escenario tipo "patio de juegos" del abecedario.
 
@@ -20,8 +20,8 @@ Aventura / Princesas / Dinosaurios / Espacio / Animales / Letras y números
 
 | | 24 páginas | 32 páginas |
 |---|---|---|
-| Temáticas elegibles | Hasta 3 | Hasta 5 |
-| Estilos artísticos elegibles | Hasta 2 | Hasta 3 |
+| Temáticas elegibles | Hasta 8 | Hasta 15 |
+| Estilos artísticos elegibles | Hasta 3 | Hasta 4 |
 | Temáticas personalizadas | Hasta 3 (cualquier tamaño) | Hasta 3 (cualquier tamaño) |
 | Imagen familiar | No | Sí |
 
@@ -38,10 +38,11 @@ Sugerencias de nuevas temáticas se reciben en sugerencias@gmail.com (mencionado
 - **Realista** — trazos detallados, proporciones naturales
 - **Pixar** — formas redondeadas, expresivo, caricaturesco
 - **Anime** — ojos grandes, líneas definidas, estética japonesa
+- **Ghibli** — pintado a mano, cálido y fantástico, inspirado en el cine de animación japonés
 
-El cliente puede elegir más de un estilo para el interior (hasta 2 en 24 páginas, hasta 3 en 32 páginas). Si se eligen varios estilos, se aplican de forma aleatoria entre las distintas ilustraciones del libro.
+El cliente puede elegir más de un estilo para el interior (hasta 3 en 24 páginas, hasta 4 en 32 páginas). Si se eligen varios estilos, se aplican de forma aleatoria entre las distintas ilustraciones del libro.
 
-**Estilo de tapa:** selección aparte y obligatoria (uno solo de los tres), independiente de los estilos elegidos para el interior — ver sección "Tapa del libro".
+**Estilo de tapa:** selección aparte y obligatoria (uno solo de los cuatro), independiente de los estilos elegidos para el interior — ver sección "Tapa del libro".
 
 ## Tipos de páginas del libro
 
@@ -61,7 +62,7 @@ El cliente sube entre 2 y 5 fotos del niño o niña. Cuantas más fotos claras d
 - Vive como una **solapa** dentro de la Pantalla 1 (configuración), no es una pantalla aparte.
 - Campos: Título *(obligatorio)*, Subtítulo *(opcional)*, Observaciones *(opcional — se usan como instrucción adicional para el prompt de generación de la tapa)*, Dedicatoria *(opcional, se imprime en la contratapa o página especial)*.
 - Campo especial para subir una imagen de referencia para la tapa *(obligatorio)*, separado de las fotos del interior del libro.
-- **Estilo de tapa** *(obligatorio)*: Realista / Pixar / Anime — igual paleta de estilos que el interior, pero elegido aparte.
+- **Estilo de tapa** *(obligatorio)*: Realista / Pixar / Anime / Ghibli — igual paleta de estilos que el interior, pero elegido aparte.
 - El admin puede cargar, por cada pedido, un "prompt extra" puntual para la generación de la tapa (por ejemplo indicaciones de color de letra o composición) antes de generarla o regenerarla.
 
 ## Tipo de papel
@@ -70,7 +71,7 @@ Blanco, ahuesado o combinado. No cambia el precio. Se elige junto con tamaño/te
 
 ## Flujo del cliente (5 pantallas)
 
-1. **Configuración** — pantalla con dos solapas: **Interior** (tamaño 24/32 páginas; hasta 3 temáticas en 24 pág / hasta 5 en 32 pág, más hasta 3 temáticas personalizadas; hasta 2 estilos en 24 pág / hasta 3 en 32 pág; tipo de papel; opción de imagen familiar en 32 pág) y **Tapa** (título, subtítulo, observaciones, imagen específica, estilo de tapa, dedicatoria).
+1. **Configuración** — pantalla con dos solapas: **Interior** (tamaño 24/32 páginas; hasta 8 temáticas en 24 pág / hasta 15 en 32 pág, más hasta 3 temáticas personalizadas; hasta 3 estilos en 24 pág / hasta 4 en 32 pág; tipo de papel; opción de imagen familiar en 32 pág) y **Tapa** (título, subtítulo, observaciones, imagen específica, estilo de tapa, dedicatoria).
 2. **Login con Google + subida de fotos + popup de términos** — login obligatorio, sube 2-5 fotos, acepta política de privacidad de imágenes mediante popup con scroll obligatorio y checkbox.
 3. **Imagen de prueba** — se genera 1 imagen gratuita con marca de agua, ligada al Google ID. Botón de descarga. Si ya generó una prueba antes, se le muestra esa misma y se lo invita a completar el pedido.
 4. **Checkout** — formulario de datos de envío (incluye tipo de entrega: a domicilio o retiro en sucursal) + resumen del pedido con desglose de precio (libro + envío "a confirmar" + total a pagar ahora) + pago (MercadoPago o transferencia con descuento), todo en una sola pantalla. Navegación con botones "Atrás" y "Siguiente" uno al lado del otro en todos los pasos.

@@ -3,6 +3,7 @@ export const ESTILO_PROMPT: Record<string, string> = {
 Variable line weight: thick bold outer contours, thin fine interior detail lines. Preserve the exact facial features and likeness of the child.`,
   PIXAR: `STYLE: Pixar-like 3D animated movie look redrawn as line art — rounded expressive shapes, big friendly eyes, soft simplified proportions, charming and warm. Keep the child's likeness recognizable but stylized.`,
   ANIME: `STYLE: Japanese anime line art — large expressive eyes, clean defined lines, dynamic hair shapes. Keep the child's likeness recognizable but stylized.`,
+  GHIBLI: `STYLE: Studio Ghibli-inspired hand-painted anime line art — soft rounded features, warm expressive eyes, gentle whimsical linework reminiscent of Miyazaki films. Keep the child's likeness recognizable but stylized.`,
 }
 
 // Varias situaciones por temática — para que páginas repetidas con la misma
@@ -211,6 +212,7 @@ export const ESTILO_PROMPT_TAPA: Record<string, string> = {
   REALISTA: `STYLE: Vibrant, fully-colored children's book cover illustration, semi-realistic style with soft painterly shading and warm lighting. Preserve the exact facial features and likeness of the child.`,
   PIXAR: `STYLE: Pixar-like 3D animated movie look, fully rendered in vivid color — rounded expressive shapes, big friendly eyes, soft simplified proportions, warm lighting and shading. Keep the child's likeness recognizable but stylized.`,
   ANIME: `STYLE: Japanese anime illustration, fully rendered in vivid color — large expressive eyes, clean defined lines, dynamic hair shapes, vibrant color palette. Keep the child's likeness recognizable but stylized.`,
+  GHIBLI: `STYLE: Studio Ghibli-inspired illustration, fully rendered in soft vivid color — warm painterly backgrounds, gentle whimsical characters, lush nature details reminiscent of Miyazaki films. Keep the child's likeness recognizable but stylized.`,
 }
 
 const BASE_PROMPT_TAPA = `Design a premium, full-color children's book COVER illustration featuring this child as the main character.

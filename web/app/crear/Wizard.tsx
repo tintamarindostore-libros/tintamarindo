@@ -8,11 +8,11 @@ import { DATOS_BANCARIOS } from '@/lib/datosBancarios'
 import '../landing.css'
 import {
   IconCamera, IconCheck, IconCircleDot, IconDownload,
-  IconPen, IconBlob, IconSparkle, IconFamily, IconImage, IconGift, IconBook,
+  IconPen, IconBlob, IconSparkle, IconLeaf, IconFamily, IconImage, IconGift, IconBook,
 } from './icons'
 
 type Tamano = 'CHICO' | 'GRANDE'
-type Estilo = 'REALISTA' | 'PIXAR' | 'ANIME'
+type Estilo = 'REALISTA' | 'PIXAR' | 'ANIME' | 'GHIBLI'
 type TipoPapel = 'BLANCO' | 'AHUESADO' | 'COMBINADO'
 type Solapa = 'interior' | 'tapa'
 
@@ -78,6 +78,7 @@ const ESTILOS: { id: Estilo; label: string; sub: string; Icon: (p: { className?:
   { id: 'REALISTA', label: 'Realista', sub: 'Rasgos detallados, estilo cómic', Icon: IconPen },
   { id: 'PIXAR', label: 'Pixar', sub: 'Redondeado, tierno y expresivo', Icon: IconBlob },
   { id: 'ANIME', label: 'Anime', sub: 'Ojos grandes, estética japonesa', Icon: IconSparkle },
+  { id: 'GHIBLI', label: 'Ghibli', sub: 'Pintado a mano, cálido y fantástico', Icon: IconLeaf },
 ]
 
 const TIPOS_PAPEL: { id: TipoPapel; label: string; sub: string }[] = [
@@ -561,8 +562,8 @@ export function Wizard({
 
   const eliminarFoto = (key: string) => setFotos((prev) => prev.filter((f) => f.key !== key))
 
-  const maxTematicas = config.tamano === 'GRANDE' ? 5 : 3
-  const maxEstilos = config.tamano === 'GRANDE' ? 3 : 2
+  const maxTematicas = config.tamano === 'GRANDE' ? 15 : 8
+  const maxEstilos = config.tamano === 'GRANDE' ? 4 : 3
 
   const toggleTematica = (id: string) => {
     setConfig((prev) => {
@@ -584,8 +585,8 @@ export function Wizard({
     setConfig((prev) => ({
       ...prev,
       tamano: t,
-      tematicas: prev.tematicas.slice(0, t === 'GRANDE' ? 5 : 3),
-      estilos: prev.estilos.slice(0, t === 'GRANDE' ? 3 : 2),
+      tematicas: prev.tematicas.slice(0, t === 'GRANDE' ? 15 : 8),
+      estilos: prev.estilos.slice(0, t === 'GRANDE' ? 4 : 3),
       fotoFamiliarKey: t === 'CHICO' ? null : prev.fotoFamiliarKey,
     }))
   }

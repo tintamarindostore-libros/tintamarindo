@@ -291,7 +291,7 @@ export default function Page() {
             <EstiloFlipCard foto="/landing/paso1-fotos.jpg" linea="/landing/estilo-pixar-linea.jpg" label="Pixar" />
             <EstiloFlipCard foto="/landing/estilo-anime-foto.jpg" linea="/landing/estilo-anime-linea.jpg" label="Anime" />
           </div>
-          <p className="styles-note">Combinables: hasta 2 estilos en 24 páginas, hasta 3 en 32.</p>
+          <p className="styles-note">Combinables: hasta 3 estilos en 24 páginas, hasta 4 en 32.</p>
         </div>
       </section>
 
@@ -311,8 +311,8 @@ export default function Page() {
                 <span className="price-alt-note">10% de descuento pagando por transferencia bancaria</span>
               </div>
               <ul>
-                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 3 temáticas</li>
-                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 2 estilos</li>
+                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 8 temáticas</li>
+                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 3 estilos</li>
               </ul>
               <Link className="btn btn-primary" href="/crear">Crear un regalo personalizado →</Link>
             </div>
@@ -324,8 +324,8 @@ export default function Page() {
                 <span className="price-alt-note">10% de descuento pagando por transferencia bancaria</span>
               </div>
               <ul>
-                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 5 temáticas</li>
-                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 3 estilos</li>
+                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 15 temáticas</li>
+                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 4 estilos</li>
                 <li><span className="badge-ocre">+ Ilustración familiar</span></li>
                 <li>Subís una foto grupal y toda la familia queda dibujada en una página.</li>
               </ul>

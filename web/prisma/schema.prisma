@@ -224,6 +224,7 @@ enum Estilo {
   REALISTA
   PIXAR
   ANIME
+  GHIBLI
 }
 
 enum TipoPapel {

@@ -133,6 +133,15 @@ export function IconSparkle({ className }: IconProps) {
   )
 }
 
+export function IconLeaf({ className }: IconProps) {
+  return (
+    <svg className={className} {...base}>
+      <path d="M5 19c-1-6 2-13 14-14 1 9-4 14-14 14Z" />
+      <path d="M6 18c3-4 6-7 12-11" />
+    </svg>
+  )
+}
+
 export function IconFamily({ className }: IconProps) {
   return (
     <svg className={className} {...base}>
