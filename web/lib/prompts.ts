@@ -44,6 +44,30 @@ export const TEMATICA_PROMPT: Record<string, string[]> = {
     'climbing and playing among a row of giant colorful building-block letters like a playground',
     'sitting atop a giant number balanced like a seesaw, with smaller numbers scattered playfully around',
   ],
+  'Con un perrito': [
+    'playing fetch with a happy puppy in a sunny park, throwing a ball',
+    'cuddling a fluffy puppy on a cozy blanket, surrounded by little paw prints',
+    'walking a happy dog on a leash through a tree-lined path',
+    'giving a puppy a bubble bath in a bucket, both covered in soap foam',
+  ],
+  'Con un gatito': [
+    'playing with a curious kitten and a ball of yarn on the floor',
+    'cuddling a fluffy kitten on a soft cushion, both looking cozy',
+    'feeding a kitten from a little bowl in a cheerful kitchen scene',
+    'a kitten perched on their shoulder while they smile, surrounded by paw print decorations',
+  ],
+  'Selección argentina': [
+    'wearing a light blue and white striped soccer jersey like the Argentina national team, celebrating a goal on a soccer field with confetti falling',
+    'wearing a light blue and white striped soccer jersey, holding a trophy up high like a champion, stadium lights in the background',
+    'wearing a light blue and white striped soccer jersey, dribbling a soccer ball on the field with the crowd cheering in the stands',
+    'wearing a light blue and white striped soccer jersey, wrapped in a flag, celebrating with teammates silhouettes in the background',
+  ],
+  Unicornios: [
+    'riding a magical unicorn with a flowing rainbow mane through a sparkling meadow',
+    'surrounded by friendly cartoon unicorns in an enchanted forest with rainbows and stars',
+    'braiding the rainbow mane of a gentle unicorn in a field of flowers',
+    'flying through a starry sky on the back of a majestic winged unicorn',
+  ],
 }
 
 // Descripción genérica para temáticas personalizadas sin situaciones manuales

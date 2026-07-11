@@ -7,8 +7,8 @@ import { estimarEnvio, type TipoEntrega } from '@/lib/envio'
 import { DATOS_BANCARIOS } from '@/lib/datosBancarios'
 import '../landing.css'
 import {
-  IconCamera, IconCheck, IconCircleDot, IconDownload, IconCompass, IconCrown, IconEgg,
-  IconRocket, IconPaw, IconPen, IconBlob, IconSparkle, IconFamily, IconImage, IconGift, IconBook,
+  IconCamera, IconCheck, IconCircleDot, IconDownload,
+  IconPen, IconBlob, IconSparkle, IconFamily, IconImage, IconGift, IconBook,
 } from './icons'
 
 type Tamano = 'CHICO' | 'GRANDE'
@@ -49,13 +49,17 @@ type DatosEnvio = {
   tipoEntrega: TipoEntrega
 }
 
-const TEMATICAS: { id: string; Icon?: (p: { className?: string }) => React.JSX.Element; letras?: boolean }[] = [
-  { id: 'Aventura', Icon: IconCompass },
-  { id: 'Princesas', Icon: IconCrown },
-  { id: 'Dinosaurios', Icon: IconEgg },
-  { id: 'Espacio', Icon: IconRocket },
-  { id: 'Animales', Icon: IconPaw },
-  { id: 'Letras y números', letras: true },
+const TEMATICAS: { id: string }[] = [
+  { id: 'Aventura' },
+  { id: 'Princesas' },
+  { id: 'Dinosaurios' },
+  { id: 'Espacio' },
+  { id: 'Animales' },
+  { id: 'Letras y números' },
+  { id: 'Con un perrito' },
+  { id: 'Con un gatito' },
+  { id: 'Selección argentina' },
+  { id: 'Unicornios' },
 ]
 
 const ESTILOS: { id: Estilo; label: string; sub: string; Icon: (p: { className?: string }) => React.JSX.Element }[] = [
@@ -875,29 +879,29 @@ export function Wizard({
                     <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Temática</p>
                     <span className="text-xs text-stone-400">{config.tematicas.length}/{maxTematicas}</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-1.5">
                     {TEMATICAS.map((t) => {
                       const sel = config.tematicas.includes(t.id)
                       const lleno = !sel && config.tematicas.length >= maxTematicas
                       return (
-                        <button
+                        <label
                           key={t.id}
-                          onClick={() => toggleTematica(t.id)}
-                          disabled={lleno}
                           className={[
-                            'rounded-xl border-2 p-3 text-center transition-all',
+                            'flex items-center gap-2 rounded-lg border px-3 py-2 transition-all',
                             sel ? 'border-brand-400 bg-brand-50'
                               : lleno ? 'border-stone-100 opacity-40 cursor-not-allowed'
-                              : 'border-stone-100 hover:border-brand-200',
+                              : 'border-stone-200 hover:border-brand-200 cursor-pointer',
                           ].join(' ')}
                         >
-                          {t.letras ? (
-                            <div className="font-black text-lg text-brand-500" style={{ fontFamily: 'var(--font-display)' }}>Aa</div>
-                          ) : t.Icon ? (
-                            <t.Icon className="w-6 h-6 mx-auto text-brand-500" />
-                          ) : null}
-                          <div className="text-xs font-bold text-stone-700 mt-1">{t.id}</div>
-                        </button>
+                          <input
+                            type="checkbox"
+                            checked={sel}
+                            disabled={lleno}
+                            onChange={() => toggleTematica(t.id)}
+                            className="w-4 h-4 accent-brand-500 shrink-0"
+                          />
+                          <span className="text-sm text-stone-700">{t.id}</span>
+                        </label>
                       )
                     })}
                   </div>
