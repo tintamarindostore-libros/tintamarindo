@@ -80,6 +80,43 @@ const PROVINCIAS = [
 
 const TIPOS_ACEPTADOS = 'image/jpeg,image/png,image/webp,image/heic,image/heif'
 
+// Guardamos el progreso del wizard en sessionStorage: al pagar con MercadoPago
+// se navega a un sitio externo, y si el cliente vuelve con el botón "atrás" del
+// navegador, React perdió todo el estado en memoria — sin esto, volvía a
+// empezar desde el paso 1 en vez de retomar donde había quedado.
+const WIZARD_STORAGE_KEY = 'tintamarindo_wizard_v1'
+const WIZARD_STORAGE_MAX_EDAD_MS = 2 * 60 * 60 * 1000 // 2 horas
+
+type WizardSnapshot = {
+  paso: number
+  fotos: { key: string; nombre: string }[]
+  aceptoPrivacidad: boolean
+  config: Config
+  datosTapa: DatosTapa
+  envio: DatosEnvio
+  medioPago: 'MERCADOPAGO' | 'TRANSFERENCIA'
+  cuponAplicado: { codigo: string; descuentoPorcentaje: number } | null
+  guardadoEn: number
+}
+
+function leerSnapshotGuardado(): WizardSnapshot | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(WIZARD_STORAGE_KEY)
+    if (!raw) return null
+    const datos = JSON.parse(raw) as WizardSnapshot
+    if (Date.now() - datos.guardadoEn > WIZARD_STORAGE_MAX_EDAD_MS) return null
+    return datos
+  } catch {
+    return null
+  }
+}
+
+function borrarSnapshotGuardado() {
+  if (typeof window === 'undefined') return
+  sessionStorage.removeItem(WIZARD_STORAGE_KEY)
+}
+
 function CampoEnvio({
   label,
   value,
@@ -238,7 +275,11 @@ function WizardHeader() {
         <Link href="/">
           <img src="/landing/logo.png" alt="Tintamarindo" />
         </Link>
-        <Link href="/" className="text-sm font-bold text-stone-500 hover:text-stone-700 transition-colors">
+        <Link
+          href="/"
+          onClick={borrarSnapshotGuardado}
+          className="text-sm font-bold text-stone-500 hover:text-stone-700 transition-colors"
+        >
           ← Volver al inicio
         </Link>
       </div>
@@ -334,33 +375,46 @@ export function Wizard({
   previewYaUsado: boolean
   previewUrlInicial: string | null
 }) {
-  const [paso, setPaso] = useState(1)
+  // Se lee una sola vez al montar — si volvió de MercadoPago (o recargó la
+  // página sin querer) con un progreso guardado reciente, lo retoma en vez de
+  // mandarlo de nuevo al paso 1.
+  const [snapshotInicial] = useState(() => leerSnapshotGuardado())
+
+  const [paso, setPaso] = useState(() => snapshotInicial?.paso ?? 1)
 
   // Paso 1 — Fotos
-  const [fotos, setFotos] = useState<Foto[]>([])
+  const [fotos, setFotos] = useState<Foto[]>(() =>
+    (snapshotInicial?.fotos ?? []).map((f) => ({ ...f, previewUrl: '' })),
+  )
   const [subiendo, setSubiendo] = useState(false)
   const [errorFoto, setErrorFoto] = useState<string | null>(null)
   const [mostrarPrivacidad, setMostrarPrivacidad] = useState(false)
-  const [aceptoPrivacidad, setAceptoPrivacidad] = useState(false)
+  const [aceptoPrivacidad, setAceptoPrivacidad] = useState(() => snapshotInicial?.aceptoPrivacidad ?? false)
 
   // Paso 2 — Configuración
   const [solapa, setSolapa] = useState<Solapa>('interior')
-  const [config, setConfig] = useState<Config>({
-    tamano: null,
-    tematicas: [],
-    tematicasPersonalizadas: [],
-    estilos: [],
-    tipoPapel: 'BLANCO',
-    fotoFamiliarKey: null,
-  })
-  const [datosTapa, setDatosTapa] = useState<DatosTapa>({
-    tituloTapa: '',
-    subtituloTapa: '',
-    observacionesTapa: '',
-    imagenTapaKey: null,
-    dedicatoria: '',
-    estiloTapa: null,
-  })
+  const [config, setConfig] = useState<Config>(
+    () =>
+      snapshotInicial?.config ?? {
+        tamano: null,
+        tematicas: [],
+        tematicasPersonalizadas: [],
+        estilos: [],
+        tipoPapel: 'BLANCO',
+        fotoFamiliarKey: null,
+      },
+  )
+  const [datosTapa, setDatosTapa] = useState<DatosTapa>(
+    () =>
+      snapshotInicial?.datosTapa ?? {
+        tituloTapa: '',
+        subtituloTapa: '',
+        observacionesTapa: '',
+        imagenTapaKey: null,
+        dedicatoria: '',
+        estiloTapa: null,
+      },
+  )
   const [subiendoFamiliar, setSubiendoFamiliar] = useState(false)
   const [errorFamiliar, setErrorFamiliar] = useState<string | null>(null)
   const [subiendoImagenTapa, setSubiendoImagenTapa] = useState(false)
@@ -375,16 +429,19 @@ export function Wizard({
   const [previewCargaError, setPreviewCargaError] = useState(false)
 
   // Paso 4 — Envío
-  const [envio, setEnvio] = useState<DatosEnvio>({
-    nombreCompleto: nombre,
-    direccion: '',
-    codigoPostal: '',
-    localidad: '',
-    provincia: '',
-    telefono: '',
-    emailEnvio: email,
-    tipoEntrega: 'DOMICILIO',
-  })
+  const [envio, setEnvio] = useState<DatosEnvio>(
+    () =>
+      snapshotInicial?.envio ?? {
+        nombreCompleto: nombre,
+        direccion: '',
+        codigoPostal: '',
+        localidad: '',
+        provincia: '',
+        telefono: '',
+        emailEnvio: email,
+        tipoEntrega: 'DOMICILIO',
+      },
+  )
 
   // Avanza etapas mientras genera la preview
   useEffect(() => {
@@ -397,9 +454,13 @@ export function Wizard({
   }, [generandoPreview])
 
   // Paso 5 — Confirmar
-  const [medioPago, setMedioPago] = useState<'MERCADOPAGO' | 'TRANSFERENCIA'>('MERCADOPAGO')
+  const [medioPago, setMedioPago] = useState<'MERCADOPAGO' | 'TRANSFERENCIA'>(
+    () => snapshotInicial?.medioPago ?? 'MERCADOPAGO',
+  )
   const [cuponInput, setCuponInput] = useState('')
-  const [cuponAplicado, setCuponAplicado] = useState<{ codigo: string; descuentoPorcentaje: number } | null>(null)
+  const [cuponAplicado, setCuponAplicado] = useState<{ codigo: string; descuentoPorcentaje: number } | null>(
+    () => snapshotInicial?.cuponAplicado ?? null,
+  )
   const [cuponError, setCuponError] = useState<string | null>(null)
   const [validandoCupon, setValidandoCupon] = useState(false)
   const [enviandoPedido, setEnviandoPedido] = useState(false)
@@ -410,6 +471,51 @@ export function Wizard({
   const inputFamiliarRef = useRef<HTMLInputElement>(null)
   const inputTapaRef = useRef<HTMLInputElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Si veníamos de un progreso guardado, las fotos se restauraron sin
+  // previewUrl (el blob: de la sesión anterior ya no sirve) — pedimos URLs
+  // firmadas nuevas para esas mismas fotos, que siguen en R2 sin tocar.
+  useEffect(() => {
+    const faltantes = fotos.filter((f) => !f.previewUrl)
+    if (faltantes.length === 0) return
+    fetch('/api/upload/urls', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keys: faltantes.map((f) => f.key) }),
+    })
+      .then((res) => res.json())
+      .then((data: { urls?: Record<string, string> }) => {
+        if (!data.urls) return
+        setFotos((prev) => prev.map((f) => (data.urls?.[f.key] ? { ...f, previewUrl: data.urls[f.key] } : f)))
+      })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Guarda el progreso en cada cambio relevante — así, si el pago con
+  // MercadoPago lleva a un sitio externo y el cliente vuelve para atrás, lo
+  // retoma en el mismo paso en vez de perder todo lo que ya cargó.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const snapshot: WizardSnapshot = {
+      paso,
+      fotos: fotos.map((f) => ({ key: f.key, nombre: f.nombre })),
+      aceptoPrivacidad,
+      config,
+      datosTapa,
+      envio,
+      medioPago,
+      cuponAplicado,
+      guardadoEn: Date.now(),
+    }
+    sessionStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(snapshot))
+  }, [paso, fotos, aceptoPrivacidad, config, datosTapa, envio, medioPago, cuponAplicado])
+
+  // El pedido ya quedó confirmado sin salir del sitio (transferencia o cupón
+  // 100%) — no hace falta retomar nada más, se limpia el progreso guardado.
+  useEffect(() => {
+    if (paso === 6) borrarSnapshotGuardado()
+  }, [paso])
 
   const subirFoto = useCallback(async (file: File) => {
     setErrorFoto(null)
