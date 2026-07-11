@@ -290,6 +290,7 @@ export default function Page() {
             <EstiloFlipCard foto="/landing/estilo-realista-foto.jpg" linea="/landing/estilo-realista-linea.jpg" label="Realista" />
             <EstiloFlipCard foto="/landing/paso1-fotos.jpg" linea="/landing/estilo-pixar-linea.jpg" label="Pixar" />
             <EstiloFlipCard foto="/landing/estilo-anime-foto.jpg" linea="/landing/estilo-anime-linea.jpg" label="Anime" />
+            <EstiloFlipCard foto="/landing/estilo-ghibli-foto.png" linea="/landing/estilo-ghibli-linea.png" label="Ghibli" />
           </div>
           <p className="styles-note">Combinables: hasta 3 estilos en 24 páginas, hasta 4 en 32.</p>
         </div>

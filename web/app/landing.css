@@ -263,7 +263,7 @@
 .tm-landing .theme-banner p { color: var(--tinta); }
 
 /* ---------- Estilos ---------- */
-.tm-landing .styles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); }
+.tm-landing .styles-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-6); }
 .tm-landing .style-card { overflow: hidden; }
 .tm-landing .style-flip { position: relative; aspect-ratio: 3 / 4; cursor: pointer; }
 .tm-landing .style-flip img {
