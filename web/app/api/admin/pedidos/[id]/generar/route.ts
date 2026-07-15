@@ -19,7 +19,10 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     include: { fotos: { orderBy: { orden: 'asc' } }, imagenes: { orderBy: { orden: 'asc' } } },
   })
   if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 })
-  if (pedido.fotos.length === 0) return NextResponse.json({ error: 'El pedido no tiene fotos' }, { status: 400 })
+  const fotosUsables = pedido.fotos.filter((f) => f.seleccionada)
+  if (fotosUsables.length === 0) {
+    return NextResponse.json({ error: 'No hay fotos seleccionadas para usar. Tildá al menos una en "Fotos del cliente".' }, { status: 400 })
+  }
 
   const siguiente = pedido.imagenes.find((img) => !img.url && !esTipoManual(img.tipo))
   if (!siguiente) {
@@ -47,7 +50,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   } else {
     const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
     const asignacion = calcularAsignacionPagina(siguiente.orden, tematicasEfectivas, pedido.estilos)
-    fotoUrl = pedido.fotos[siguiente.orden % pedido.fotos.length].url
+    fotoUrl = fotosUsables[siguiente.orden % fotosUsables.length].url
     estilo = asignacion.estilo
     tematica = asignacion.tematica
     varianteIndex = asignacion.varianteIndex

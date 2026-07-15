@@ -92,7 +92,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         tematicasEfectivas: [...pedido.tematicas, ...pedido.tematicasPersonalizadas],
         situacionesPorTematica: (pedido.situacionesPorTematica as Record<string, string[]> | null) ?? {},
       }}
-      fotos={fotosConUrl.map((f) => ({ id: f.id, urlFirmada: f.urlFirmada }))}
+      fotos={fotosConUrl.map((f) => ({ id: f.id, urlFirmada: f.urlFirmada, seleccionada: f.seleccionada }))}
       imagenesIniciales={[...imagenesConUrl].sort(compararPaginasLibro).map((i) => {
         const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
         const manual = esTipoManual(i.tipo)

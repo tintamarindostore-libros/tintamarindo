@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { formatoARS, precioFinalLibro } from '@/lib/precios'
 import { renderPlantilla } from '@/lib/plantillas'
 import { ESTADOS_PEDIDO, ESTADO_LABEL } from '@/lib/estados'
@@ -193,6 +193,183 @@ function SituacionesPorTematica({
   )
 }
 
+type FotoClienteInfo = { id: string; urlFirmada: string; seleccionada: boolean }
+type Recorte = { x: number; y: number; w: number; h: number }
+
+const RECORTE_INICIAL: Recorte = { x: 0.1, y: 0.1, w: 0.8, h: 0.8 }
+
+function fracDesdeEvento(e: ReactPointerEvent, container: HTMLDivElement) {
+  const rect = container.getBoundingClientRect()
+  const fx = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width))
+  const fy = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height))
+  return { fx, fy }
+}
+
+function FotoClienteCard({
+  pedidoId,
+  foto,
+  onUpdate,
+}: {
+  pedidoId: string
+  foto: FotoClienteInfo
+  onUpdate: (id: string, cambios: Partial<FotoClienteInfo>) => void
+}) {
+  const [editando, setEditando] = useState(false)
+  const [sel, setSel] = useState<Recorte>(RECORTE_INICIAL)
+  const [ratio, setRatio] = useState(1)
+  const [guardando, setGuardando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{ modo: 'new' | 'move' | 'resize'; fx: number; fy: number; sel: Recorte } | null>(null)
+
+  const toggleSeleccionada = async () => {
+    const nuevo = !foto.seleccionada
+    onUpdate(foto.id, { seleccionada: nuevo })
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedidoId}/fotos/${foto.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seleccionada: nuevo }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      onUpdate(foto.id, { seleccionada: !nuevo })
+    }
+  }
+
+  const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return
+    const { fx, fy } = fracDesdeEvento(e, containerRef.current)
+    const dentro = fx >= sel.x && fx <= sel.x + sel.w && fy >= sel.y && fy <= sel.y + sel.h
+    dragRef.current = dentro ? { modo: 'move', fx, fy, sel } : { modo: 'new', fx, fy, sel: { x: fx, y: fy, w: 0, h: 0 } }
+    if (!dentro) setSel({ x: fx, y: fy, w: 0, h: 0 })
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const handleResizeDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    e.stopPropagation()
+    if (!containerRef.current) return
+    const { fx, fy } = fracDesdeEvento(e, containerRef.current)
+    dragRef.current = { modo: 'resize', fx, fy, sel }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const handlePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current
+    if (!drag || !containerRef.current) return
+    const { fx, fy } = fracDesdeEvento(e, containerRef.current)
+    if (drag.modo === 'new') {
+      setSel({ x: Math.min(drag.fx, fx), y: Math.min(drag.fy, fy), w: Math.abs(fx - drag.fx), h: Math.abs(fy - drag.fy) })
+    } else if (drag.modo === 'move') {
+      const x = Math.min(Math.max(0, drag.sel.x + (fx - drag.fx)), 1 - drag.sel.w)
+      const y = Math.min(Math.max(0, drag.sel.y + (fy - drag.fy)), 1 - drag.sel.h)
+      setSel({ ...drag.sel, x, y })
+    } else {
+      const w = Math.min(Math.max(0.05, fx - drag.sel.x), 1 - drag.sel.x)
+      const h = Math.min(Math.max(0.05, fy - drag.sel.y), 1 - drag.sel.y)
+      setSel({ ...drag.sel, w, h })
+    }
+  }
+
+  const handlePointerUp = () => {
+    dragRef.current = null
+  }
+
+  const abrirEditor = () => {
+    setSel(RECORTE_INICIAL)
+    setError(null)
+    setEditando(true)
+  }
+
+  const guardarRecorte = async () => {
+    if (sel.w < 0.02 || sel.h < 0.02) {
+      setError('Marcá un recuadro más grande antes de guardar')
+      return
+    }
+    setGuardando(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedidoId}/fotos/${foto.id}/recorte`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sel),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'No se pudo guardar el recorte')
+      onUpdate(foto.id, { urlFirmada: data.foto.urlFirmada })
+      setEditando(false)
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  if (!editando) {
+    return (
+      <div className="space-y-1.5">
+        <img
+          src={foto.urlFirmada}
+          alt="Foto del cliente"
+          className={`w-28 h-28 object-cover rounded-xl border border-stone-800 ${foto.seleccionada ? '' : 'opacity-35'}`}
+        />
+        <label className="flex items-center gap-1.5 text-xs text-stone-300 cursor-pointer">
+          <input type="checkbox" checked={foto.seleccionada} onChange={toggleSeleccionada} className="accent-brand-500" />
+          Usar esta foto
+        </label>
+        <button type="button" onClick={abrirEditor} className="block text-xs font-bold text-brand-400 hover:text-brand-300">
+          Ajustar encuadre
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="w-60 space-y-2 bg-stone-950 border border-stone-800 rounded-xl p-2">
+      <div
+        ref={containerRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        style={{ aspectRatio: ratio }}
+        className="relative w-full overflow-hidden rounded-lg touch-none select-none cursor-crosshair bg-stone-900"
+      >
+        <img
+          src={foto.urlFirmada}
+          alt="Foto del cliente"
+          draggable={false}
+          onLoad={(e) => setRatio(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight || 1)}
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        />
+        <div
+          className="absolute border-2 border-brand-500 bg-brand-500/20"
+          style={{ left: `${sel.x * 100}%`, top: `${sel.y * 100}%`, width: `${sel.w * 100}%`, height: `${sel.h * 100}%` }}
+        >
+          <div
+            onPointerDown={handleResizeDown}
+            className="absolute -right-1.5 -bottom-1.5 w-4 h-4 rounded-full bg-brand-500 border-2 border-white cursor-nwse-resize"
+          />
+        </div>
+      </div>
+      <p className="text-[11px] text-stone-500">Arrastrá para marcar el recuadro que sirve. El punto de la esquina lo agranda o achica.</p>
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={guardarRecorte}
+          disabled={guardando}
+          className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-full"
+        >
+          {guardando ? 'Guardando…' : 'Guardar recorte'}
+        </button>
+        <button type="button" onClick={() => setEditando(false)} className="text-xs font-bold text-stone-400 hover:text-stone-200 px-2">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function PedidoDetalle({
   pedido,
   fotos,
@@ -201,12 +378,15 @@ export function PedidoDetalle({
   variablesAuto,
 }: {
   pedido: Pedido
-  fotos: { id: string; urlFirmada: string }[]
+  fotos: FotoClienteInfo[]
   imagenesIniciales: Imagen[]
   plantillas: Plantilla[]
   variablesAuto: Record<string, string>
 }) {
   const [imagenes, setImagenes] = useState<Imagen[]>(imagenesIniciales)
+  const [fotosCliente, setFotosCliente] = useState<FotoClienteInfo[]>(fotos)
+  const actualizarFotoCliente = (id: string, cambios: Partial<FotoClienteInfo>) =>
+    setFotosCliente((prev) => prev.map((f) => (f.id === id ? { ...f, ...cambios } : f)))
   const [promptExtras, setPromptExtras] = useState<Record<string, string>>(
     Object.fromEntries(imagenesIniciales.map((i) => [i.id, i.promptExtra ?? ''])),
   )
@@ -606,10 +786,18 @@ export function PedidoDetalle({
         </div>
 
         <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
-          <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">Fotos del cliente</p>
+          <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Fotos del cliente</p>
+          <p className="text-xs text-stone-500 mb-3">
+            Destildá las que no sirven (por ejemplo, con más de una persona) — no se van a usar para generar ilustraciones. Con &quot;Ajustar encuadre&quot; podés recortar una foto que sirve pero está mal encuadrada.
+          </p>
+          {fotosCliente.every((f) => !f.seleccionada) && (
+            <p className="text-xs font-bold text-amber-400 bg-amber-500/15 border border-amber-500/20 rounded-lg px-2.5 py-1.5 mb-3 inline-block">
+              ⚠ No hay ninguna foto tildada — la generación va a fallar hasta que uses al menos una.
+            </p>
+          )}
           <div className="flex gap-3 flex-wrap">
-            {fotos.map((f) => (
-              <img key={f.id} src={f.urlFirmada} alt="Foto del cliente" className="w-24 h-24 object-cover rounded-xl border border-stone-800" />
+            {fotosCliente.map((f) => (
+              <FotoClienteCard key={f.id} pedidoId={pedido.id} foto={f} onUpdate={actualizarFotoCliente} />
             ))}
           </div>
         </div>

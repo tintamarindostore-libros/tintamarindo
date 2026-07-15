@@ -190,8 +190,9 @@ model FotoCliente {
   pedidoId String
   pedido   Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
 
-  url   String
-  orden Int
+  url          String
+  orden        Int
+  seleccionada Boolean @default(true) // si está destildada, no se usa para generar ilustraciones
 
   createdAt DateTime @default(now())
 }
