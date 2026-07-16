@@ -46,7 +46,7 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
 | Botón de arrepentimiento | Obligatorio por ley, pero el producto es personalizado (excepción art. 1116 CCCN) — solo aplica si se cancela dentro de 48hs y antes de iniciar la generación |
 | Tapa | Solapa dentro de la pantalla de configuración, no un paso del checkout. La opción "Regalo" (tarjeta personalizada) se evaluó y se **eliminó** del producto — no reabrir sin pedido explícito |
 | Tarjeta de dedicatoria | El cliente elige entre diseños prediseñados en miniatura (o "Sin tarjeta"), no escribe un mensaje digital. Se imprime en blanco en la retiración de tapa para completar a mano. Catálogo en `web/lib/tarjetasDedicatoria.ts` |
-| Estados del pedido | `ESPERANDO_PAGO → ESPERANDO_GENERACION → EN_REVISION → ESPERANDO_APROBACION → APROBADO → EN_IMPOSICION → IMPRIMIENDO → ENVIADO`. Se puede mover manualmente con un desplegable en el admin (lista y detalle) — ver `web/lib/estados.ts` |
+| Estados del pedido | `ESPERANDO_PAGO → ESPERANDO_GENERACION → EN_REVISION → EN_IMPOSICION → ESPERANDO_APROBACION → APROBADO → IMPRIMIENDO → ENVIADO`. Se puede mover manualmente con un desplegable en el admin (lista y detalle) — ver `web/lib/estados.ts` |
 | Temáticas por tamaño | 24 pág: hasta 8. 32 pág: hasta 15 + hasta 3 temáticas personalizadas (texto libre) |
 | Estilos por tamaño | 24 pág: hasta 3. 32 pág: hasta 4. Si hay varios, se aplican aleatoriamente |
 | Estilo de tapa | Selector obligatorio (Realista/Pixar/Anime/Ghibli), independiente de los estilos del interior |
