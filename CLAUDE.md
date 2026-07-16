@@ -2,7 +2,7 @@
 
 ## Qué es este proyecto
 
-App web donde el cliente sube fotos de un niño, elige temática, estilo artístico y tipo de papel, ve una imagen de prueba gratuita y paga. El dueño genera el libro completo en el back, lo revisa imagen por imagen, arma el PDF y lo manda al cliente con marca de agua para aprobación. Una vez aprobado, el dueño imprime el libro físico y lo envía por correo a cualquier punto de Argentina.
+App web donde el cliente sube fotos de un niño, elige temática, estilo artístico y tipo de papel, ve una imagen de prueba gratuita y paga. El dueño genera el libro completo en el back, lo revisa imagen por imagen, arma el PDF (por fuera del sistema, en baja resolución y con la marca de agua ya incorporada) y lo sube para que el cliente lo apruebe. Una vez aprobado, el dueño imprime el libro físico —usando su versión en alta, que maneja a mano— y lo envía por correo a cualquier punto de Argentina.
 
 **Para el detalle completo de producto (flujo de pantallas, copy de cara al cliente, precios, política de privacidad, integración de envíos y pagos, etc.) ver `PRODUCTO.md`.** Leerlo cuando se trabaje en UI, contenido, flujo de compra o reglas de negocio — no hace falta para tareas puramente técnicas (setup, deploy, dependencias).
 
@@ -38,6 +38,7 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
 | Autenticación | Google OAuth obligatorio antes de subir fotos |
 | Producto final | Libro impreso físico enviado por correo — no PDF descargable |
 | Aprobación final | Cliente aprueba PDF con marca de agua; 5 días de plazo, luego auto-aprobación |
+| PDF de aprobación | El dueño sube **un solo PDF** ya armado por él, en baja resolución y con la marca de agua incorporada. El sistema no le agrega marca de agua ni genera otra versión — ese archivo es el link que ve el cliente. La versión en alta para imprimir la maneja el dueño por fuera del sistema |
 | Producción | El dueño arma e imprime cada libro manualmente (escala después) |
 | Quién puede comprar | No se restringe a padres/tutores — cualquiera con autorización de la familia |
 | Envíos | Costo "a confirmar" (no se cobra en el checkout) hasta tener acceso a la API de MiCorreo — se confirma por WhatsApp/email antes de despachar |

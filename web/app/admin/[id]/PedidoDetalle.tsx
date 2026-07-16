@@ -69,7 +69,6 @@ type Pedido = {
   cuponDescuentoPorcentaje: number | null
   trackingNumero: string | null
   pdfUrlFirmada: string | null
-  pdfMuestraUrlFirmada: string | null
   tematicasEfectivas: string[]
   situacionesPorTematica: Record<string, string[]>
 }
@@ -920,16 +919,11 @@ export function PedidoDetalle({
           <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
             <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">PDF del libro</p>
             <p className="text-xs text-stone-500 mb-3">
-              Subí el PDF completo, en alta calidad y sin marca de agua (tapa, retiración de tapa, páginas interiores, retiración de contratapa y contratapa, en ese orden). El sistema genera automáticamente una copia con marca de agua en las páginas interiores para mandarle al cliente a aprobar.
+              Subí el PDF ya armado por vos, en baja resolución y con la marca de agua incorporada. Es exactamente lo que el cliente va a ver para aprobar — no se procesa ni se genera ninguna otra versión.
             </p>
             {pedido.pdfUrlFirmada && (
-              <a href={pedido.pdfUrlFirmada} target="_blank" className="text-sm text-brand-400 underline block mb-1">
-                📥 Descargar PDF alta calidad (sin marca de agua, para imprimir)
-              </a>
-            )}
-            {pedido.pdfMuestraUrlFirmada && (
-              <a href={pedido.pdfMuestraUrlFirmada} target="_blank" className="text-sm text-stone-400 underline block mb-3">
-                👁 Ver muestra con marca de agua (lo que recibe el cliente)
+              <a href={pedido.pdfUrlFirmada} target="_blank" className="text-sm text-brand-400 underline block mb-3">
+                👁 Ver PDF (lo que recibe el cliente para aprobar)
               </a>
             )}
             <input ref={pdfInputRef} type="file" accept="application/pdf" className="text-xs text-stone-400 mb-2" />

@@ -35,8 +35,6 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
     })),
   )
   const pdfUrlFirmada = pedido.pdfUrl ? await obtenerUrlFirmada(pedido.pdfUrl) : null
-  const pdfMuestraKey = pedido.pdfUrl?.replace(/\/libro\.pdf$/, '/libro-muestra.pdf') ?? null
-  const pdfMuestraUrlFirmada = pdfMuestraKey ? await obtenerUrlFirmada(pdfMuestraKey) : null
 
   const fotoFamiliarUrl = pedido.fotoFamiliarKey ? await obtenerUrlFirmada(pedido.fotoFamiliarKey) : null
 
@@ -51,7 +49,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
     tamano: pedido.tamano === 'CHICO' ? '24 páginas' : '32 páginas',
     tematicas: [...pedido.tematicas, ...pedido.tematicasPersonalizadas].join(', '),
     monto: formatoARS(precioFinalLibro(pedido.tamano, pedido.medioPago, pedido.cuponDescuentoPorcentaje)),
-    link: pdfMuestraUrlFirmada ?? '',
+    link: pdfUrlFirmada ?? '',
     localidad: `${pedido.localidad}, ${pedido.provincia}`,
     tracking: pedido.trackingNumero ?? '',
     diasRestantes: diasRestantesAprobacion !== null ? String(diasRestantesAprobacion) : '',
@@ -88,7 +86,6 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         cuponDescuentoPorcentaje: pedido.cuponDescuentoPorcentaje,
         trackingNumero: pedido.trackingNumero,
         pdfUrlFirmada,
-        pdfMuestraUrlFirmada,
         tematicasEfectivas: [...pedido.tematicas, ...pedido.tematicasPersonalizadas],
         situacionesPorTematica: (pedido.situacionesPorTematica as Record<string, string[]> | null) ?? {},
       }}
