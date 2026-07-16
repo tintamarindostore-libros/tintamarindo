@@ -37,6 +37,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
   const pdfUrlFirmada = pedido.pdfUrl ? await obtenerUrlFirmada(pedido.pdfUrl) : null
 
   const fotoFamiliarUrl = pedido.fotoFamiliarKey ? await obtenerUrlFirmada(pedido.fotoFamiliarKey) : null
+  const imagenTapaUrl = pedido.imagenTapaKey ? await obtenerUrlFirmada(pedido.imagenTapaKey) : null
 
   const plantillas = await prisma.plantillaMensaje.findMany({ orderBy: { clave: 'asc' } })
   const nombreDeClave = Object.fromEntries(PLANTILLAS_CONFIG.map((p) => [p.clave, p.nombre]))
@@ -67,6 +68,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         estilos: pedido.estilos,
         tipoPapel: pedido.tipoPapel,
         fotoFamiliarUrl,
+        imagenTapaUrl,
         tituloTapa: pedido.tituloTapa,
         subtituloTapa: pedido.subtituloTapa,
         observacionesTapa: pedido.observacionesTapa,

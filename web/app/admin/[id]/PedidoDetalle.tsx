@@ -50,6 +50,7 @@ type Pedido = {
   estilos: string[]
   tipoPapel: string
   fotoFamiliarUrl: string | null
+  imagenTapaUrl: string | null
   tituloTapa: string | null
   subtituloTapa: string | null
   observacionesTapa: string | null
@@ -785,7 +786,21 @@ export function PedidoDetalle({
         </div>
 
         <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
-          <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Fotos del cliente</p>
+          <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">Fotos del cliente</p>
+
+          {pedido.imagenTapaUrl && (
+            <div className="mb-4 pb-4 border-b border-stone-800">
+              <p className="text-xs font-bold text-brand-400 uppercase tracking-widest mb-2">📕 Foto de tapa</p>
+              <img
+                src={pedido.imagenTapaUrl}
+                alt="Foto de tapa"
+                className="w-28 h-28 object-cover rounded-xl border-2 border-brand-500/50"
+              />
+              <p className="text-xs text-stone-500 mt-1.5">Esta es la foto elegida para la tapa, no para las páginas del interior.</p>
+            </div>
+          )}
+
+          <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Fotos del interior</p>
           <p className="text-xs text-stone-500 mb-3">
             Destildá las que no sirven (por ejemplo, con más de una persona) — no se van a usar para generar ilustraciones. Con &quot;Ajustar encuadre&quot; podés recortar una foto que sirve pero está mal encuadrada.
           </p>
