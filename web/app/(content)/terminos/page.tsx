@@ -108,6 +108,11 @@ export default function TerminosPage() {
               Los tiempos de entrega una vez despachado el libro dependen del Correo Argentino y varían según el código postal de destino.
             </p>
           </Sub>
+          <Sub title="3.7 Características del papel y uso de marcadores">
+            <p>
+              El interior del libro se imprime en papel apto para colorear, optimizado para lápices de colores y crayones. Por la naturaleza de este papel, el uso de fibras, marcadores, fibrones o cualquier tinta líquida puede provocar que el color traspase o se transparente hacia el reverso de la hoja. Esto constituye una característica propia de este tipo de papel y no representa un defecto de fabricación, ni motivo de reclamo, cambio o devolución. Recomendamos colorear con lápices o crayones; para quienes prefieran marcadores, sugerimos fotocopiar la página y colorear sobre la copia.
+            </p>
+          </Sub>
         </Section>
 
         <Section num="4" title="Precios, costos adicionales y envío">

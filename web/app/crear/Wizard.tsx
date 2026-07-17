@@ -1023,6 +1023,9 @@ export function Wizard({
                       </button>
                     ))}
                   </div>
+                  <p className="text-xs text-stone-400 mt-3 leading-relaxed">
+                    ℹ️ Todas las opciones están pensadas para colorear con lápices y crayones, que es con lo que mejor se ve y no traspasa. Si te gustan las fibras o marcadores, lo mejor es sacarle una fotocopia a la página y pintar sobre la copia (ideal también para practicar o repetir un dibujo).
+                  </p>
                 </div>
 
                 {config.tamano === 'GRANDE' && (
