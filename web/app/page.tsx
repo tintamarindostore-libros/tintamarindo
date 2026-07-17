@@ -305,7 +305,7 @@ export default function Page() {
           </div>
           <div className="pricing">
             <div className="card price-card">
-              <span className="badge-especial">🎁 Precio especial Día del Niño</span>
+              <span className="badge-especial">🎁 Precio especial de lanzamiento</span>
               <h3>24 páginas</h3>
               <div className="price">$49.900</div>
               <div className="price-transfer-box">
@@ -319,7 +319,7 @@ export default function Page() {
               <Link className="btn btn-primary" href="/crear">Crear un regalo personalizado →</Link>
             </div>
             <div className="card price-card">
-              <span className="badge-especial">🎁 Precio especial Día del Niño</span>
+              <span className="badge-especial">🎁 Precio especial de lanzamiento</span>
               <h3>32 páginas</h3>
               <div className="price">$59.900</div>
               <div className="price-transfer-box">
@@ -444,7 +444,6 @@ export default function Page() {
               <p>Cancelás dentro de las 48 hs y te devolvemos el pago completo.</p>
             </div>
           </div>
-          <div className="banner-dia">Día del Niño: pedilo antes del 15 de julio para que llegue garantizado el 9 de agosto.</div>
         </div>
       </section>
 
