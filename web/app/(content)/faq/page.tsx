@@ -197,7 +197,7 @@ export default function FAQPage() {
           },
           {
             q: 'Es para un regalo, ¿pueden enviarlo directamente a otra dirección?',
-            a: <p>Sí. En el formulario de envío podés indicar la dirección de entrega que quieras. Además, si elegís la opción regalo, el libro se envía envuelto en papel de regalo junto con una tarjeta personalizada de 14 x 10 cm. Podés elegir entre varias plantillas de diseño y completarla con un título, el nombre de quien recibe el regalo, el nombre de quien lo regala y un mensaje. Esta opción tiene un costo adicional de $6.000.</p>,
+            a: <p>Sí. En el formulario de envío podés indicar la dirección de entrega que quieras, así el libro llega directamente a quien va dirigido el regalo.</p>,
           },
         ]}
       />

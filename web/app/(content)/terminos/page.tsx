@@ -123,12 +123,7 @@ export default function TerminosPage() {
           </Sub>
           <Sub title="4.2 Costo de envío">
             <p>
-              El costo de envío se calcula en tiempo real al momento del checkout, según el código postal de destino y el peso y dimensiones del libro. El costo se muestra antes de confirmar el pago. Se ofrece también la opción de retiro en sucursal del Correo Argentino a menor costo.
-            </p>
-          </Sub>
-          <Sub title="4.3 Opción regalo">
-            <p>
-              El cliente puede optar por el envío con presentación de regalo, que incluye papel de regalo y una tarjeta personalizada de 14 x 10 cm con diseño elegido por el cliente. Esta opción tiene un costo adicional fijo de $6.000 (pesos argentinos), que se suma al precio del libro y se muestra en el resumen del pedido antes del pago.
+              El costo de envío no se cobra en el checkout. Una vez confirmado el pedido, coordinamos el costo del envío con el cliente por WhatsApp o email, según el código postal de destino y la modalidad elegida, antes de despachar el libro. También está disponible la opción de retiro en sucursal del Correo Argentino, a menor costo.
             </p>
           </Sub>
         </Section>
