@@ -21,7 +21,7 @@ function BadgeAprobacion({ pdfSubidoAt }: { pdfSubidoAt: Date | null }) {
                     ['bg-red-500/15', 'text-red-400']
   const label = restantes > 0 ? `${restantes}d para aprobar` : 'Vencido — se aprueba hoy'
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${bg} ${text} mt-1 block`}>
+    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${bg} ${text} sm:mt-1 inline-block`}>
       ⏱ {label}
     </span>
   )
@@ -35,7 +35,7 @@ function BadgeAntiguedad({ createdAt, estado }: { createdAt: Date; estado: strin
   if (dias < 4) return null
   const [bg, text] = dias >= 10 ? ['bg-red-500/15', 'text-red-400'] : ['bg-amber-500/15', 'text-amber-400']
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${bg} ${text} mt-1 block`}>
+    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${bg} ${text} sm:mt-1 inline-block`}>
       {dias >= 10 ? `⚠ ${dias}d — revisar` : `${dias}d desde el pedido`}
     </span>
   )
@@ -78,13 +78,13 @@ export default async function AdminPage({
     lista.reduce((acc, p) => acc + precioFinalLibro(p.tamano, p.medioPago, p.cuponDescuentoPorcentaje), 0)
 
   return (
-    <div className="min-h-screen bg-stone-950 px-6 py-12" style={{ fontFamily: 'var(--font-body)' }}>
+    <div className="min-h-screen bg-stone-950 px-4 sm:px-6 py-8 sm:py-12" style={{ fontFamily: 'var(--font-body)' }}>
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <h1 className="text-3xl font-black text-white" style={{ fontFamily: 'var(--font-display)' }}>
             Panel de administración
           </h1>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link
               href="/admin/cupones"
               className="text-xs font-bold px-3 py-1.5 rounded-full bg-stone-900 text-stone-300 border border-stone-800 hover:border-brand-500"
@@ -180,11 +180,11 @@ export default async function AdminPage({
                   key={p.id}
                   href={`/admin/${p.id}`}
                   className={[
-                    'flex items-center justify-between px-6 py-4 border-b border-stone-800/60 last:border-0 hover:bg-stone-800 transition-colors',
+                    'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 border-b border-stone-800/60 last:border-0 hover:bg-stone-800 transition-colors',
                     i % 2 === 1 ? 'bg-stone-800/50' : '',
                   ].join(' ')}
                 >
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-bold text-white text-sm">{p.nombreCompleto}</p>
                     <p className="text-xs text-stone-500">
                       {p.user.email} · {p.tematicas[0]} · {p.estilos[0]} · {p.tamano === 'CHICO' ? '24 pág' : '32 pág'}
@@ -198,12 +198,12 @@ export default async function AdminPage({
                       </p>
                     )}
                   </div>
-                  <div className="text-right">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:block sm:text-right sm:shrink-0">
                     <EstadoSelector pedidoId={p.id} estadoInicial={p.estado} />
-                    <p className="text-xs font-bold text-stone-300 mt-1">
+                    <p className="text-xs font-bold text-stone-300 sm:mt-1">
                       {formatoARS(precioFinalLibro(p.tamano, p.medioPago, p.cuponDescuentoPorcentaje))}
                     </p>
-                    <p className="text-xs text-stone-500 mt-1">
+                    <p className="text-xs text-stone-500 sm:mt-1">
                       {aprobadas}/{p.imagenes.length} aprobadas
                     </p>
                     {p.estado === 'ESPERANDO_APROBACION' && <BadgeAprobacion pdfSubidoAt={p.pdfSubidoAt} />}
