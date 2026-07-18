@@ -46,12 +46,14 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Falta la imagen o el estilo de tapa' }, { status: 400 })
     }
     fotoUrl = pedido.imagenTapaKey
-    estilo = pedido.estiloTapa
+    // El admin puede forzar un estilo puntual por imagen; si no, usa el estilo de tapa.
+    estilo = siguiente.estilo ?? pedido.estiloTapa
   } else {
     const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
     const asignacion = calcularAsignacionPagina(siguiente.orden, tematicasEfectivas, pedido.estilos)
     fotoUrl = fotosUsables[siguiente.orden % fotosUsables.length].url
-    estilo = asignacion.estilo
+    // El admin puede forzar un estilo puntual por imagen; si no, usa la rotación automática.
+    estilo = siguiente.estilo ?? asignacion.estilo
     tematica = asignacion.tematica
     varianteIndex = asignacion.varianteIndex
     const situaciones = pedido.situacionesPorTematica as Record<string, string[]> | null

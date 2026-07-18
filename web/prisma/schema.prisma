@@ -127,6 +127,9 @@ model Pedido {
   // Limpieza automática a 30 días
   eliminarAt DateTime?
 
+  // Notas internas del admin (privadas — no las ve el cliente)
+  notasAdmin String? @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -209,6 +212,7 @@ model ImagenPedido {
   url         String?
   promptUsado String?    @db.Text
   promptExtra String?    @db.Text // instrucciones puntuales que carga el admin antes de generar/regenerar esta imagen
+  estilo      Estilo?    // override manual del estilo (técnica) desde el admin; si es null se usa la rotación automática por posición
   aprobada    Boolean    @default(false)
 
   createdAt DateTime @default(now())

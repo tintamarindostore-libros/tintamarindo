@@ -40,6 +40,14 @@ const LABEL_TIPO_MANUAL: Record<string, string> = {
   RETIRACION_CONTRATAPA: 'Retiración de contratapa',
 }
 
+// Estilos (técnicas) que el admin puede forzar por imagen desde su desplegable.
+const ESTILOS_IMAGEN: { id: string; label: string }[] = [
+  { id: 'REALISTA', label: 'Realista' },
+  { id: 'PIXAR', label: 'Pixar' },
+  { id: 'ANIME', label: 'Anime' },
+  { id: 'GHIBLI', label: 'Ghibli' },
+]
+
 type Pedido = {
   id: string
   creadoEn: string
@@ -51,6 +59,7 @@ type Pedido = {
   tipoPapel: string
   fotoFamiliarUrl: string | null
   imagenTapaUrl: string | null
+  notasAdmin: string | null
   tituloTapa: string | null
   subtituloTapa: string | null
   observacionesTapa: string | null
@@ -384,6 +393,9 @@ export function PedidoDetalle({
   variablesAuto: Record<string, string>
 }) {
   const [imagenes, setImagenes] = useState<Imagen[]>(imagenesIniciales)
+  const [notasAdmin, setNotasAdmin] = useState(pedido.notasAdmin ?? '')
+  const [guardandoNotas, setGuardandoNotas] = useState(false)
+  const [notasGuardadas, setNotasGuardadas] = useState(false)
   const [fotosCliente, setFotosCliente] = useState<FotoClienteInfo[]>(fotos)
   const actualizarFotoCliente = (id: string, cambios: Partial<FotoClienteInfo>) =>
     setFotosCliente((prev) => prev.map((f) => (f.id === id ? { ...f, ...cambios } : f)))
@@ -529,6 +541,36 @@ export function PedidoDetalle({
       }
     } finally {
       setGuardandoPrompt(null)
+    }
+  }
+
+  const guardarNotas = async () => {
+    setGuardandoNotas(true)
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}/notas`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notasAdmin }),
+      })
+      if (res.ok) setNotasGuardadas(true)
+    } finally {
+      setGuardandoNotas(false)
+    }
+  }
+
+  const cambiarEstiloImagen = async (img: Imagen, nuevoEstilo: string) => {
+    const anterior = img.estilo
+    // Optimista: reflejamos el cambio al instante y revertimos si falla.
+    setImagenes((prev) => prev.map((i) => (i.id === img.id ? { ...i, estilo: nuevoEstilo } : i)))
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}/imagenes/${img.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion: 'actualizarEstilo', estilo: nuevoEstilo }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      setImagenes((prev) => prev.map((i) => (i.id === img.id ? { ...i, estilo: anterior } : i)))
     }
   }
 
@@ -791,6 +833,25 @@ export function PedidoDetalle({
         </div>
 
         <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
+          <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Notas internas</p>
+          <p className="text-xs text-stone-500 mb-3">Solo para vos — el cliente no las ve.</p>
+          <textarea
+            value={notasAdmin}
+            onChange={(e) => { setNotasAdmin(e.target.value); setNotasGuardadas(false) }}
+            placeholder="Anotá lo que quieras sobre este pedido (detalles a tener en cuenta, pendientes, etc.)…"
+            rows={3}
+            className="w-full rounded-xl border border-stone-700 bg-stone-800 text-stone-200 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none placeholder:text-stone-600"
+          />
+          <button
+            onClick={guardarNotas}
+            disabled={guardandoNotas}
+            className="mt-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white text-xs font-black px-4 py-2 rounded-full transition-colors"
+          >
+            {guardandoNotas ? 'Guardando…' : notasGuardadas ? '✓ Guardado' : 'Guardar notas'}
+          </button>
+        </div>
+
+        <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
           <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">Fotos del cliente</p>
 
           {pedido.imagenTapaUrl && (
@@ -859,7 +920,6 @@ export function PedidoDetalle({
                   <p className="text-[10px] text-stone-500 font-bold">
                     {img.manual ? LABEL_TIPO_MANUAL[img.tipo] : img.tipo === 'TAPA' ? 'Tapa (color)' : `Pág. ${img.orden + 1}`}
                     {img.tematica && img.tipo !== 'TAPA' ? ` · ${img.tematica}` : ''}
-                    {img.estilo ? ` (${img.estilo})` : ''}
                   </p>
                   <div className="flex gap-1">
                     <button
@@ -913,6 +973,17 @@ export function PedidoDetalle({
                     </>
                   ) : (
                     <>
+                      <select
+                        value={img.estilo ?? ''}
+                        onChange={(e) => cambiarEstiloImagen(img, e.target.value)}
+                        title="Técnica / estilo de esta imagen — cambialo y volvé a generar para variar el resultado"
+                        className="w-full rounded-lg border border-stone-700 bg-stone-800 text-stone-200 px-2 py-1 text-[10px] focus:border-brand-500 focus:outline-none cursor-pointer"
+                      >
+                        {img.estilo == null && <option value="">Estilo…</option>}
+                        {ESTILOS_IMAGEN.map((e) => (
+                          <option key={e.id} value={e.id}>Estilo: {e.label}</option>
+                        ))}
+                      </select>
                       <textarea
                         value={promptExtras[img.id] ?? ''}
                         onChange={(e) => setPromptExtras((prev) => ({ ...prev, [img.id]: e.target.value }))}

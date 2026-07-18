@@ -14,11 +14,23 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const { id, imgId } = await params
-  const { accion, promptExtra } = await req.json()
+  const { accion, promptExtra, estilo } = await req.json()
 
   const imagen = await prisma.imagenPedido.findUnique({ where: { id: imgId } })
   if (!imagen || imagen.pedidoId !== id) {
     return NextResponse.json({ error: 'Imagen no encontrada' }, { status: 404 })
+  }
+
+  if (accion === 'actualizarEstilo') {
+    const ESTILOS_VALIDOS = ['REALISTA', 'PIXAR', 'ANIME', 'GHIBLI']
+    if (estilo !== null && !ESTILOS_VALIDOS.includes(estilo)) {
+      return NextResponse.json({ error: 'Estilo inválido' }, { status: 400 })
+    }
+    const actualizada = await prisma.imagenPedido.update({
+      where: { id: imgId },
+      data: { estilo: estilo ?? null },
+    })
+    return NextResponse.json({ imagen: { id: actualizada.id, estilo: actualizada.estilo } })
   }
 
   if (accion === 'aprobar' || accion === 'desaprobar') {
@@ -60,12 +72,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         return NextResponse.json({ error: 'Falta la imagen o el estilo de tapa' }, { status: 400 })
       }
       fotoUrl = pedido.imagenTapaKey
-      estilo = pedido.estiloTapa
+      estilo = imagen.estilo ?? pedido.estiloTapa
     } else {
       const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
       const asignacion = calcularAsignacionPagina(imagen.orden, tematicasEfectivas, pedido.estilos)
       fotoUrl = pedido.fotos[imagen.orden % pedido.fotos.length].url
-      estilo = asignacion.estilo
+      estilo = imagen.estilo ?? asignacion.estilo
       tematica = asignacion.tematica
       varianteIndex = asignacion.varianteIndex
       const situaciones = pedido.situacionesPorTematica as Record<string, string[]> | null

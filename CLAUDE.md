@@ -25,6 +25,7 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
   - **Páginas interiores** (tipo A/B/C): blanco y negro, line art, para colorear.
   - **Tapa** (tipo TAPA): a color, con tipografía del título/subtítulo renderizada sobre la ilustración — usa `estiloTapa` + `observacionesTapa` del pedido como guía del prompt.
 - Cada imagen (`ImagenPedido`) tiene un campo `promptExtra` editable desde el admin para instrucciones puntuales antes de generar/regenerar esa imagen en particular.
+- Cada imagen también tiene un override de estilo opcional (`ImagenPedido.estilo`): desde un desplegable en su card el admin puede forzar la técnica (Realista/Pixar/Anime/Ghibli) de esa imagen puntual; si queda en null se usa la rotación automática por posición (`calcularAsignacionPagina`). Además, cada pedido tiene `notasAdmin` (notas internas privadas del dueño, no visibles para el cliente).
 - El admin puede generar todas las imágenes faltantes en secuencia, o generar/regenerar una imagen puntual desde su propia card (para no gastar créditos de más y poder ajustar el proceso de a una).
 - **Importante (de cara al cliente):** en ningún texto orientado al usuario se menciona "inteligencia artificial" ni el nombre del modelo. Se usa "herramientas de última tecnología". Detalle completo del copy en `PRODUCTO.md`.
 
