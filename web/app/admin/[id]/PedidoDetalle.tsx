@@ -740,7 +740,12 @@ export function PedidoDetalle({
                 {pedido.tituloTapa && <p className="text-sm text-stone-300">Título: <b className="text-white">{pedido.tituloTapa}</b></p>}
                 {pedido.subtituloTapa && <p className="text-sm text-stone-300">Subtítulo: <b className="text-white">{pedido.subtituloTapa}</b></p>}
                 {pedido.estiloTapa && <p className="text-sm text-stone-300">Estilo: <b className="text-white">{pedido.estiloTapa}</b></p>}
-                {pedido.observacionesTapa && <p className="text-sm text-stone-300">Observaciones: <i>{pedido.observacionesTapa}</i></p>}
+                <p className="text-sm text-stone-300">
+                  Observaciones / aclaración de tapa:{' '}
+                  {pedido.observacionesTapa
+                    ? <i className="text-white">{pedido.observacionesTapa}</i>
+                    : <span className="text-stone-500 italic">— el cliente no dejó ninguna indicación —</span>}
+                </p>
                 {pedido.dedicatoria && (
                   <div className="mt-2 p-2 bg-brand-500/10 rounded-lg border border-brand-500/20">
                     <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Tarjeta de dedicatoria</p>
