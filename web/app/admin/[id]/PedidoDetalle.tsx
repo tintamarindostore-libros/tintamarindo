@@ -741,7 +741,7 @@ export function PedidoDetalle({
                 {pedido.subtituloTapa && <p className="text-sm text-stone-300">Subtítulo: <b className="text-white">{pedido.subtituloTapa}</b></p>}
                 {pedido.estiloTapa && <p className="text-sm text-stone-300">Estilo: <b className="text-white">{pedido.estiloTapa}</b></p>}
                 <p className="text-sm text-stone-300">
-                  Observaciones / aclaración de tapa:{' '}
+                  Indicaciones para la tapa:{' '}
                   {pedido.observacionesTapa
                     ? <i className="text-white">{pedido.observacionesTapa}</i>
                     : <span className="text-stone-500 italic">— el cliente no dejó ninguna indicación —</span>}

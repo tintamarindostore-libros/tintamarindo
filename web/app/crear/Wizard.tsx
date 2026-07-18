@@ -835,7 +835,10 @@ export function Wizard({
       config.tematicas.length >= 1 || config.tematicasPersonalizadas.some((t) => t.trim().length > 0)
     const configInteriorValida = config.tamano !== null && tieneAlgunaTematica && config.estilos.length >= 1
     const configTapaValida =
-      datosTapa.tituloTapa.trim().length > 0 && datosTapa.imagenTapaKey !== null && datosTapa.estiloTapa !== null
+      datosTapa.tituloTapa.trim().length > 0 &&
+      datosTapa.observacionesTapa.trim().length > 0 &&
+      datosTapa.imagenTapaKey !== null &&
+      datosTapa.estiloTapa !== null
 
     return (
       <Shell>
@@ -1111,11 +1114,16 @@ export function Wizard({
             </div>
 
             <div>
-              <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 block">Observaciones</label>
+              <label className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 block">
+                Indicaciones para la tapa <span className="text-brand-400">*</span>
+              </label>
+              <p className="text-xs text-stone-400 mb-2 leading-relaxed">
+                Contanos cómo querés que se vea el protagonista en la tapa: por ejemplo, en primer plano mostrando su carita, o haciendo alguna actividad (jugando a la pelota, con un disfraz, andando en bici…). Cuanto más nos cuentes, mejor queda el resultado.
+              </p>
               <textarea
                 value={datosTapa.observacionesTapa}
                 onChange={(e) => setDatosTapa((prev) => ({ ...prev, observacionesTapa: e.target.value }))}
-                placeholder="Indicaciones especiales para el diseño de la tapa..."
+                placeholder='Ej: "Que se vea su carita en primer plano, sonriendo" o "Jugando al fútbol con la camiseta de Argentina"'
                 className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-300 focus:outline-none"
                 rows={3}
               />

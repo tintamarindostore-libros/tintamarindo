@@ -60,7 +60,7 @@ El cliente sube entre 2 y 5 fotos del niño o niña. Cuantas más fotos claras d
 
 - Se genera **a color** con IA (a diferencia del interior, que es blanco y negro para colorear), incluyendo el título/subtítulo como tipografía sobre la ilustración.
 - Vive como una **solapa** dentro de la Pantalla 1 (configuración), no es una pantalla aparte.
-- Campos: Título *(obligatorio)*, Subtítulo *(opcional)*, Observaciones *(opcional — se usan como instrucción adicional para el prompt de generación de la tapa)*, Tarjeta de dedicatoria *(opcional)*.
+- Campos: Título *(obligatorio)*, Subtítulo *(opcional)*, Indicaciones para la tapa *(obligatorio — el cliente describe cómo quiere que se vea el protagonista: primer plano de su rostro, haciendo una actividad, etc.; se usan como instrucción para el prompt de generación de la tapa)*, Tarjeta de dedicatoria *(opcional)*.
 - **Tarjeta de dedicatoria:** el cliente no escribe un mensaje digital — elige entre varios diseños prediseñados en miniatura (o "Sin tarjeta"), con opción de ampliar cada uno antes de elegir. La tarjeta elegida se imprime en blanco en la retiración de tapa, para completar a mano. Catálogo en `web/lib/tarjetasDedicatoria.ts` (imágenes en `web/public/landing/tarjeta-dedicatoria-*.png`); se guarda el `id` del diseño en `Pedido.dedicatoria`.
 - Campo especial para subir una imagen de referencia para la tapa *(obligatorio)*, separado de las fotos del interior del libro.
 - **Estilo de tapa** *(obligatorio)*: Realista / Pixar / Anime / Ghibli — igual paleta de estilos que el interior, pero elegido aparte.
