@@ -179,6 +179,11 @@ CRITICAL — THIS IS A COLORING PAGE:
 
 FACES (most important): preserve individual likeness and expression of the child.`
 
+// Regla general para todas las páginas interiores: la ropa del protagonista va
+// con la temática, y hay un objeto de la escena en su mano o cerca — así cada
+// página se siente claramente ambientada, no una foto con un fondo pegado detrás.
+const REGLA_ESCENA = `GENERAL RULE (always apply): the child's clothing and outfit must clearly match the theme of the scene, and the child must be holding in their hand — or have right beside them — a recognizable object or prop related to the scene.`
+
 // varianteIndex distingue páginas repetidas con la misma temática (ver
 // generarImagen.ts: se calcula a partir de cuántas veces se repitió el ciclo
 // de temáticas hasta esta página), para que no salgan casi idénticas.
@@ -204,7 +209,7 @@ export function construirPromptEscena(
   const pose = POSE_MODIFIERS[orden % POSE_MODIFIERS.length]
   const angulo = ANGULO_MODIFIERS[orden % ANGULO_MODIFIERS.length]
   const escena = `Place the child in this scene: ${situacion}. The child is ${pose}, ${angulo}.`
-  return `${BASE_PROMPT}\n\n${ESTILO_PROMPT[estilo]}\n\nSCENE: ${escena}\n\nPure white background. All lines strictly black. No color, no gray.`
+  return `${BASE_PROMPT}\n\n${ESTILO_PROMPT[estilo]}\n\nSCENE: ${escena}\n\n${REGLA_ESCENA}\n\nPure white background. All lines strictly black. No color, no gray.`
 }
 
 // Tapa — a diferencia de las páginas interiores, va a color y con tipografía (título/subtítulo)
