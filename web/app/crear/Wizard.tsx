@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { PRECIO_LIBRO, precioTransferencia, formatoARS } from '@/lib/precios'
 import { estimarEnvio, type TipoEntrega } from '@/lib/envio'
 import { DATOS_BANCARIOS } from '@/lib/datosBancarios'
+import { linkWhatsApp } from '@/lib/contacto'
 import { TARJETAS_DEDICATORIA } from '@/lib/tarjetasDedicatoria'
 import '../landing.css'
 import {
@@ -1671,23 +1672,65 @@ export function Wizard({
   }
 
   // ── Confirmación ─────────────────────────────────────
+  const esCuponTotal = cuponAplicado?.descuentoPorcentaje === 100
+  const montoTransferencia =
+    config.tamano != null
+      ? cuponAplicado
+        ? Math.round(precioTransferencia(config.tamano) * (1 - cuponAplicado.descuentoPorcentaje / 100))
+        : precioTransferencia(config.tamano)
+      : 0
+  const codigoPedido = pedidoId?.slice(-8).toUpperCase() ?? ''
+  const linkComprobante = linkWhatsApp(
+    `¡Hola! Ya hice mi pedido Tintamarindo${codigoPedido ? ` (#${codigoPedido})` : ''} y les paso el comprobante de la transferencia.`,
+  )
+
   return (
     <Shell>
       <div className="text-center py-6">
         <IconGift className="w-14 h-14 mx-auto mb-4 text-brand-500" />
         <h1 className="text-2xl font-black text-stone-800 mb-3" style={{ fontFamily: 'var(--font-display)' }}>
-          ¡Pedido recibido!
+          ¡Pedido registrado!
         </h1>
-        <p className="text-stone-500 text-sm">
-          Tu pedido <span className="font-mono text-stone-700">#{pedidoId?.slice(-8)}</span> quedó registrado.
-          Te vamos a contactar a {envio.emailEnvio} para coordinar el pago y los siguientes pasos.
-        </p>
-        <p className="text-stone-500 text-sm mt-3">
-          ¡Gracias por confiar en nosotros para este regalo tan especial! 💛
-        </p>
+
+        {esCuponTotal ? (
+          <p className="text-stone-500 text-sm">
+            Tu pedido <span className="font-mono text-stone-700">#{codigoPedido}</span> quedó confirmado.
+            No tenés que pagar nada — tu libro ya está en proceso. Te avisamos por email ({envio.emailEnvio}) cuando esté listo para revisar. 💛
+          </p>
+        ) : medioPago === 'TRANSFERENCIA' ? (
+          <>
+            <p className="text-stone-500 text-sm">
+              Tu pedido <span className="font-mono text-stone-700">#{codigoPedido}</span> quedó registrado.
+              Para completarlo, transferí <b className="text-stone-700">{formatoARS(montoTransferencia)}</b> a:
+            </p>
+            <div className="mt-3 mx-auto max-w-xs text-left bg-brand-50 border border-brand-100 rounded-2xl p-4 text-sm space-y-0.5">
+              <p className="text-stone-600">Alias: <b className="text-stone-800">{DATOS_BANCARIOS.alias}</b></p>
+              <p className="text-stone-600">CBU: <b className="text-stone-800">{DATOS_BANCARIOS.cbu}</b></p>
+              <p className="text-stone-600">Titular: <b className="text-stone-800">{DATOS_BANCARIOS.titular}</b></p>
+            </div>
+            <p className="text-stone-500 text-sm mt-3">
+              Después mandanos el comprobante por WhatsApp y, apenas lo verifiquemos, arrancamos con tu libro. 💛
+            </p>
+            <a
+              href={linkComprobante}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-5 w-full py-4 rounded-2xl font-black text-base bg-green-500 hover:bg-green-600 text-white active:scale-[0.98] shadow-lg transition-all"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Enviar comprobante por WhatsApp
+            </a>
+          </>
+        ) : (
+          <p className="text-stone-500 text-sm">
+            Tu pedido <span className="font-mono text-stone-700">#{codigoPedido}</span> quedó registrado.
+            Te vamos a contactar a {envio.emailEnvio} para coordinar los siguientes pasos. 💛
+          </p>
+        )}
+
         <Link
           href="/"
-          className="inline-block mt-8 w-full py-4 rounded-2xl font-black text-base bg-brand-500 hover:bg-brand-600 text-white active:scale-[0.98] shadow-lg shadow-brand-200 transition-all"
+          className="inline-block mt-4 w-full py-4 rounded-2xl font-black text-base bg-brand-500 hover:bg-brand-600 text-white active:scale-[0.98] shadow-lg shadow-brand-200 transition-all"
           style={{ fontFamily: 'var(--font-display)' }}
         >
           Volver al inicio
