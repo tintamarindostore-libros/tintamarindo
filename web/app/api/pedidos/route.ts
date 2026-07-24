@@ -16,26 +16,43 @@ const TIPOS_ENTREGA_VALIDOS = ['SUCURSAL', 'DOMICILIO']
 const MEDIOS_PAGO_VALIDOS = ['MERCADOPAGO', 'TRANSFERENCIA']
 const MAX_TEMATICAS_PERSONALIZADAS = 3
 
+// Firma canónica del "contenido" de un libro = la configuración que carga el
+// cliente (interior + textos de tapa), para detectar pedidos duplicados del mismo
+// usuario. A propósito NO incluye las keys de archivos (fotos, imagen de tapa):
+// esas cambian cuando el admin recorta o re-sube una foto, y no son lo que define
+// "el mismo libro". Tampoco incluye envío/pago/cupón.
+function firmaContenido(d: {
+  tamano: string
+  tematicas: string[]
+  tematicasPersonalizadas: string[]
+  estilos: string[]
+  tipoPapel: string
+  tituloTapa?: string | null
+  subtituloTapa?: string | null
+  observacionesTapa?: string | null
+  estiloTapa?: string | null
+  dedicatoria?: string | null
+}): string {
+  const t = (s?: string | null) => (s ?? '').trim()
+  return JSON.stringify({
+    tamano: d.tamano,
+    tematicas: [...d.tematicas].sort(),
+    tematicasPersonalizadas: [...d.tematicasPersonalizadas].map((x) => x.trim()).filter(Boolean).sort(),
+    estilos: [...d.estilos].sort(),
+    tipoPapel: d.tipoPapel,
+    tituloTapa: t(d.tituloTapa),
+    subtituloTapa: t(d.subtituloTapa),
+    observacionesTapa: t(d.observacionesTapa),
+    estiloTapa: t(d.estiloTapa),
+    dedicatoria: t(d.dedicatoria),
+  })
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
-    }
-
-    // Evita el doble cobro: si el usuario ya tiene un pedido pagado que todavía
-    // está en proceso (no enviado), no puede crear y pagar otro desde el flujo
-    // —por ejemplo si vuelve atrás después de haber pagado—. Para encargar un
-    // segundo libro, que nos escriba por WhatsApp.
-    const pedidoPagadoEnProceso = await prisma.pedido.findFirst({
-      where: { userId: session.user.id, pagadoAt: { not: null }, estado: { not: 'ENVIADO' } },
-      select: { id: true },
-    })
-    if (pedidoPagadoEnProceso) {
-      return NextResponse.json(
-        { error: 'Ya tenés un pedido pagado en proceso. Si querés encargar otro libro, escribinos por WhatsApp y te ayudamos.' },
-        { status: 409 },
-      )
     }
 
     const body = await req.json()
@@ -141,6 +158,51 @@ export async function POST(req: NextRequest) {
     }
     if (imagenTapaKey && (typeof imagenTapaKey !== 'string' || !imagenTapaKey.startsWith(`temp/${userId}/`))) {
       return NextResponse.json({ error: 'Imagen de tapa inválida' }, { status: 403 })
+    }
+
+    // Detección de pedido duplicado. Un usuario SÍ puede tener varios libros
+    // distintos a la vez (por ejemplo uno por cada hijo); lo que se evita es el
+    // duplicado accidental: si ya creó hace poco (24 h) un pedido con
+    // EXACTAMENTE el mismo contenido (interior + tapa + fotos), no se crea otro.
+    const firmaNueva = firmaContenido({
+      tamano,
+      tematicas,
+      tematicasPersonalizadas: tematicasPersonalizadas || [],
+      estilos,
+      tipoPapel: tipoPapel || 'BLANCO',
+      tituloTapa, subtituloTapa, observacionesTapa, estiloTapa, dedicatoria,
+    })
+    const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    const recientes = await prisma.pedido.findMany({
+      where: { userId, createdAt: { gte: hace24h } },
+    })
+    const duplicado = recientes.find(
+      (p) =>
+        firmaContenido({
+          tamano: p.tamano,
+          tematicas: p.tematicas,
+          tematicasPersonalizadas: p.tematicasPersonalizadas,
+          estilos: p.estilos,
+          tipoPapel: p.tipoPapel,
+          tituloTapa: p.tituloTapa,
+          subtituloTapa: p.subtituloTapa,
+          observacionesTapa: p.observacionesTapa,
+          estiloTapa: p.estiloTapa,
+          dedicatoria: p.dedicatoria,
+        }) === firmaNueva,
+    )
+    if (duplicado) {
+      // Si el duplicado ya está pagado → se bloquea (evita el doble cobro).
+      if (duplicado.pagadoAt) {
+        return NextResponse.json(
+          { error: 'Ya hiciste este mismo libro y el pedido ya está pagado. Si querés otra copia o hacer un cambio, escribinos por WhatsApp.' },
+          { status: 409 },
+        )
+      }
+      // Si sigue sin pagar (ej. cambió de medio de pago o volvió atrás), se
+      // reemplaza por el nuevo para no dejar un pedido fantasma. Se borran solo
+      // las filas (las fotos en R2 son temp/ y las reusa el pedido nuevo).
+      await prisma.pedido.delete({ where: { id: duplicado.id } })
     }
 
     const cantidadPaginas = PAGINAS_POR_TAMANO[tamano]
