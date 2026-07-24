@@ -11,20 +11,14 @@ export const metadata: Metadata = {
 const MENSAJES = {
   aprobado: {
     emoji: '🎉',
-    titulo: '¡Pago recibido!',
-    texto: 'Tu pedido está registrado y en proceso. Pronto recibirás un email de confirmación con los detalles.',
+    titulo: '¡Pago confirmado!',
+    texto: 'Tu pedido ingresó y ya está en proceso. Pronto recibirás un email de confirmación con los detalles.',
     color: 'text-green-600',
   },
-  pendiente: {
-    emoji: '⏳',
-    titulo: 'Pago en proceso',
-    texto: 'Tu pago está siendo verificado. Cuando se confirme te avisamos por email y empezamos a preparar tu libro.',
-    color: 'text-orange-500',
-  },
-  rechazado: {
-    emoji: '❌',
-    titulo: 'El pago no fue aprobado',
-    texto: 'Podés intentarlo de nuevo o contactarnos si el problema persiste.',
+  error: {
+    emoji: '⚠️',
+    titulo: 'No pudimos confirmar tu pago',
+    texto: 'No se realizó ningún cobro. Podés intentar de nuevo o completar el pedido pagando por transferencia bancaria (con descuento).',
     color: 'text-red-500',
   },
 } as const
@@ -37,33 +31,46 @@ export default async function PedidoPage({
   searchParams: Promise<{ resultado?: string; pid?: string; payment_id?: string; collection_id?: string }>
 }) {
   const params = await searchParams
-  let status: Status = 'pendiente'
 
-  // No confiamos en "resultado" (nuestro propio hint en la URL) como fuente de verdad:
-  // si MercadoPago nos dio un payment_id/collection_id, siempre lo verificamos de
-  // verdad contra su API y confirmamos el pedido acá mismo si todavía no estaba
-  // confirmado (el webhook puede llegar tarde o fallar) — así sea que la vuelta haya
-  // sido "success", "pending" o "failure".
+  // Un pedido de MercadoPago solo "ingresa" cuando MP confirma el pago como
+  // aprobado. No confiamos en "resultado" (nuestro hint en la URL): si hay un
+  // payment_id/collection_id, verificamos de verdad contra la API de MP y
+  // confirmamos el pedido acá mismo si el webhook todavía no lo hizo.
   const paymentId = params.payment_id ?? params.collection_id
+  let confirmado = false
+  let mpStatus: string | null = null
+  let pedidoId: string | null = params.pid ?? null
+
   if (paymentId) {
     try {
-      const { confirmado, mpStatus } = await confirmarPagoAprobado(paymentId)
-      status = confirmado ? 'aprobado' : mpStatus === 'rejected' ? 'rechazado' : 'pendiente'
+      const r = await confirmarPagoAprobado(paymentId)
+      confirmado = r.confirmado
+      mpStatus = r.mpStatus
+      pedidoId = r.pedidoId ?? pedidoId
     } catch (err) {
       console.error('[pedido] Error al verificar el pago:', err)
-      status = 'pendiente'
     }
   } else if (params.pid) {
-    // Sin payment_id en la URL: chequeamos el estado ya guardado (puede haberlo
-    // confirmado el webhook antes de que cargue esta pantalla).
+    // Sin payment_id en la URL: el webhook pudo haberlo confirmado antes de que
+    // cargue esta pantalla.
     const pedido = await prisma.pedido.findUnique({ where: { id: params.pid }, select: { estado: true } })
-    if (pedido && pedido.estado !== 'ESPERANDO_PAGO') status = 'aprobado'
-    else if (params.resultado === 'rechazado') status = 'rechazado'
+    confirmado = !!pedido && pedido.estado !== 'ESPERANDO_PAGO'
+    if (params.resultado === 'rechazado') mpStatus = 'rejected'
   } else if (params.resultado === 'rechazado') {
-    status = 'rechazado'
+    mpStatus = 'rejected'
   }
 
-  const msg = MENSAJES[status] ?? MENSAJES.rechazado
+  // Si MercadoPago rechazó el pago, no debe quedar un pedido "fantasma" sin pagar:
+  // se borra (solo si sigue ESPERANDO_PAGO + MERCADOPAGO, nunca uno ya pagado). No
+  // se borra en otros estados no confirmados por si el pago todavía puede aprobarse.
+  if (!confirmado && mpStatus === 'rejected' && pedidoId) {
+    await prisma.pedido.deleteMany({
+      where: { id: pedidoId, estado: 'ESPERANDO_PAGO', medioPago: 'MERCADOPAGO' },
+    })
+  }
+
+  const status: Status = confirmado ? 'aprobado' : 'error'
+  const msg = MENSAJES[status]
 
   return (
     <div className="min-h-screen bg-[#FEF9F0] flex items-center justify-center px-6">
@@ -77,13 +84,21 @@ export default async function PedidoPage({
         </h1>
         <p className="text-stone-500 mb-8 leading-relaxed">{msg.texto}</p>
 
-        {status === 'rechazado' ? (
-          <Link
-            href="/crear"
-            className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-2xl transition-colors"
-          >
-            Volver e intentar de nuevo
-          </Link>
+        {status === 'error' ? (
+          <div className="space-y-4">
+            <Link
+              href="/crear"
+              className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-2xl transition-colors"
+            >
+              Volver e intentar de nuevo
+            </Link>
+            <p className="text-stone-400 text-sm">
+              ¿Necesitás ayuda? Escribinos por WhatsApp o a{' '}
+              <a href="mailto:tintamarindo.store@gmail.com" className="text-orange-500 underline">
+                tintamarindo.store@gmail.com
+              </a>
+            </p>
+          </div>
         ) : (
           <p className="text-stone-400 text-sm">
             ¿Dudas? Contactanos por WhatsApp o a{' '}

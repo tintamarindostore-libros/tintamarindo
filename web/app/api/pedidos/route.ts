@@ -324,13 +324,20 @@ export async function POST(req: NextRequest) {
         body: {
           items,
           external_reference: pedido.id,
+          // Solo medios de pago instantáneos: se excluyen los offline (ticket =
+          // Rapipago/Pago Fácil, atm = cajero), que quedan "pendientes" hasta que
+          // el cliente pague en efectivo. Así MercadoPago confirma (o rechaza) el
+          // cobro al momento; el que no puede pagar con tarjeta usa transferencia.
+          payment_methods: {
+            excluded_payment_types: [{ id: 'ticket' }, { id: 'atm' }],
+          },
           // OJO: no usar "status" como nombre de parámetro acá — MercadoPago agrega su
           // propio "status" (en inglés: approved/rejected/pending) al redirigir, y pisa
           // cualquier "status" que pongamos nosotros en la URL. Por eso "resultado".
           back_urls: {
             success: `${siteUrl}/pedido?resultado=aprobado&pid=${pedido.id}`,
             failure: `${siteUrl}/pedido?resultado=rechazado&pid=${pedido.id}`,
-            pending: `${siteUrl}/pedido?resultado=pendiente&pid=${pedido.id}`,
+            pending: `${siteUrl}/pedido?resultado=rechazado&pid=${pedido.id}`,
           },
           auto_return: 'approved',
           notification_url: `${siteUrl}/api/webhooks/mercadopago`,

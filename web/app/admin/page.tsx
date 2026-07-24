@@ -53,6 +53,17 @@ export default async function AdminPage({
   const { estado, q } = await searchParams
   const busqueda = q?.trim()
 
+  // Limpieza: los checkouts de MercadoPago abandonados (sin pagar hace más de
+  // 24 h) se borran definitivamente. A esa altura el pago ya no se va a confirmar
+  // (los medios de MP son instantáneos), así que no son pedidos reales.
+  await prisma.pedido.deleteMany({
+    where: {
+      estado: 'ESPERANDO_PAGO',
+      medioPago: 'MERCADOPAGO',
+      createdAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+    },
+  })
+
   // Los checkouts de MercadoPago que quedaron sin pagar (el cliente inició el pago
   // y no lo completó — por ejemplo porque volvió atrás y pagó por transferencia)
   // no son pedidos reales: se ocultan del panel y de las estadísticas. Si el pago
