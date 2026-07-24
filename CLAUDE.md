@@ -44,6 +44,8 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
 | Quién puede comprar | No se restringe a padres/tutores — cualquiera con autorización de la familia |
 | Envíos | Costo "a confirmar" (no se cobra en el checkout) hasta tener acceso a la API de MiCorreo — se confirma por WhatsApp/email antes de despachar |
 | Pago | MercadoPago (precio de lista) o transferencia bancaria (10% descuento) |
+| Pedidos de MP sin pagar | Los checkouts de MercadoPago que quedan en `ESPERANDO_PAGO` (el cliente no completó el pago) se **ocultan** del panel y de las estadísticas — no son pedidos reales. Si el pago se concreta, el webhook los pasa a `ESPERANDO_GENERACION` y reaparecen. Los de transferencia en `ESPERANDO_PAGO` sí se muestran (el dueño los confirma a mano) |
+| Un pago por vez | Al crear un pedido (`/api/pedidos`), si el usuario ya tiene uno pagado y no enviado, se bloquea (409) para evitar el doble cobro si vuelve atrás después de pagar. Para un segundo libro, contacto manual |
 | Botón de arrepentimiento | Obligatorio por ley, pero el producto es personalizado (excepción art. 1116 CCCN) — solo aplica si se cancela dentro de 48hs y antes de iniciar la generación |
 | Tapa | Solapa dentro de la pantalla de configuración, no un paso del checkout. La opción "Regalo" (tarjeta personalizada) se evaluó y se **eliminó** del producto — no reabrir sin pedido explícito |
 | Tarjeta de dedicatoria | El cliente elige entre diseños prediseñados en miniatura (o "Sin tarjeta"), no escribe un mensaje digital. Se imprime en blanco en la retiración de tapa para completar a mano. Catálogo en `web/lib/tarjetasDedicatoria.ts` |

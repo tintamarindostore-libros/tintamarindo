@@ -23,6 +23,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
+    // Evita el doble cobro: si el usuario ya tiene un pedido pagado que todavía
+    // está en proceso (no enviado), no puede crear y pagar otro desde el flujo
+    // —por ejemplo si vuelve atrás después de haber pagado—. Para encargar un
+    // segundo libro, que nos escriba por WhatsApp.
+    const pedidoPagadoEnProceso = await prisma.pedido.findFirst({
+      where: { userId: session.user.id, pagadoAt: { not: null }, estado: { not: 'ENVIADO' } },
+      select: { id: true },
+    })
+    if (pedidoPagadoEnProceso) {
+      return NextResponse.json(
+        { error: 'Ya tenés un pedido pagado en proceso. Si querés encargar otro libro, escribinos por WhatsApp y te ayudamos.' },
+        { status: 409 },
+      )
+    }
+
     const body = await req.json()
     const {
       fotos,

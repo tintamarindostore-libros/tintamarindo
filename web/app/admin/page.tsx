@@ -52,8 +52,16 @@ export default async function AdminPage({
 
   const { estado, q } = await searchParams
   const busqueda = q?.trim()
+
+  // Los checkouts de MercadoPago que quedaron sin pagar (el cliente inició el pago
+  // y no lo completó — por ejemplo porque volvió atrás y pagó por transferencia)
+  // no son pedidos reales: se ocultan del panel y de las estadísticas. Si el pago
+  // se concreta, el webhook los pasa a ESPERANDO_GENERACION y vuelven a aparecer.
+  const ocultarMpSinPagar = { NOT: { estado: 'ESPERANDO_PAGO', medioPago: 'MERCADOPAGO' } } as const
+
   const pedidos = await prisma.pedido.findMany({
     where: {
+      ...ocultarMpSinPagar,
       ...(estado ? { estado: estado as never } : {}),
       ...(busqueda
         ? {
@@ -71,8 +79,8 @@ export default async function AdminPage({
 
   const camposResumen = { tamano: true, medioPago: true, cuponDescuentoPorcentaje: true, createdAt: true } as const
   const [pedidosHoy, pedidosSemana] = await Promise.all([
-    prisma.pedido.findMany({ where: { createdAt: { gte: inicioDiaBuenosAires(0) } }, select: camposResumen }),
-    prisma.pedido.findMany({ where: { createdAt: { gte: inicioDiaBuenosAires(6) } }, select: camposResumen }),
+    prisma.pedido.findMany({ where: { ...ocultarMpSinPagar, createdAt: { gte: inicioDiaBuenosAires(0) } }, select: camposResumen }),
+    prisma.pedido.findMany({ where: { ...ocultarMpSinPagar, createdAt: { gte: inicioDiaBuenosAires(6) } }, select: camposResumen }),
   ])
   const totalFacturado = (lista: typeof pedidosHoy) =>
     lista.reduce((acc, p) => acc + precioFinalLibro(p.tamano, p.medioPago, p.cuponDescuentoPorcentaje), 0)
