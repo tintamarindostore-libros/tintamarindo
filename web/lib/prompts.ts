@@ -146,7 +146,7 @@ export const TEMATICA_PROMPT: Record<string, string[]> = {
 // Descripción genérica para temáticas personalizadas sin situaciones manuales
 // cargadas (ver situacionesPorTematica del pedido) y sin entrada en el
 // diccionario de arriba.
-function escenaGenerica(tematica: string) {
+export function escenaGenerica(tematica: string) {
   return `themed around: "${tematica}" — include clearly recognizable, iconic props, symbols and background elements strongly associated with this specific theme, so the theme is immediately identifiable, not a generic setting`
 }
 
@@ -154,7 +154,7 @@ function escenaGenerica(tematica: string) {
 // libro repita mucho una misma temática (ej. 8 páginas de "Princesas" en un
 // libro de 24 con 3 temáticas), el conjunto no se repite hasta pasadas varias
 // decenas de páginas, sin depender de escribir a mano una variante por página.
-const POSE_MODIFIERS = [
+export const POSE_MODIFIERS = [
   'in a joyful, dynamic action pose, mid-movement',
   'in a calm, gentle pose, smiling softly at the viewer',
   'laughing with arms raised triumphantly',
@@ -163,7 +163,7 @@ const POSE_MODIFIERS = [
   'in a confident, heroic pose',
 ]
 
-const ANGULO_MODIFIERS = [
+export const ANGULO_MODIFIERS = [
   'shown in a close-up framing',
   'shown in a wide, full-body framing',
   'shown from a slightly low, heroic angle',
@@ -197,6 +197,15 @@ const REGLA_ESCENA = `GENERAL RULE (always apply): the child's clothing and outf
 // situacionesManuales: lista de situaciones puntuales cargadas por el admin
 // para esta temática en ESTE pedido (ver campo situacionesPorTematica) — si
 // están cargadas, se usan en vez de las predefinidas o la descripción genérica.
+// Ensamblador de bajo nivel: junta las partes fijas (base + estilo + regla) con
+// las variables ya resueltas (situación + pose + ángulo). Lo usa tanto el
+// generador real (a través de construirPromptEscena) como el armador de prompts
+// del admin, para que el texto salga idéntico en los dos lados.
+export function ensamblarPromptEscena(estilo: string, situacion: string, pose: string, angulo: string) {
+  const escena = `Place the child in this scene: ${situacion}. The child is ${pose}, ${angulo}.`
+  return `${BASE_PROMPT}\n\n${ESTILO_PROMPT[estilo]}\n\nSCENE: ${escena}\n\n${REGLA_ESCENA}\n\nPure white background. All lines strictly black. No color, no gray.`
+}
+
 export function construirPromptEscena(
   estilo: string,
   tematica: string,
@@ -208,8 +217,7 @@ export function construirPromptEscena(
   const situacion = variantes ? variantes[varianteIndex % variantes.length] : escenaGenerica(tematica)
   const pose = POSE_MODIFIERS[orden % POSE_MODIFIERS.length]
   const angulo = ANGULO_MODIFIERS[orden % ANGULO_MODIFIERS.length]
-  const escena = `Place the child in this scene: ${situacion}. The child is ${pose}, ${angulo}.`
-  return `${BASE_PROMPT}\n\n${ESTILO_PROMPT[estilo]}\n\nSCENE: ${escena}\n\n${REGLA_ESCENA}\n\nPure white background. All lines strictly black. No color, no gray.`
+  return ensamblarPromptEscena(estilo, situacion, pose, angulo)
 }
 
 // Tapa — a diferencia de las páginas interiores, va a color y con tipografía (título/subtítulo)

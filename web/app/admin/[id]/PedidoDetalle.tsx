@@ -1095,6 +1095,19 @@ export function PedidoDetalle({
           </div>
         </div>
 
+        <div className="bg-stone-900 rounded-2xl border border-brand-500/30 p-5">
+          <p className="text-xs font-bold text-brand-400 uppercase tracking-widest mb-2">🧩 Armar prompts para generar afuera</p>
+          <p className="text-xs text-stone-500 mb-3">
+            Abre una página con cada página del libro ya armada como prompt (idéntico al que usa el sistema). Ajustás las variables —estilo, temática, situación, pose— y lo copiás para generar la imagen por fuera, adjuntando la foto del nene y una imagen de referencia si hace falta. Útil si te quedaste sin crédito de la API.
+          </p>
+          <a
+            href={`/admin/${pedido.id}/prompts`}
+            className="inline-block bg-brand-500 hover:bg-brand-600 text-white text-xs font-black px-4 py-2 rounded-full transition-colors"
+          >
+            🧩 Abrir armador de prompts
+          </a>
+        </div>
+
         <div className="bg-stone-900 rounded-2xl border border-stone-800 p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">Mensajes para el cliente</p>
