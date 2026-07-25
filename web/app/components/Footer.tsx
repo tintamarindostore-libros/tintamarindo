@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { CONTACTO, linkWhatsApp } from '@/lib/contacto'
 
 export default function Footer() {
   return (
@@ -10,8 +11,8 @@ export default function Footer() {
           <p className="text-stone-400 text-sm mt-2">
             Libros de colorear personalizados · Enviamos a todo el país
           </p>
-          <a href="mailto:tintamarindo.store@gmail.com" className="text-stone-400 hover:text-white transition-colors text-sm mt-1">
-            tintamarindo.store@gmail.com
+          <a href={`mailto:${CONTACTO.email}`} className="text-stone-400 hover:text-white transition-colors text-sm mt-1">
+            {CONTACTO.email}
           </a>
         </div>
 
@@ -31,7 +32,7 @@ export default function Footer() {
           </a>
 
           <a
-            href="https://wa.me/5491139532951"
+            href={linkWhatsApp()}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors"
@@ -40,7 +41,7 @@ export default function Footer() {
               <path d="M3 21l1.4-4.2A8.5 8.5 0 1 1 8 19.6L3 21Z" />
               <path d="M8.5 8.5c0 4 3 7 7 7 .8 0 1.2-.9.7-1.6l-1.2-1.6c-.3-.4-.9-.5-1.3-.2l-.6.4c-1-.6-1.9-1.5-2.5-2.5l.4-.6c.3-.4.2-1-.2-1.3L9.6 7.3c-.7-.5-1.6-.1-1.6.7v.5Z" />
             </svg>
-            <span className="text-sm">11 3953 2951</span>
+            <span className="text-sm">{CONTACTO.whatsappDisplay}</span>
           </a>
         </div>
 
