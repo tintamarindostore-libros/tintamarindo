@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Fredoka, Inter } from 'next/font/google'
 import { Providers } from './providers'
 import Footer from './components/Footer'
+import WhatsAppFlotante from './components/WhatsAppFlotante'
 import './globals.css'
 
 const fredoka = Fredoka({
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${fredoka.variable} ${inter.variable}`}>
         <Providers>{children}</Providers>
         <Footer />
+        <WhatsAppFlotante />
       </body>
     </html>
   )
