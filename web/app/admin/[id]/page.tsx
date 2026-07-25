@@ -105,7 +105,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
           orden: i.orden,
           tipo: i.tipo,
           manual,
-          tematica: i.tipo === 'TAPA' ? (pedido.estiloTapa ? 'Tapa' : null) : asignacion?.tematica ?? null,
+          tematica: i.tipo === 'TAPA' ? (pedido.estiloTapa ? 'Tapa' : null) : i.tematica ?? asignacion?.tematica ?? null,
           estilo: i.estilo ?? (i.tipo === 'TAPA' ? pedido.estiloTapa : asignacion?.estilo ?? null),
           aprobada: i.aprobada,
           urlFirmada: i.urlFirmada,

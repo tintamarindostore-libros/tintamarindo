@@ -574,6 +574,22 @@ export function PedidoDetalle({
     }
   }
 
+  const cambiarTematicaImagen = async (img: Imagen, nuevaTematica: string) => {
+    const anterior = img.tematica
+    // Optimista: reflejamos el cambio al instante y revertimos si falla.
+    setImagenes((prev) => prev.map((i) => (i.id === img.id ? { ...i, tematica: nuevaTematica } : i)))
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedido.id}/imagenes/${img.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion: 'actualizarTematica', tematica: nuevaTematica }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      setImagenes((prev) => prev.map((i) => (i.id === img.id ? { ...i, tematica: anterior } : i)))
+    }
+  }
+
   const regenerar = async (img: Imagen) => {
     setGenerandoImg(img.id)
     setErrorGen(null)
@@ -919,7 +935,6 @@ export function PedidoDetalle({
                 <div className="p-2 space-y-1">
                   <p className="text-[10px] text-stone-500 font-bold">
                     {img.manual ? LABEL_TIPO_MANUAL[img.tipo] : img.tipo === 'TAPA' ? 'Tapa (color)' : `Pág. ${img.orden + 1}`}
-                    {img.tematica && img.tipo !== 'TAPA' ? ` · ${img.tematica}` : ''}
                   </p>
                   <div className="flex gap-1">
                     <button
@@ -973,6 +988,19 @@ export function PedidoDetalle({
                     </>
                   ) : (
                     <>
+                      {img.tipo !== 'TAPA' && pedido.tematicasEfectivas.length > 0 && (
+                        <select
+                          value={img.tematica ?? ''}
+                          onChange={(e) => cambiarTematicaImagen(img, e.target.value)}
+                          title="Temática de esta imagen — cambiala y volvé a generar para variar la escena"
+                          className="w-full rounded-lg border border-stone-700 bg-stone-800 text-stone-200 px-2 py-1 text-[10px] focus:border-brand-500 focus:outline-none cursor-pointer"
+                        >
+                          {img.tematica == null && <option value="">Temática…</option>}
+                          {pedido.tematicasEfectivas.map((t) => (
+                            <option key={t} value={t}>Temática: {t}</option>
+                          ))}
+                        </select>
+                      )}
                       <select
                         value={img.estilo ?? ''}
                         onChange={(e) => cambiarEstiloImagen(img, e.target.value)}

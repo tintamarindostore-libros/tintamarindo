@@ -52,9 +52,9 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
     const asignacion = calcularAsignacionPagina(siguiente.orden, tematicasEfectivas, pedido.estilos)
     fotoUrl = fotosUsables[siguiente.orden % fotosUsables.length].url
-    // El admin puede forzar un estilo puntual por imagen; si no, usa la rotación automática.
+    // El admin puede forzar un estilo/temática puntual por imagen; si no, usa la rotación automática.
     estilo = siguiente.estilo ?? asignacion.estilo
-    tematica = asignacion.tematica
+    tematica = siguiente.tematica ?? asignacion.tematica
     varianteIndex = asignacion.varianteIndex
     const situaciones = pedido.situacionesPorTematica as Record<string, string[]> | null
     situacionesManuales = situaciones?.[tematica]

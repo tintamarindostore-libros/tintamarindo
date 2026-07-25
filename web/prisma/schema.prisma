@@ -213,6 +213,7 @@ model ImagenPedido {
   promptUsado String?    @db.Text
   promptExtra String?    @db.Text // instrucciones puntuales que carga el admin antes de generar/regenerar esta imagen
   estilo      Estilo?    // override manual del estilo (técnica) desde el admin; si es null se usa la rotación automática por posición
+  tematica    String?    // override manual de la temática desde el admin; si es null se usa la rotación automática por posición
   aprobada    Boolean    @default(false)
 
   createdAt DateTime @default(now())

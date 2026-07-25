@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const { id, imgId } = await params
-  const { accion, promptExtra, estilo } = await req.json()
+  const { accion, promptExtra, estilo, tematica } = await req.json()
 
   const imagen = await prisma.imagenPedido.findUnique({ where: { id: imgId } })
   if (!imagen || imagen.pedidoId !== id) {
@@ -31,6 +31,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       data: { estilo: estilo ?? null },
     })
     return NextResponse.json({ imagen: { id: actualizada.id, estilo: actualizada.estilo } })
+  }
+
+  if (accion === 'actualizarTematica') {
+    // La temática forzada tiene que ser una de las que el cliente eligió para
+    // este pedido (predefinidas + personalizadas). null = volver a la rotación
+    // automática por posición.
+    const pedido = await prisma.pedido.findUnique({
+      where: { id },
+      select: { tematicas: true, tematicasPersonalizadas: true },
+    })
+    if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 })
+    const tematicasEfectivas = [...pedido.tematicas, ...pedido.tematicasPersonalizadas]
+    if (tematica !== null && !tematicasEfectivas.includes(tematica)) {
+      return NextResponse.json({ error: 'Temática inválida' }, { status: 400 })
+    }
+    const actualizada = await prisma.imagenPedido.update({
+      where: { id: imgId },
+      data: { tematica: tematica ?? null },
+    })
+    return NextResponse.json({ imagen: { id: actualizada.id, tematica: actualizada.tematica } })
   }
 
   if (accion === 'aprobar' || accion === 'desaprobar') {
@@ -78,7 +98,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       const asignacion = calcularAsignacionPagina(imagen.orden, tematicasEfectivas, pedido.estilos)
       fotoUrl = pedido.fotos[imagen.orden % pedido.fotos.length].url
       estilo = imagen.estilo ?? asignacion.estilo
-      tematica = asignacion.tematica
+      // El admin puede forzar una temática puntual por imagen; si no, usa la rotación automática.
+      tematica = imagen.tematica ?? asignacion.tematica
       varianteIndex = asignacion.varianteIndex
       const situaciones = pedido.situacionesPorTematica as Record<string, string[]> | null
       situacionesManuales = situaciones?.[tematica]
