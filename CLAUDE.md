@@ -25,8 +25,9 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
   - **Páginas interiores** (tipo A/B/C): blanco y negro, line art, para colorear.
   - **Tapa** (tipo TAPA): a color, con tipografía del título/subtítulo renderizada sobre la ilustración — usa `estiloTapa` + `observacionesTapa` del pedido como guía del prompt.
 - Cada imagen (`ImagenPedido`) tiene un campo `promptExtra` editable desde el admin para instrucciones puntuales antes de generar/regenerar esa imagen en particular.
-- Cada imagen también tiene un override de estilo opcional (`ImagenPedido.estilo`): desde un desplegable en su card el admin puede forzar la técnica (Realista/Pixar/Anime/Ghibli) de esa imagen puntual; si queda en null se usa la rotación automática por posición (`calcularAsignacionPagina`). Además, cada pedido tiene `notasAdmin` (notas internas privadas del dueño, no visibles para el cliente).
+- Cada imagen tiene además dos overrides opcionales que el admin fuerza desde desplegables en su card: **estilo** (`ImagenPedido.estilo`, técnica Realista/Pixar/Anime/Ghibli) y **temática** (`ImagenPedido.tematica`, entre las del pedido). Si quedan en null se usa la rotación automática por posición (`calcularAsignacionPagina`). Sirven cuando la rotación repite escenas parecidas en páginas de la misma temática. Además, cada pedido tiene `notasAdmin` (notas internas privadas del dueño, no visibles para el cliente).
 - El admin puede generar todas las imágenes faltantes en secuencia, o generar/regenerar una imagen puntual desde su propia card (para no gastar créditos de más y poder ajustar el proceso de a una).
+- **Armador de prompts** (`/admin/[id]/prompts`, link desde el detalle del pedido): arma para cada página del libro el prompt exacto que usaría el generador, con las variables editables en vivo (estilo, temática, situación, pose, ángulo, imagen de referencia, instrucciones extra) y botón de copiar. Reutiliza las mismas funciones de `web/lib/prompts.ts` (`ensamblarPromptEscena` / `construirPromptTapa`) para que el texto sea idéntico al real. Pensado para generar imágenes por fuera de la API cuando no hay crédito.
 - **Importante (de cara al cliente):** en ningún texto orientado al usuario se menciona "inteligencia artificial" ni el nombre del modelo. Se usa "herramientas de última tecnología". Detalle completo del copy en `PRODUCTO.md`.
 
 ## Decisiones tomadas — no reabrir
@@ -56,6 +57,7 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
 | Estilo de tapa | Selector obligatorio (Realista/Pixar/Anime/Ghibli), independiente de los estilos del interior |
 | Imagen familiar | Solo en 32 pág. El cliente sube foto grupal; la IA dibuja a todo el grupo como personajes en la escena |
 | Tipo de entrega | Sucursal (dirección opcional, se coordina después) o domicilio |
+| Contacto / chat | Botón flotante de WhatsApp que **abre WhatsApp** (no chat embebido en el sitio). Se evaluó un chat dentro de la web y se descartó para conservar el contacto del cliente + las notificaciones y reusar el bot de n8n ya en vivo. No reabrir sin pedido explícito |
 
 *(Justificación y detalle de cada una de estas decisiones en `PRODUCTO.md`)*
 
@@ -73,6 +75,7 @@ tintamarindo/
 │   │   ├── page.tsx                ← landing + CTA "Crear mi libro"
 │   │   ├── providers.tsx           ← SessionProvider para next-auth
 │   │   ├── components/Footer.tsx   ← footer global (FAQ, arrepentimiento, términos)
+│   │   ├── components/WhatsAppFlotante.tsx ← botón flotante de WhatsApp (abajo a la derecha, oculto en /admin)
 │   │   ├── (content)/              ← páginas de contenido/legal (route group, no afecta URL)
 │   │   │   ├── layout.tsx          ← header con "← Inicio" compartido
 │   │   │   ├── faq/page.tsx        ← preguntas frecuentes
@@ -85,7 +88,8 @@ tintamarindo/
 │   │   │   ├── cupones/            ← alta/edición de cupones de descuento
 │   │   │   ├── mensajes/           ← edición de plantillas de mensajes (PlantillaMensaje)
 │   │   │   ├── compradores/        ← listado de compradores
-│   │   │   └── [id]/PedidoDetalle.tsx ← detalle, generación imagen por imagen (tapa + páginas), desplegable de estado, descarga .zip de todas las imágenes, exportar prompts .txt
+│   │   │   ├── [id]/PedidoDetalle.tsx ← detalle, generación imagen por imagen (tapa + páginas), overrides de estilo/temática por imagen, desplegable de estado, descarga .zip de todas las imágenes, exportar prompts .txt
+│   │   │   └── [id]/prompts/        ← armador de prompts del pedido (page.tsx server + ArmadorPrompts.tsx client)
 │   │   └── api/
 │   │       ├── auth/[...nextauth]/ ← handler de NextAuth v5
 │   │       ├── upload/             ← subida de fotos a R2 (+ upload/urls: firma URLs para fotos ya subidas, usado al restaurar el wizard)
@@ -93,12 +97,13 @@ tintamarindo/
 │   │       ├── pedidos/            ← crear pedido, listar pedidos
 │   │       ├── cupones/validar/    ← valida un cupón cargado por el cliente en el checkout
 │   │       ├── webhooks/mercadopago/ ← recibe confirmación de pago (firma HMAC verificada)
-│   │       └── admin/pedidos/[id]/ ← generar (secuencial), imagenes/[imgId] (generar/regenerar/aprobar/subir manual/prompt puntual), estado (mover manualmente), PDF, tracking, descargar-imagenes (.zip), descargar-prompts (.txt), verificar-pago, confirmar-transferencia
+│   │       └── admin/pedidos/[id]/ ← generar (secuencial), imagenes/[imgId] (generar/regenerar/aprobar/subir manual/prompt puntual/actualizarEstilo/actualizarTematica), estado (mover manualmente), PDF, tracking, notas, situaciones, descargar-imagenes (.zip), descargar-prompts (.txt), verificar-pago, confirmar-transferencia
 │   ├── lib/
 │   │   ├── prisma.ts               ← cliente Prisma
 │   │   ├── r2.ts                   ← cliente Cloudflare R2 + URLs firmadas
 │   │   ├── generarImagen.ts        ← wrapper GPT-4o image generation (interior y tapa)
-│   │   ├── prompts.ts              ← prompts de generación (line art interior + color/tipografía tapa, por temática y estilo)
+│   │   ├── prompts.ts              ← prompts de generación (line art interior + color/tipografía tapa, por temática y estilo); `ensamblarPromptEscena` lo comparten el generador y el armador de prompts del admin
+│   │   ├── contacto.ts             ← datos de contacto centralizados (WhatsApp público 11 2366 8769 + notificaciones 11 5949 3883, email) y `linkWhatsApp()`
 │   │   ├── precios.ts              ← precios de lanzamiento del libro + descuento transferencia
 │   │   ├── envio.ts                ← costo de envío "a confirmar" (interino, sin API de MiCorreo)
 │   │   ├── estados.ts              ← lista de estados del pedido + labels, usado en admin y API

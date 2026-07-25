@@ -133,6 +133,8 @@ Cómo usar este archivo:
 - [x] Botón para descargar todas las imágenes del pedido juntas en un .zip
 - [x] Botón para exportar los prompts de cada página en un .txt, por si se generan las imágenes por afuera de la API
 - [x] Subida manual de páginas (sin IA) — corregido: ahora también dispara el pase a "En revisión" cuando se completa la última imagen pendiente (antes solo lo hacía la generación con IA)
+- [x] Desplegable de **temática por imagen** (además del de estilo) — el admin puede forzar la temática de una página puntual cuando la rotación automática le repite escenas parecidas; en `null` usa la rotación por posición (`ImagenPedido.tematica`). *(2026-07-25)*
+- [x] **Armador de prompts por pedido** (`/admin/[id]/prompts`, con link desde el detalle) — trae cada página del libro (interior + tapa) ya armada como prompt, idéntico al del generador (reutiliza `web/lib/prompts.ts` vía `ensamblarPromptEscena`). Se ajustan estilo/temática/situación/pose/ángulo e imagen de referencia en vivo y se copian, para generar por fuera de la API (ej. sin crédito). Botón "copiar todos" + sección para armar uno libre. *(2026-07-25)*
 
 ---
 
@@ -172,16 +174,16 @@ Cómo usar este archivo:
 
 ---
 
-## 🔲 FASE 5 — Canal de WhatsApp con agente IA (futuro)
+## ✅ FASE 5 — Canal de WhatsApp con agente IA (EN VIVO desde 2026-07-24)
 
-*A construir más adelante con Claude Code + n8n. No bloquea el MVP.*
+*Bot armado con n8n + Evolution API. FAQ automática + derivación a humano funcionando. Números: contacto público **11 2366 8769**, notificaciones internas **11 5949 3883**.*
 
-- [ ] Conectar Evolution API
-- [ ] Botón flotante de WhatsApp en la web
-- [ ] Agente conversacional con base de conocimiento (RAG o FAQ en Word)
+- [x] Conectar Evolution API — bot en vivo desde 2026-07-24 (instancia `tintamarindo`, número público 11 2366 8769)
+- [x] Botón flotante de WhatsApp en la web — abajo a la derecha, en todo el sitio de cara al cliente (oculto en `/admin`), abre WhatsApp con mensaje prellenado (`web/app/components/WhatsAppFlotante.tsx`, usa `web/lib/contacto.ts`). Se evaluó un chat embebido en el sitio y se decidió **mantener el redirect a WhatsApp** (conserva el contacto del cliente + las notificaciones y reusa el bot ya andando). *(2026-07-25)*
+- [x] Agente conversacional con base de conocimiento (FAQ) — responde consultas automáticamente
+- [x] Definir criterio de escalamiento a humano — derivación a humano funcionando (avisa al 11 5949 3883)
 - [ ] Acceso de solo lectura a Postgres (estado de pedidos — sin modificar datos)
-- [ ] Definir criterio de escalamiento a humano
-- [ ] Migrar notificaciones automáticas de Fase 3 a este canal
+- [ ] Migrar notificaciones automáticas de Fase 3 a este canal (parcial: ya avisa pedido nuevo pagado y handoff)
 - [ ] Crear skill `agente-whatsapp` en Claude Code antes de arrancar
 
 ---
