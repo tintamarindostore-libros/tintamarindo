@@ -79,6 +79,7 @@ type Pedido = {
   cuponDescuentoPorcentaje: number | null
   trackingNumero: string | null
   pdfUrlFirmada: string | null
+  linkAprobacion: string | null
   tematicasEfectivas: string[]
   situacionesPorTematica: Record<string, string[]>
 }
@@ -95,7 +96,15 @@ function MensajePlantilla({ plantilla, variablesAuto }: { plantilla: Plantilla; 
   const [manuales, setManuales] = useState<Record<string, string>>({})
   const [copiado, setCopiado] = useState(false)
 
-  const texto = renderPlantilla(plantilla.cuerpo, { ...variablesAuto, ...manuales })
+  const textoBase = renderPlantilla(plantilla.cuerpo, { ...variablesAuto, ...manuales })
+  // El mensaje de "PDF listo para aprobar" siempre tiene que llevar el link de
+  // aprobación. Si el texto de la plantilla no lo incluye (no tiene {{link}}), lo
+  // agregamos al final para que el mensaje copiado esté completo igual.
+  const link = variablesAuto.link
+  const texto =
+    plantilla.clave === 'PDF_LISTO_APROBACION' && link && !textoBase.includes(link)
+      ? `${textoBase}\n\n👉 Miralo y aprobalo acá: ${link}`
+      : textoBase
 
   const copiar = () => {
     navigator.clipboard.writeText(texto)
@@ -427,6 +436,7 @@ export function PedidoDetalle({
   const [eliminando, setEliminando] = useState(false)
   const [confirmandoTransferencia, setConfirmandoTransferencia] = useState(false)
   const [codigoCopiado, setCodigoCopiado] = useState(false)
+  const [linkCopiado, setLinkCopiado] = useState(false)
   const [cambiandoEstado, setCambiandoEstado] = useState(false)
   const pdfInputRef = useRef<HTMLInputElement>(null)
 
@@ -436,6 +446,13 @@ export function PedidoDetalle({
     navigator.clipboard.writeText(pedido.id.slice(-8).toUpperCase())
     setCodigoCopiado(true)
     setTimeout(() => setCodigoCopiado(false), 1500)
+  }
+
+  const copiarLinkAprobacion = () => {
+    if (!pedido.linkAprobacion) return
+    navigator.clipboard.writeText(pedido.linkAprobacion)
+    setLinkCopiado(true)
+    setTimeout(() => setLinkCopiado(false), 1500)
   }
 
   const simularPago = async () => {
@@ -1042,8 +1059,32 @@ export function PedidoDetalle({
             </p>
             {pedido.pdfUrlFirmada && (
               <a href={pedido.pdfUrlFirmada} target="_blank" className="text-sm text-brand-400 underline block mb-3">
-                👁 Ver PDF (lo que recibe el cliente para aprobar)
+                👁 Ver PDF (previsualización rápida para vos)
               </a>
+            )}
+            {pedido.linkAprobacion && (
+              <div className="mb-3 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
+                <p className="text-xs font-bold text-green-400 mb-1.5">🔗 Link para enviarle al cliente (no expira)</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={pedido.linkAprobacion}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="flex-1 min-w-0 rounded-lg border border-stone-700 bg-stone-900 text-stone-200 px-2 py-1.5 text-xs outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={copiarLinkAprobacion}
+                    className="shrink-0 text-xs font-black px-3 py-1.5 rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
+                  >
+                    {linkCopiado ? '✓ Copiado' : '📋 Copiar link'}
+                  </button>
+                </div>
+                <p className="text-[11px] text-stone-500 mt-1.5">
+                  El cliente ve el PDF, lo aprueba o pide cambios por WhatsApp. Este link ya va incluido en el mensaje &quot;PDF listo para aprobar&quot;.
+                </p>
+              </div>
             )}
             <input ref={pdfInputRef} type="file" accept="application/pdf" className="text-xs text-stone-400 mb-2" />
             <button

@@ -43,6 +43,12 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
   const nombreDeClave = Object.fromEntries(PLANTILLAS_CONFIG.map((p) => [p.clave, p.nombre]))
   const camposManualesDeClave = Object.fromEntries(PLANTILLAS_CONFIG.map((p) => [p.clave, p.camposManuales]))
 
+  // Link estable de aprobación que se le manda al cliente (no expira; genera una
+  // URL firmada nueva del PDF en cada visita). Reemplaza al link firmado directo,
+  // que duraba 1 hora y era una URL larga y fea para pegar en WhatsApp.
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const linkAprobacion = pedido.pdfUrl ? `${siteUrl}/aprobar/${pedido.id}` : null
+
   const diasRestantesAprobacion = pedido.pdfSubidoAt ? Math.max(0, 5 - diasDesde(pedido.pdfSubidoAt)) : null
   const variablesAuto: Record<string, string> = {
     nombre: pedido.nombreCompleto.split(' ')[0],
@@ -50,7 +56,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
     tamano: pedido.tamano === 'CHICO' ? '24 páginas' : '32 páginas',
     tematicas: [...pedido.tematicas, ...pedido.tematicasPersonalizadas].join(', '),
     monto: formatoARS(precioFinalLibro(pedido.tamano, pedido.medioPago, pedido.cuponDescuentoPorcentaje)),
-    link: pdfUrlFirmada ?? '',
+    link: linkAprobacion ?? '',
     localidad: `${pedido.localidad}, ${pedido.provincia}`,
     tracking: pedido.trackingNumero ?? '',
     diasRestantes: diasRestantesAprobacion !== null ? String(diasRestantesAprobacion) : '',
@@ -89,6 +95,7 @@ export default async function AdminPedidoPage({ params }: { params: Promise<{ id
         cuponDescuentoPorcentaje: pedido.cuponDescuentoPorcentaje,
         trackingNumero: pedido.trackingNumero,
         pdfUrlFirmada,
+        linkAprobacion,
         tematicasEfectivas: [...pedido.tematicas, ...pedido.tematicasPersonalizadas],
         situacionesPorTematica: (pedido.situacionesPorTematica as Record<string, string[]> | null) ?? {},
       }}
