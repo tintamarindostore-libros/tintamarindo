@@ -1,7 +1,8 @@
-// Precios de lanzamiento — Día del Niño 2026 (ver CLAUDE.md / PRODUCTO.md)
+// Precios del libro. Subidos 15% el 2026-07-28 al terminar la etapa de
+// lanzamiento (antes: 49.900 / 59.900). Ver CLAUDE.md / PRODUCTO.md.
 export const PRECIO_LIBRO: Record<string, number> = {
-  CHICO: 49900,
-  GRANDE: 59900,
+  CHICO: 57900,
+  GRANDE: 68900,
 }
 
 // Descuento por pago con transferencia bancaria directa (evita retención de fondos de MercadoPago)

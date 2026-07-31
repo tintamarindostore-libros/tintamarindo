@@ -213,7 +213,7 @@ Auditoría completa del sitio realizada el 2026-07-11.
 
 ## 📝 Decisiones pendientes
 
-- [x] Cargar precio final real del libro (24 y 32 páginas) en `web/lib/precios.ts` — $49.900 (24 pág.) / $59.900 (32 pág.), 10% descuento por transferencia. Precio de lanzamiento Día del Niño 2026.
+- [x] Cargar precio final real del libro (24 y 32 páginas) en `web/lib/precios.ts` — subidos 15% el 2026-07-28 al terminar el lanzamiento: $57.900 (24 pág.) / $68.900 (32 pág.), 10% descuento por transferencia. (Lanzamiento fue $49.900 / $59.900.)
 - [ ] Definir precio del plus de regeneraciones extra (si se implementa)
 - [ ] Confirmar plazo real de retención de fondos de MercadoPago (para comunicar beneficio del pago por transferencia)
 - [ ] Definir peso y dimensiones reales del libro armado (no bloquea el estimado por zona actual, pero sí la cotización real vía API de MiCorreo)

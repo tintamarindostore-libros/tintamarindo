@@ -305,11 +305,10 @@ export default function Page() {
           </div>
           <div className="pricing">
             <div className="card price-card">
-              <span className="badge-especial">🎁 Precio especial de lanzamiento</span>
               <h3>24 páginas</h3>
-              <div className="price">$49.900</div>
+              <div className="price">$57.900</div>
               <div className="price-transfer-box">
-                <span className="price-alt"><b>$44.910</b></span>
+                <span className="price-alt"><b>$52.110</b></span>
                 <span className="price-alt-note">10% de descuento pagando por transferencia bancaria</span>
               </div>
               <ul>
@@ -319,11 +318,10 @@ export default function Page() {
               <Link className="btn btn-primary" href="/crear">Crear un regalo personalizado →</Link>
             </div>
             <div className="card price-card">
-              <span className="badge-especial">🎁 Precio especial de lanzamiento</span>
               <h3>32 páginas</h3>
-              <div className="price">$59.900</div>
+              <div className="price">$68.900</div>
               <div className="price-transfer-box">
-                <span className="price-alt"><b>$53.910</b></span>
+                <span className="price-alt"><b>$62.010</b></span>
                 <span className="price-alt-note">10% de descuento pagando por transferencia bancaria</span>
               </div>
               <ul>

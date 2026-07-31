@@ -154,12 +154,12 @@ No es parte del MVP actual — queda registrado como decisión de arquitectura p
 
 ## Precios
 
-**Precio de lanzamiento (Día del Niño 2026), ya cargado en `web/lib/precios.ts`:**
+**Precios vigentes (cargados en `web/lib/precios.ts`) — subidos 15% el 2026-07-28 al terminar la etapa de lanzamiento (antes: $49.900 / $59.900):**
 
 | Tamaño | MercadoPago (lista) | Transferencia (10% desc.) |
 |---|---|---|
-| 24 páginas | $49.900 | $44.910 |
-| 32 páginas | $59.900 | $53.910 |
+| 24 páginas | $57.900 | $52.110 |
+| 32 páginas | $68.900 | $62.010 |
 
 - Envío aparte (ver sección "Envíos" arriba).
 - Estrategia: precio de lanzamiento agresivo para entrar al mercado y juntar reseñas (impresión sin costo por ahora, impresora propia). Precio objetivo a futuro en línea con la competencia (Bookinest, ~$74.700–$95.000).
