@@ -33,11 +33,11 @@ function EjemploLamina() {
     <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-4">
       <div className="grid grid-cols-2 gap-3">
         <figure>
-          <img src="/landing/estilo-realista-foto.jpg" alt="Foto de ejemplo" className="w-full aspect-square object-cover rounded-2xl" />
+          <img src="/landing/feria-ejemplo-foto.jpg" alt="Foto de ejemplo" className="w-full aspect-[4/5] object-cover rounded-2xl" />
           <figcaption className="text-center text-xs font-bold text-stone-400 mt-1.5">Tu foto</figcaption>
         </figure>
         <figure>
-          <img src="/landing/estilo-realista-linea.jpg" alt="Lámina para colorear de ejemplo" className="w-full aspect-square object-cover rounded-2xl border border-stone-100" />
+          <img src="/landing/feria-ejemplo-lamina.png" alt="Lámina para colorear de ejemplo" className="w-full aspect-[4/5] object-contain bg-white rounded-2xl border border-stone-100" />
           <figcaption className="text-center text-xs font-bold text-orange-500 mt-1.5">Tu lámina</figcaption>
         </figure>
       </div>
@@ -112,7 +112,7 @@ export default function FeriaPage() {
             ))}
           </div>
           <p className="text-stone-500 text-sm mt-4">
-            Suele estar lista en menos de 48 horas. La hacemos a mano, de a una.
+            Suele estar lista en menos de 48 horas. Las hacemos de a una.
           </p>
         </section>
 
