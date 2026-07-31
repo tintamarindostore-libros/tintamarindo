@@ -117,6 +117,12 @@ export default async function AdminPage({
               💬 Mensajes
             </Link>
             <Link
+              href="/admin/feria"
+              className="text-xs font-bold px-3 py-1.5 rounded-full bg-stone-900 text-stone-300 border border-stone-800 hover:border-brand-500"
+            >
+              🎪 Feria
+            </Link>
+            <Link
               href="/admin/compradores"
               className="text-xs font-bold px-3 py-1.5 rounded-full bg-stone-900 text-stone-300 border border-stone-800 hover:border-brand-500"
             >

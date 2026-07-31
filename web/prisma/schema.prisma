@@ -159,6 +159,22 @@ model CompradorHistorial {
   eliminadoEn      DateTime @default(now())
 }
 
+// —— Solicitudes de lámina gratis (campaña Feria del Libro Infantil) ————
+// Regalo sin login: el visitante sube una foto de su peque y recibe una lámina
+// para colorear por WhatsApp. El dueño la dibuja a mano. No genera un Pedido.
+
+model SolicitudLamina {
+  id        String   @id @default(cuid())
+  nombre    String // nombre del peque
+  tematica  String // Aventura / Princesas / Dinosaurios / Espacio / Animales
+  whatsapp  String // número de contacto que dejó el visitante
+  fotoKey   String // key en R2 de la foto subida
+  enviada   Boolean  @default(false) // el dueño marca cuando ya mandó la lámina
+  createdAt DateTime @default(now())
+
+  @@index([whatsapp])
+}
+
 // —— Cupones de descuento (para promos/influencers) ————————————————
 
 model Cupon {
