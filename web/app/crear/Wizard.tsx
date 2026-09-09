@@ -744,6 +744,19 @@ export function Wizard({
         <PasoHeader paso={1} total={5} titulo="Subí las fotos de la persona protagonista" />
         {mostrarPrivacidad && <PrivacidadPopup onClose={() => setMostrarPrivacidad(false)} />}
 
+        {/* Referencia de precios. El tamaño se elige recién en el paso 2, pero el
+            precio tiene que estar a la vista antes de que el cliente suba las fotos. */}
+        <div className="rounded-2xl bg-brand-50 border border-brand-100 px-4 py-3 mb-6">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <span className="text-sm font-black text-stone-800">24 páginas {formatoARS(PRECIO_LIBRO.CHICO)}</span>
+            <span className="text-stone-300">·</span>
+            <span className="text-sm font-black text-stone-800">32 páginas {formatoARS(PRECIO_LIBRO.GRANDE)}</span>
+          </div>
+          <p className="text-xs text-stone-500 text-center mt-1">
+            10% menos pagando por transferencia · Elegís el tamaño en el paso siguiente
+          </p>
+        </div>
+
         {fotos.length < 5 && (
           <div
             role="button"
@@ -885,7 +898,12 @@ export function Wizard({
                       {t.paginas} páginas
                     </div>
                     <div className="text-xs text-stone-500 mt-0.5">{t.desc}</div>
-                    <div className="text-xs font-bold text-brand-400 mt-2">{formatoARS(PRECIO_LIBRO[t.id])}</div>
+                    <div className="mt-2">
+                      <div className="text-sm font-black text-stone-800">{formatoARS(PRECIO_LIBRO[t.id])}</div>
+                      <div className="text-[11px] font-bold text-brand-500 mt-0.5">
+                        {formatoARS(precioTransferencia(t.id))} por transferencia
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>

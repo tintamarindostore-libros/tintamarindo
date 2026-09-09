@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import FaqAccordion from './components/FaqAccordion'
 import EstiloFlipCard from './components/EstiloFlipCard'
+import { PRECIO_LIBRO, precioTransferencia, formatoARS } from '@/lib/precios'
 import './landing.css'
 
 const TEMATICAS = [
@@ -306,9 +307,9 @@ export default function Page() {
           <div className="pricing">
             <div className="card price-card">
               <h3>24 páginas</h3>
-              <div className="price">$57.900</div>
+              <div className="price">{formatoARS(PRECIO_LIBRO.CHICO)}</div>
               <div className="price-transfer-box">
-                <span className="price-alt"><b>$52.110</b></span>
+                <span className="price-alt"><b>{formatoARS(precioTransferencia('CHICO'))}</b></span>
                 <span className="price-alt-note">10% de descuento pagando por transferencia bancaria</span>
               </div>
               <ul>
@@ -319,9 +320,9 @@ export default function Page() {
             </div>
             <div className="card price-card">
               <h3>32 páginas</h3>
-              <div className="price">$68.900</div>
+              <div className="price">{formatoARS(PRECIO_LIBRO.GRANDE)}</div>
               <div className="price-transfer-box">
-                <span className="price-alt"><b>$62.010</b></span>
+                <span className="price-alt"><b>{formatoARS(precioTransferencia('GRANDE'))}</b></span>
                 <span className="price-alt-note">10% de descuento pagando por transferencia bancaria</span>
               </div>
               <ul>
