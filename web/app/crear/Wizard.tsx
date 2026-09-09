@@ -18,6 +18,11 @@ type Estilo = 'REALISTA' | 'PIXAR' | 'ANIME' | 'GHIBLI'
 type TipoPapel = 'BLANCO' | 'AHUESADO' | 'COMBINADO'
 type Solapa = 'interior' | 'tapa'
 
+const TAMANOS: { id: Tamano; paginas: number; desc: string }[] = [
+  { id: 'CHICO', paginas: 24, desc: 'Ideal para regalo rápido' },
+  { id: 'GRANDE', paginas: 32, desc: 'Más páginas para colorear' },
+]
+
 type Foto = { key: string; previewUrl: string; nombre: string }
 
 type Config = {
@@ -306,7 +311,7 @@ function WizardHeader() {
   )
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({ children, abajo }: { children: React.ReactNode; abajo?: React.ReactNode }) {
   return (
     <div className="tm-landing" style={{ fontFamily: 'var(--font-body)' }}>
       <WizardHeader />
@@ -314,6 +319,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="max-w-lg mx-auto bg-white rounded-3xl shadow-sm border border-stone-100 p-8">
           {children}
         </div>
+        {abajo && <div className="max-w-lg mx-auto mt-6">{abajo}</div>}
       </div>
     </div>
   )
@@ -594,6 +600,18 @@ export function Wizard({
     }))
   }
 
+  // El selector de tamaño del paso 1 es opcional: volver a tocar el tamaño ya
+  // elegido lo deselecciona, y el cliente puede seguir sin definirlo hasta el
+  // paso de diseño. Lo que elija acá viaja en `config` y queda guardado en el
+  // snapshot de sesión, así llega al checkout sin volver a preguntarlo.
+  const alternarTamano = (t: Tamano) => {
+    if (config.tamano === t) {
+      setConfig((prev) => ({ ...prev, tamano: null }))
+      return
+    }
+    cambiarTamano(t)
+  }
+
   const generarPreview = async () => {
     if (!fotos[0] || config.tematicas.length === 0 || config.estilos.length === 0) return
     setGenerandoPreview(true)
@@ -740,22 +758,54 @@ export function Wizard({
   // ── Paso 1 — Fotos ──────────────────────────────────
   if (paso === 1) {
     return (
-      <Shell>
+      <Shell
+        abajo={
+          <div>
+            <p className="text-xs font-bold text-stone-400 uppercase tracking-widest text-center mb-3">
+              Cuánto sale
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {TAMANOS.map((t) => {
+                const elegido = config.tamano === t.id
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => alternarTamano(t.id)}
+                    className={[
+                      'relative rounded-2xl border-2 p-4 text-center transition-all',
+                      elegido
+                        ? 'border-brand-400 bg-brand-50'
+                        : 'border-stone-200 bg-white hover:border-brand-200',
+                    ].join(' ')}
+                  >
+                    {elegido && (
+                      <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center">
+                        <IconCheck className="w-3 h-3" />
+                      </span>
+                    )}
+                    <div className="text-sm font-black text-stone-800" style={{ fontFamily: 'var(--font-display)' }}>
+                      {t.paginas} páginas
+                    </div>
+                    <div className="text-lg font-black text-stone-800 mt-1" style={{ fontFamily: 'var(--font-display)' }}>
+                      {formatoARS(PRECIO_LIBRO[t.id])}
+                    </div>
+                    <div className="text-[11px] font-bold text-brand-500 mt-0.5">
+                      {formatoARS(precioTransferencia(t.id))} por transferencia
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-xs text-stone-400 text-center mt-3">
+              {config.tamano
+                ? 'Tamaño guardado. Podés cambiarlo en el paso de diseño.'
+                : 'Podés elegir el tamaño ahora o más adelante, en el paso de diseño.'}
+            </p>
+          </div>
+        }
+      >
         <PasoHeader paso={1} total={5} titulo="Subí las fotos de la persona protagonista" />
         {mostrarPrivacidad && <PrivacidadPopup onClose={() => setMostrarPrivacidad(false)} />}
-
-        {/* Referencia de precios. El tamaño se elige recién en el paso 2, pero el
-            precio tiene que estar a la vista antes de que el cliente suba las fotos. */}
-        <div className="rounded-2xl bg-brand-50 border border-brand-100 px-4 py-3 mb-6">
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <span className="text-sm font-black text-stone-800">24 páginas {formatoARS(PRECIO_LIBRO.CHICO)}</span>
-            <span className="text-stone-300">·</span>
-            <span className="text-sm font-black text-stone-800">32 páginas {formatoARS(PRECIO_LIBRO.GRANDE)}</span>
-          </div>
-          <p className="text-xs text-stone-500 text-center mt-1">
-            10% menos pagando por transferencia · Elegís el tamaño en el paso siguiente
-          </p>
-        </div>
 
         {fotos.length < 5 && (
           <div
@@ -881,10 +931,7 @@ export function Wizard({
             <div>
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Tamaño del libro</p>
               <div className="grid grid-cols-2 gap-3">
-                {([
-                  { id: 'CHICO' as const, paginas: 24, desc: 'Ideal para regalo rápido' },
-                  { id: 'GRANDE' as const, paginas: 32, desc: 'Más páginas para colorear' },
-                ]).map((t) => (
+                {TAMANOS.map((t) => (
                   <button
                     key={t.id}
                     onClick={() => cambiarTamano(t.id)}
