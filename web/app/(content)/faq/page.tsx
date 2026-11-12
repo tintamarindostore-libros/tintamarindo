@@ -192,8 +192,8 @@ export default function FAQPage() {
             a: <p>Sí. Cuando despachamos tu libro, te enviamos por email el número de tracking del envío.</p>,
           },
           {
-            q: '¿El libro es un PDF descargable o es un libro físico?',
-            a: <p>El producto final es un libro impreso físico que te enviamos por correo. El PDF con marca de agua que recibís antes es solo para que lo apruebes; no es el producto que te queda.</p>,
+            q: '¿El libro es físico o digital?',
+            a: <p>¡Las dos cosas! Es un libro físico, impreso, que te enviamos por correo. Y también es digital: cuando despachamos el libro te mandamos por email o WhatsApp todas las láminas para colorear (en un archivo PDF), de regalo, para que las imprimas en casa o en una fotocopiadora y las pinten cuantas veces quieran. La versión digital no incluye la tapa a color. El PDF con marca de agua que recibís antes de la impresión es otra cosa: es solo para que revises y apruebes el libro.</p>,
           },
           {
             q: 'Es para un regalo, ¿pueden enviarlo directamente a otra dirección?',

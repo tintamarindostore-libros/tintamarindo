@@ -63,6 +63,7 @@ export default function TerminosPage() {
             <li>Revisión interna imagen por imagen antes de armar el libro final.</li>
             <li>Envío al cliente de un PDF con marca de agua del libro completo para su aprobación antes de imprimir.</li>
             <li>Impresión y envío del libro físico una vez aprobado por el cliente.</li>
+            <li>Sin costo adicional, envío de las láminas para colorear del libro en formato digital (sin la tapa), por email o WhatsApp al momento del despacho, para que el cliente las imprima para uso personal y familiar.</li>
           </ul>
         </Section>
 

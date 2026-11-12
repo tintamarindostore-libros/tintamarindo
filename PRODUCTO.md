@@ -93,6 +93,7 @@ Blanco, ahuesado o combinado. No cambia el precio. Se elige junto con tamaño/te
 6. Sube el PDF **ya armado por él, en baja resolución y con la marca de agua incorporada** — el sistema no lo procesa ni genera ninguna otra versión; ese mismo archivo es el link que ve el cliente para aprobar. (La versión en alta para imprimir la maneja el dueño por fuera del sistema, a mano.) → *(pendiente: el cliente debería recibir ese link por email + WhatsApp — hoy no hay envío de emails)*
 7. Cliente aprueba (o se aprueba automáticamente a los 5 días — cron pendiente) → el pedido pasa por **Armando imposición** e **Imprimiendo** antes de enviarse. El estado de cada pedido (`ESPERANDO_PAGO` → `ESPERANDO_GENERACION` → `EN_REVISION` → `EN_IMPOSICION` → `ESPERANDO_APROBACION` → `APROBADO` → `IMPRIMIENDO` → `ENVIADO`) se puede mover manualmente con un desplegable al lado de cada pedido, tanto en el listado como en el detalle (`web/lib/estados.ts`)
 8. Carga el tracking → *(pendiente: el cliente debería recibir email de despacho — hoy no hay envío de emails)*
+9. Junto con el aviso de despacho, le manda **a mano** al cliente (email o WhatsApp) el PDF de regalo con las láminas para colorear — solo el interior, sin la tapa a color. Es un obsequio incluido en el precio, para que impriman y vuelvan a pintar las láminas. En la landing figura como "De regalo: las láminas listas para imprimir y volver a pintar".
 
 ## Formulario de datos de envío
 

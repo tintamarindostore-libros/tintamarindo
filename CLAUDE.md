@@ -38,7 +38,7 @@ App web donde el cliente sube fotos de un niño, elige temática, estilo artíst
 | Preview del cliente | 1 imagen de prueba gratuita con marca de agua, ligada a Google ID |
 | Generación del libro completo | La hace el dueño en el back, sin el cliente esperando |
 | Autenticación | Google OAuth obligatorio antes de subir fotos |
-| Producto final | Libro impreso físico enviado por correo — no PDF descargable |
+| Producto final | Libro impreso físico enviado por correo. **De regalo** (incluido en el precio, desde 2026-11-12): las láminas para colorear en PDF (solo interior, sin la tapa a color), que el dueño manda **a mano** por email o WhatsApp cuando avisa el despacho. El sistema no las genera ni las envía. En el copy de cara al cliente se dice "las láminas listas para imprimir" / "en formato digital" — evitar "PDF" en textos destacados (público mayor que no lo entiende) |
 | Aprobación final | Cliente aprueba PDF con marca de agua; 5 días de plazo, luego auto-aprobación |
 | PDF de aprobación | El dueño sube **un solo PDF** ya armado por él, en baja resolución y con la marca de agua incorporada. El sistema no le agrega marca de agua ni genera otra versión — ese archivo es el link que ve el cliente. La versión en alta para imprimir la maneja el dueño por fuera del sistema |
 | Producción | El dueño arma e imprime cada libro manualmente (escala después) |

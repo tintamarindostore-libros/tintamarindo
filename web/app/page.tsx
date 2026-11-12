@@ -315,6 +315,7 @@ export default function Page() {
               <ul>
                 <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 8 temáticas</li>
                 <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 3 estilos</li>
+                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>De regalo: las láminas listas para imprimir</li>
               </ul>
               <Link className="btn btn-primary" href="/crear">Crear un regalo personalizado →</Link>
             </div>
@@ -328,10 +329,23 @@ export default function Page() {
               <ul>
                 <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 15 temáticas</li>
                 <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Hasta 4 estilos</li>
+                <li><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>De regalo: las láminas listas para imprimir</li>
                 <li><span className="badge-ocre">+ Ilustración familiar</span></li>
                 <li>Subís una foto grupal y toda la familia queda dibujada en una página.</li>
               </ul>
               <Link className="btn btn-primary" href="/crear">Crear un regalo personalizado →</Link>
+            </div>
+          </div>
+          <div className="price-gift">
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="8" width="18" height="4" rx="1" />
+              <path d="M12 8v13" />
+              <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
+              <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5" />
+            </svg>
+            <div>
+              <h3>De regalo: las láminas listas para imprimir y volver a pintar</h3>
+              <p>Junto con el libro te enviamos todas las láminas para colorear en formato digital, para que las imprimas y las pinten cuantas veces quieran.</p>
             </div>
           </div>
           <div className="price-photo"><img src="/landing/precios-papel.jpg" alt="Hojas de papel blanco y ahuesado con crayones sobre una mesa de madera" /></div>
